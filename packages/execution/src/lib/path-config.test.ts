@@ -13,11 +13,6 @@ describe('createPathConfig', () => {
     expect(config.harnessDir).toBe(path.join('/my/root', 'packages'))
   })
 
-  it('sets repoRoot to parent of root', () => {
-    const config = createPathConfig('/my/root')
-    expect(config.repoRoot).toBe(path.join('/my/root', '..'))
-  })
-
   it('sets outputDir to output under root', () => {
     const config = createPathConfig('/my/root')
     expect(config.outputDir).toBe(path.join('/my/root', 'output'))

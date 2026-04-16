@@ -6,7 +6,6 @@ const config = createPathConfig(process.cwd())
 
 export const testsDir = config.testsDir
 export const harnessDir = config.harnessDir
-export const repoRoot = config.repoRoot
 export const outputDir = config.outputDir
 export const dataDir = config.dataDir
 

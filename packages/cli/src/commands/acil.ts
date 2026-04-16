@@ -1,7 +1,7 @@
 import type { AcilConfig } from '@testdouble/harness-execution'
 import { HarnessError, runAcilLoop } from '@testdouble/harness-execution'
 import type { Argv } from 'yargs'
-import { outputDir, repoRoot, testsDir } from '../paths.js'
+import { outputDir, testsDir } from '../paths.js'
 
 export const command = 'acil'
 export const describe = 'Agent Call Improvement Loop — iteratively improve an agent description for call accuracy'
@@ -20,6 +20,11 @@ export function builder(yargs: Argv): Argv {
       type: 'boolean',
       default: false,
       describe: 'Auto-apply best description to agent .md without prompting',
+    })
+    .option('repo-root', {
+      type: 'string',
+      default: process.cwd(),
+      describe: 'Target repo root containing plugins/agents (defaults to current working directory)',
     })
 }
 
@@ -67,7 +72,7 @@ export async function handler(argv: Record<string, unknown>): Promise<void> {
     apply,
     outputDir,
     testsDir,
-    repoRoot,
+    repoRoot: argv['repo-root'] as string,
   }
 
   await runAcilLoop(config)

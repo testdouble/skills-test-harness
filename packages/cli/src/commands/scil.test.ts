@@ -6,7 +6,6 @@ vi.mock('@testdouble/harness-execution', () => ({
 vi.mock('../paths.js', () => ({
   outputDir: '/mock/output',
   testsDir: '/mock/tests',
-  repoRoot: '/mock/repo',
 }))
 
 import { runScilLoop } from '@testdouble/harness-execution'
@@ -27,6 +26,7 @@ function fullArgv(): Record<string, unknown> {
     model: 'sonnet',
     debug: true,
     apply: true,
+    'repo-root': '/mock/repo',
   }
 }
 
@@ -98,6 +98,11 @@ describe('scil builder', () => {
     const options = buildOptions()
     expect(options.skill).toMatchObject({ type: 'string' })
     expect(options.skill).not.toHaveProperty('demandOption')
+  })
+
+  it('configures repo-root with default process.cwd()', () => {
+    const options = buildOptions()
+    expect(options['repo-root']).toMatchObject({ type: 'string', default: process.cwd() })
   })
 })
 

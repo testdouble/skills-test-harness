@@ -41,7 +41,7 @@ update-analytics-data: build
 	./harness update-analytics-data
 
 test:
-	bunx vitest run --config vitest.all.config.ts
+	bun run vitest run --config vitest.all.config.ts
 
 clear-data:
 	rm -rdfv output/*

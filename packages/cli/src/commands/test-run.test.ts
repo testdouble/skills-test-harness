@@ -7,7 +7,6 @@ vi.mock('@testdouble/harness-execution', () => ({
 vi.mock('../paths.js', () => ({
   outputDir: '/mock/output',
   testsDir: '/mock/tests',
-  repoRoot: '/mock/repo',
   getAllTestSuites: vi.fn(),
 }))
 
@@ -27,6 +26,7 @@ const defaultArgv = {
   suite: 'my-suite',
   test: undefined,
   debug: false,
+  'repo-root': '/mock/repo',
 }
 
 beforeEach(() => {
@@ -71,6 +71,18 @@ describe('test-run builder', () => {
     } as any
     builder(fakeYargs)
     expect(options.debug).toMatchObject({ type: 'boolean', default: false })
+  })
+
+  it('configures repo-root as a string option defaulting to process.cwd()', () => {
+    const options: Record<string, unknown> = {}
+    const fakeYargs = {
+      option(name: string, opts: unknown) {
+        options[name] = opts
+        return fakeYargs
+      },
+    } as any
+    builder(fakeYargs)
+    expect(options['repo-root']).toMatchObject({ type: 'string', default: process.cwd() })
   })
 })
 

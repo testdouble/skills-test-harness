@@ -1,7 +1,7 @@
 import type { ScilConfig } from '@testdouble/harness-execution'
 import { runScilLoop } from '@testdouble/harness-execution'
 import type { Argv } from 'yargs'
-import { outputDir, repoRoot, testsDir } from '../paths.js'
+import { outputDir, testsDir } from '../paths.js'
 
 export const command = 'scil'
 export const describe = 'Skill Call Improvement Loop — iteratively improve a skill description for trigger accuracy'
@@ -21,6 +21,11 @@ export function builder(yargs: Argv): Argv {
       default: false,
       describe: 'Auto-apply best description to SKILL.md without prompting',
     })
+    .option('repo-root', {
+      type: 'string',
+      default: process.cwd(),
+      describe: 'Target repo root containing plugins/skills (defaults to current working directory)',
+    })
 }
 
 export async function handler(argv: Record<string, unknown>): Promise<void> {
@@ -36,7 +41,7 @@ export async function handler(argv: Record<string, unknown>): Promise<void> {
     apply: argv.apply as boolean,
     outputDir,
     testsDir,
-    repoRoot,
+    repoRoot: argv['repo-root'] as string,
   }
 
   await runScilLoop(config)
