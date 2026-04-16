@@ -1,13 +1,13 @@
-import { describe, it, expect } from 'vitest'
+import type { StreamJsonEvent, TestExpectation } from '@testdouble/harness-data'
+import { describe, expect, it } from 'vitest'
 import {
+  evaluateAgentCall,
+  evaluateAllExpectations,
+  evaluateExpectation,
   evaluateResultContains,
   evaluateResultDoesNotContain,
   evaluateSkillCall,
-  evaluateAgentCall,
-  evaluateExpectation,
-  evaluateAllExpectations,
 } from './boolean-evals.js'
-import type { StreamJsonEvent, TestExpectation } from '@testdouble/harness-data'
 
 const resultEvent = (text: string): StreamJsonEvent => ({ type: 'result', result: text })
 const skillEvent = (name: string): StreamJsonEvent => ({
@@ -106,58 +106,47 @@ describe('evaluateAgentCall', () => {
 
 describe('evaluateExpectation', () => {
   it('handles result-contains type', () => {
-    const result = evaluateExpectation(
-      { type: 'result-contains', value: 'hello' },
-      [resultEvent('say hello')]
-    )
+    const result = evaluateExpectation({ type: 'result-contains', value: 'hello' }, [resultEvent('say hello')])
     expect(result).toEqual({ expect_type: 'result-contains', expect_value: 'hello', passed: true })
   })
 
   it('handles result-does-not-contain type', () => {
-    const result = evaluateExpectation(
-      { type: 'result-does-not-contain', value: 'goodbye' },
-      [resultEvent('say hello')]
-    )
+    const result = evaluateExpectation({ type: 'result-does-not-contain', value: 'goodbye' }, [
+      resultEvent('say hello'),
+    ])
     expect(result).toEqual({ expect_type: 'result-does-not-contain', expect_value: 'goodbye', passed: true })
   })
 
   it('handles skill-call type when skill was called and value is true', () => {
-    const result = evaluateExpectation(
-      { type: 'skill-call', value: true, skillFile: 'my-skill' },
-      [skillEvent('my-skill')]
-    )
+    const result = evaluateExpectation({ type: 'skill-call', value: true, skillFile: 'my-skill' }, [
+      skillEvent('my-skill'),
+    ])
     expect(result).toEqual({ expect_type: 'skill-call', expect_value: 'true', passed: true })
   })
 
   it('handles skill-call type when skill was not called and value is false', () => {
-    const result = evaluateExpectation(
-      { type: 'skill-call', value: false, skillFile: 'my-skill' },
-      [skillEvent('other-skill')]
-    )
+    const result = evaluateExpectation({ type: 'skill-call', value: false, skillFile: 'my-skill' }, [
+      skillEvent('other-skill'),
+    ])
     expect(result).toEqual({ expect_type: 'skill-call', expect_value: 'false', passed: true })
   })
 
   it('handles agent-call type when agent was called and value is true', () => {
-    const result = evaluateExpectation(
-      { type: 'agent-call', value: true, agentFile: 'r-and-d:gap-analyzer' },
-      [agentEvent('r-and-d:gap-analyzer')]
-    )
+    const result = evaluateExpectation({ type: 'agent-call', value: true, agentFile: 'r-and-d:gap-analyzer' }, [
+      agentEvent('r-and-d:gap-analyzer'),
+    ])
     expect(result).toEqual({ expect_type: 'agent-call', expect_value: 'true', passed: true })
   })
 
   it('handles agent-call type when agent was not called and value is false', () => {
-    const result = evaluateExpectation(
-      { type: 'agent-call', value: false, agentFile: 'r-and-d:gap-analyzer' },
-      [agentEvent('r-and-d:other')]
-    )
+    const result = evaluateExpectation({ type: 'agent-call', value: false, agentFile: 'r-and-d:gap-analyzer' }, [
+      agentEvent('r-and-d:other'),
+    ])
     expect(result).toEqual({ expect_type: 'agent-call', expect_value: 'false', passed: true })
   })
 
   it('returns passed: false when expectation fails', () => {
-    const result = evaluateExpectation(
-      { type: 'result-contains', value: 'missing' },
-      [resultEvent('present')]
-    )
+    const result = evaluateExpectation({ type: 'result-contains', value: 'missing' }, [resultEvent('present')])
     expect(result.passed).toBe(false)
   })
 })

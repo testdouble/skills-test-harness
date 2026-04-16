@@ -1,17 +1,13 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import {
-  buildTestCaseId,
-  resolvePromptPath,
-  validateScaffolds,
-} from './config.js'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { buildTestCaseId, resolvePromptPath, validateScaffolds } from './config.js'
 import type { TestSuiteConfig } from './types.js'
-import { vi } from 'vitest'
 
 vi.mock('node:fs', () => ({
   existsSync: vi.fn(),
 }))
 
 import { existsSync } from 'node:fs'
+
 const mockExistsSync = existsSync as ReturnType<typeof vi.fn>
 
 describe('buildTestCaseId', () => {
@@ -59,7 +55,7 @@ describe('resolvePromptPath', () => {
 function makeConfig(tests: Array<{ name: string; scaffold?: string }>): TestSuiteConfig {
   return {
     plugins: ['r-and-d'],
-    tests: tests.map(t => ({
+    tests: tests.map((t) => ({
       name: t.name,
       promptFile: 'prompt.md',
       model: 'sonnet',

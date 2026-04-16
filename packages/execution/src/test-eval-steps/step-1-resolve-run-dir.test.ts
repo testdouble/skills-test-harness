@@ -1,12 +1,13 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { resolveRunDir } from './step-1-resolve-run-dir.js'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { RunNotFoundError } from '../lib/errors.js'
+import { resolveRunDir } from './step-1-resolve-run-dir.js'
 
 vi.mock('node:fs/promises', () => ({
   stat: vi.fn(),
 }))
 
 import { stat } from 'node:fs/promises'
+
 const mockStat = stat as ReturnType<typeof vi.fn>
 
 beforeEach(() => {

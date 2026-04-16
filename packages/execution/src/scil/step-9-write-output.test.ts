@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('node:fs/promises', () => ({
   appendFile: vi.fn().mockResolvedValue(undefined),
-  writeFile:  vi.fn().mockResolvedValue(undefined),
+  writeFile: vi.fn().mockResolvedValue(undefined),
 }))
 
 vi.mock('@testdouble/harness-data', () => ({
@@ -11,8 +11,8 @@ vi.mock('@testdouble/harness-data', () => ({
 
 import { appendFile, writeFile } from 'node:fs/promises'
 import { ensureOutputDir } from '@testdouble/harness-data'
-import type { IterationResult, QueryResult } from './types.js'
 import { writeIterationOutput, writeSummaryOutput } from './step-9-write-output.js'
+import type { IterationResult, QueryResult } from './types.js'
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -20,27 +20,27 @@ beforeEach(() => {
 
 function makeQueryResult(overrides: Partial<QueryResult> = {}): QueryResult {
   return {
-    testName:  'Test A',
+    testName: 'Test A',
     skillFile: 'plugin:skill',
     promptContent: 'test prompt',
-    expected:  true,
-    actual:    true,
-    passed:    true,
-    runIndex:  0,
-    events:    [{ type: 'system' } as any],
+    expected: true,
+    actual: true,
+    passed: true,
+    runIndex: 0,
+    events: [{ type: 'system' } as any],
     ...overrides,
   }
 }
 
 function makeIteration(overrides: Partial<IterationResult> = {}): IterationResult {
   return {
-    iteration:     1,
-    phase:         'explore',
-    description:   'A description',
-    trainResults:  [makeQueryResult()],
-    testResults:   [],
+    iteration: 1,
+    phase: 'explore',
+    description: 'A description',
+    trainResults: [makeQueryResult()],
+    testResults: [],
     trainAccuracy: 1.0,
-    testAccuracy:  null,
+    testAccuracy: null,
     ...overrides,
   }
 }
@@ -144,7 +144,12 @@ describe('writeSummaryOutput', () => {
     const written = vi.mocked(writeFile).mock.calls[0][1] as string
     const parsed = JSON.parse(written)
     expect(parsed.iterations).toHaveLength(2)
-    expect(parsed.iterations[0]).toEqual({ iteration: 1, trainAccuracy: 0.5, testAccuracy: null, description: 'desc 1' })
+    expect(parsed.iterations[0]).toEqual({
+      iteration: 1,
+      trainAccuracy: 0.5,
+      testAccuracy: null,
+      description: 'desc 1',
+    })
     expect(parsed.iterations[1]).toEqual({ iteration: 2, trainAccuracy: 1.0, testAccuracy: 0.8, description: 'desc 2' })
     expect(parsed.iterations[0]).not.toHaveProperty('trainResults')
     expect(parsed.iterations[0]).not.toHaveProperty('testResults')
@@ -182,7 +187,7 @@ describe('writeIterationOutput — additional coverage', () => {
     const r3 = makeQueryResult({ testName: 'C', events: [{ type: 'c' } as any] })
     const iteration = makeIteration({
       trainResults: [r1, r2],
-      testResults:  [r3],
+      testResults: [r3],
     })
     await writeIterationOutput('/out/run-abc', 'run-abc', iteration)
 

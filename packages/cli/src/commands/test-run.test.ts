@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@testdouble/harness-execution', () => ({
   runTestSuite: vi.fn(),
@@ -7,20 +7,26 @@ vi.mock('@testdouble/harness-execution', () => ({
 vi.mock('../paths.js', () => ({
   outputDir: '/mock/output',
   testsDir: '/mock/tests',
-  repoRoot: '/mock/repo',
   getAllTestSuites: vi.fn(),
 }))
 
-import { handler, command, describe as commandDescribe, builder } from './test-run.js'
-import { runTestSuite, exitWithResult } from '@testdouble/harness-execution'
+import { exitWithResult, runTestSuite } from '@testdouble/harness-execution'
 import { getAllTestSuites } from '../paths.js'
+import { builder, command, describe as commandDescribe, handler } from './test-run.js'
 
-const mockResult = { testRunId: 'run-123', totalDurationMs: 100, totalInputTokens: 50, totalOutputTokens: 25, failures: 0 }
+const mockResult = {
+  testRunId: 'run-123',
+  totalDurationMs: 100,
+  totalInputTokens: 50,
+  totalOutputTokens: 25,
+  failures: 0,
+}
 
 const defaultArgv = {
   suite: 'my-suite',
   test: undefined,
   debug: false,
+  'repo-root': '/mock/repo',
 }
 
 beforeEach(() => {
@@ -45,20 +51,38 @@ describe('test-run builder', () => {
   it('configures suite as an optional string option', () => {
     const options: Record<string, unknown> = {}
     const fakeYargs = {
-      option(name: string, opts: unknown) { options[name] = opts; return fakeYargs },
+      option(name: string, opts: unknown) {
+        options[name] = opts
+        return fakeYargs
+      },
     } as any
     builder(fakeYargs)
-    expect(options['suite']).toMatchObject({ type: 'string' })
-    expect(options['suite']).not.toHaveProperty('demandOption')
+    expect(options.suite).toMatchObject({ type: 'string' })
+    expect(options.suite).not.toHaveProperty('demandOption')
   })
 
   it('configures debug with a boolean default of false', () => {
     const options: Record<string, unknown> = {}
     const fakeYargs = {
-      option(name: string, opts: unknown) { options[name] = opts; return fakeYargs },
+      option(name: string, opts: unknown) {
+        options[name] = opts
+        return fakeYargs
+      },
     } as any
     builder(fakeYargs)
-    expect(options['debug']).toMatchObject({ type: 'boolean', default: false })
+    expect(options.debug).toMatchObject({ type: 'boolean', default: false })
+  })
+
+  it('configures repo-root as a string option defaulting to process.cwd()', () => {
+    const options: Record<string, unknown> = {}
+    const fakeYargs = {
+      option(name: string, opts: unknown) {
+        options[name] = opts
+        return fakeYargs
+      },
+    } as any
+    builder(fakeYargs)
+    expect(options['repo-root']).toMatchObject({ type: 'string', default: process.cwd() })
   })
 })
 
@@ -77,9 +101,7 @@ describe('test-run handler', () => {
 
   it('passes test filter when provided', async () => {
     await handler({ ...defaultArgv, test: 'my-test' })
-    expect(vi.mocked(runTestSuite)).toHaveBeenCalledWith(
-      expect.objectContaining({ testFilter: 'my-test' })
-    )
+    expect(vi.mocked(runTestSuite)).toHaveBeenCalledWith(expect.objectContaining({ testFilter: 'my-test' }))
   })
 
   it('passes failures from result to exitWithResult', async () => {
@@ -91,9 +113,7 @@ describe('test-run handler', () => {
   it('runs all discovered suites when --suite is omitted', async () => {
     await handler({ ...defaultArgv, suite: undefined })
     expect(vi.mocked(getAllTestSuites)).toHaveBeenCalled()
-    expect(vi.mocked(runTestSuite)).toHaveBeenCalledWith(
-      expect.objectContaining({ suites: ['suite-a', 'suite-b'] })
-    )
+    expect(vi.mocked(runTestSuite)).toHaveBeenCalledWith(expect.objectContaining({ suites: ['suite-a', 'suite-b'] }))
   })
 
   it('does not call getAllTestSuites when --suite is provided', async () => {

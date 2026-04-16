@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { HarnessError, ConfigNotFoundError, RunNotFoundError } from './errors.js'
+import { describe, expect, it } from 'vitest'
+import { ConfigNotFoundError, HarnessError, RunNotFoundError } from './errors.js'
 
 describe('HarnessError', () => {
   it('is an instance of Error', () => {

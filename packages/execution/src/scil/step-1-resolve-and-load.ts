@@ -1,27 +1,27 @@
-import path from 'node:path'
 import { existsSync } from 'node:fs'
-import { readTestSuiteConfig, TEST_CONFIG_FILENAME } from '@testdouble/harness-data'
+import path from 'node:path'
 import type { TestCase } from '@testdouble/harness-data'
+import { readTestSuiteConfig, TEST_CONFIG_FILENAME } from '@testdouble/harness-data'
 import { HarnessError } from '../lib/errors.js'
 
 export interface ResolvedSkillAndTests {
-  skillFile:   string
+  skillFile: string
   skillMdPath: string
-  tests:       TestCase[]
+  tests: TestCase[]
 }
 
 export async function resolveAndLoad(
   suite: string,
   skill: string | undefined,
   testsDir: string,
-  repoRoot: string
+  repoRoot: string,
 ): Promise<ResolvedSkillAndTests> {
   const testSuiteDir = path.join(testsDir, 'test-suites', suite)
   const configPath = path.join(testSuiteDir, TEST_CONFIG_FILENAME)
   const config = await readTestSuiteConfig(configPath)
 
   // Filter to skill-call tests only
-  const skillCallTests = config.tests.filter(t => t.type === 'skill-call')
+  const skillCallTests = config.tests.filter((t) => t.type === 'skill-call')
 
   if (skill) {
     // Validate SKILL.md exists
@@ -32,11 +32,11 @@ export async function resolveAndLoad(
     }
 
     // Filter tests to those targeting this skill
-    const filtered = skillCallTests.filter(t => {
+    const filtered = skillCallTests.filter((t) => {
       // Check test-level skillFile
       if (t.skillFile === skill) return true
       // Check expectations for skill-call type with matching skillFile
-      return t.expect.some(e => e.type === 'skill-call' && 'skillFile' in e && e.skillFile === skill)
+      return t.expect.some((e) => e.type === 'skill-call' && 'skillFile' in e && e.skillFile === skill)
     })
 
     if (filtered.length === 0) {
@@ -62,9 +62,7 @@ export async function resolveAndLoad(
 
   if (skillFiles.size > 1) {
     const options = Array.from(skillFiles).join(', ')
-    throw new HarnessError(
-      `Multiple skills found in suite "${suite}": ${options}. Use --skill to specify one.`
-    )
+    throw new HarnessError(`Multiple skills found in suite "${suite}": ${options}. Use --skill to specify one.`)
   }
 
   const inferredSkill = Array.from(skillFiles)[0]

@@ -1,3 +1,4 @@
+import { ensureSandboxExists } from '@testdouble/docker-integration'
 import { resolvePaths } from '../test-runners/steps/step-1-resolve-paths.js'
 import { validateConfig } from '../test-runners/steps/step-2-validate-config.js'
 import { readConfig } from '../test-runners/steps/step-3-read-config.js'
@@ -6,7 +7,6 @@ import { buildFlags } from '../test-runners/steps/step-6-build-flags.js'
 import { initTotals } from '../test-runners/steps/step-7-init-totals.js'
 import { runTestCases } from '../test-runners/steps/step-8-run-test-cases.js'
 import { printTotals } from '../test-runners/steps/step-9-print-totals.js'
-import { ensureSandboxExists } from '@testdouble/docker-integration'
 
 export interface RunTestSuiteOptions {
   suites: string[]
@@ -41,7 +41,17 @@ export async function runTestSuite(opts: RunTestSuiteOptions): Promise<RunTestSu
     const config = await readConfig(configFilePath, testSuiteDir, opts.testFilter)
     process.stderr.write('  Building flags...\n')
     const { pluginDirs } = buildFlags(config, opts.repoRoot)
-    totals = await runTestCases(config, suite, testSuiteDir, pluginDirs, opts.debug, testRunId, totals, opts.outputDir, opts.repoRoot)
+    totals = await runTestCases(
+      config,
+      suite,
+      testSuiteDir,
+      pluginDirs,
+      opts.debug,
+      testRunId,
+      totals,
+      opts.outputDir,
+      opts.repoRoot,
+    )
   }
 
   printTotals(totals.totalDurationMs, totals.totalInputTokens, totals.totalOutputTokens, testRunId)

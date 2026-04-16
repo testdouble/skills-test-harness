@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { buildTempAgentPlugin, buildTempAgentPluginWithDescription } from './build-temp-plugin.js'
 
 vi.mock('node:fs/promises', () => ({
@@ -8,13 +8,15 @@ vi.mock('node:fs/promises', () => ({
   readdir: vi.fn(),
 }))
 
-import { writeFile, readFile, readdir } from 'node:fs/promises'
+import { readdir, readFile, writeFile } from 'node:fs/promises'
 
 const AGENT_NOOP = 'Respond with: "agent triggered" — nothing else.'
 const SKILL_NOOP = 'Respond with: "skill triggered" — nothing else.'
 
 function makeMd(fields: Record<string, string>, body: string): string {
-  const frontmatter = Object.entries(fields).map(([k, v]) => `${k}: ${v}`).join('\n')
+  const frontmatter = Object.entries(fields)
+    .map(([k, v]) => `${k}: ${v}`)
+    .join('\n')
   return `---\n${frontmatter}\n---\n\n${body}`
 }
 
@@ -199,7 +201,9 @@ describe('buildTempAgentPlugin', () => {
 
     const { tempDir } = await buildTempAgentPlugin('myplugin:alpha', '/run', '/repo')
     expect(tempDir).toBe('/run/temp-agents/myplugin-alpha')
-    const agentWrites = vi.mocked(writeFile).mock.calls.filter(([p]) => p.toString().includes('/agents/') && p.toString().endsWith('.md'))
+    const agentWrites = vi
+      .mocked(writeFile)
+      .mock.calls.filter(([p]) => p.toString().includes('/agents/') && p.toString().endsWith('.md'))
     expect(agentWrites).toHaveLength(0)
   })
 
@@ -334,9 +338,9 @@ describe('buildTempAgentPlugin', () => {
     })
 
     await buildTempAgentPlugin('myplugin:alpha', '/run', '/repo')
-    const agentWrites = vi.mocked(writeFile).mock.calls.filter(([p]) =>
-      p.toString().includes('/agents/') && p.toString().endsWith('.md')
-    )
+    const agentWrites = vi
+      .mocked(writeFile)
+      .mock.calls.filter(([p]) => p.toString().includes('/agents/') && p.toString().endsWith('.md'))
     expect(agentWrites).toHaveLength(1)
     expect(agentWrites[0][0].toString()).toContain('alpha.md')
   })
@@ -409,9 +413,7 @@ describe('buildTempAgentPluginWithDescription', () => {
 
   // TP-007 (T7/EC11): Override description with YAML-special characters
   it('handles override description with quotes and colons', async () => {
-    await buildTempAgentPluginWithDescription(
-      'myplugin:alpha', '/run', 'Use for "gap: analysis" tasks', '/repo'
-    )
+    await buildTempAgentPluginWithDescription('myplugin:alpha', '/run', 'Use for "gap: analysis" tasks', '/repo')
     const alpha = writtenFile('agents/alpha.md')!
     expect(alpha).toContain('description:')
     expect(alpha).not.toContain('Alpha agent description')

@@ -1,1 +1,1 @@
-export { getReEvaluatedRuns, markAsReEvaluated, clearReEvaluatedRuns } from '@testdouble/harness-data'
+export { clearReEvaluatedRuns, getReEvaluatedRuns, markAsReEvaluated } from '@testdouble/harness-data'

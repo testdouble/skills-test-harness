@@ -1,12 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('node:fs/promises', () => ({
   readFile: vi.fn(),
 }))
 
 import { readFile } from 'node:fs/promises'
-import { readSkill } from './step-3-read-skill.js'
 import { HarnessError } from '../lib/errors.js'
+import { readSkill } from './step-3-read-skill.js'
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -14,12 +14,14 @@ beforeEach(() => {
 
 describe('readSkill', () => {
   it('parses name and description from standard quoted frontmatter', async () => {
-    vi.mocked(readFile).mockResolvedValue(`---
+    vi.mocked(readFile).mockResolvedValue(
+      `---
 name: "my-skill"
 description: "A description"
 ---
 
-Body text.` as any)
+Body text.` as any,
+    )
 
     const result = await readSkill('/path/SKILL.md')
     expect(result.name).toBe('my-skill')
@@ -35,7 +37,8 @@ Body text.` as any)
   })
 
   it('parses multi-line block scalar description (folded > style)', async () => {
-    vi.mocked(readFile).mockResolvedValue(`---
+    vi.mocked(readFile).mockResolvedValue(
+      `---
 name: "investigate"
 description: >
   Line one
@@ -43,14 +46,16 @@ description: >
 allowed-tools: Read
 ---
 
-Body.` as any)
+Body.` as any,
+    )
 
     const result = await readSkill('/path/SKILL.md')
     expect(result.description).toBe('Line one\nLine two')
   })
 
   it('parses multi-line block scalar description (literal | style)', async () => {
-    vi.mocked(readFile).mockResolvedValue(`---
+    vi.mocked(readFile).mockResolvedValue(
+      `---
 name: "investigate"
 description: |
   Line one
@@ -58,81 +63,94 @@ description: |
 allowed-tools: Read
 ---
 
-Body.` as any)
+Body.` as any,
+    )
 
     const result = await readSkill('/path/SKILL.md')
     expect(result.description).toBe('Line one\nLine two')
   })
 
   it('parses unquoted single-line description', async () => {
-    vi.mocked(readFile).mockResolvedValue(`---
+    vi.mocked(readFile).mockResolvedValue(
+      `---
 name: "my-skill"
 description: Some unquoted text
 ---
 
-Body.` as any)
+Body.` as any,
+    )
 
     const result = await readSkill('/path/SKILL.md')
     expect(result.description).toBe('Some unquoted text')
   })
 
   it('returns empty description when no description field exists', async () => {
-    vi.mocked(readFile).mockResolvedValue(`---
+    vi.mocked(readFile).mockResolvedValue(
+      `---
 name: "my-skill"
 allowed-tools: Read
 ---
 
-Body.` as any)
+Body.` as any,
+    )
 
     const result = await readSkill('/path/SKILL.md')
     expect(result.description).toBe('')
   })
 
   it('returns empty name when no name field exists', async () => {
-    vi.mocked(readFile).mockResolvedValue(`---
+    vi.mocked(readFile).mockResolvedValue(
+      `---
 description: "A description"
 ---
 
-Body.` as any)
+Body.` as any,
+    )
 
     const result = await readSkill('/path/SKILL.md')
     expect(result.name).toBe('')
   })
 
   it('trims leading whitespace from body after frontmatter', async () => {
-    vi.mocked(readFile).mockResolvedValue(`---
+    vi.mocked(readFile).mockResolvedValue(
+      `---
 name: "my-skill"
 description: "desc"
 ---
 
 
 
-  Body text.` as any)
+  Body text.` as any,
+    )
 
     const result = await readSkill('/path/SKILL.md')
     expect(result.body).toBe('Body text.')
   })
 
   it('handles block scalar with chomp indicator (>-)', async () => {
-    vi.mocked(readFile).mockResolvedValue(`---
+    vi.mocked(readFile).mockResolvedValue(
+      `---
 name: "my-skill"
 description: >-
   Stripped trailing newline
 allowed-tools: Read
 ---
 
-Body.` as any)
+Body.` as any,
+    )
 
     const result = await readSkill('/path/SKILL.md')
     expect(result.description).toBe('Stripped trailing newline')
   })
 
   it('returns empty fields for frontmatter with no content', async () => {
-    vi.mocked(readFile).mockResolvedValue(`---
+    vi.mocked(readFile).mockResolvedValue(
+      `---
 
 ---
 
-Body.` as any)
+Body.` as any,
+    )
 
     const result = await readSkill('/path/SKILL.md')
     expect(result.name).toBe('')

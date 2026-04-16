@@ -6,9 +6,19 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:integration": "vitest run --config vitest.integration.config.ts",
-    "test:all": "vitest run && vitest run --config vitest.integration.config.ts"
+    "test:all": "vitest run --config vitest.all.config.ts",
+    "lint": "biome lint",
+    "format:check": "biome format",
+    "check": "biome check",
+    "typecheck": "for pkg in packages/bun-helpers packages/claude-integration packages/cli packages/data packages/docker-integration packages/evals packages/execution packages/web; do (cd $pkg && bunx tsc --noEmit) || exit 1; done",
+    "ci-checks": "npm run lint && npm run format:check && npm run typecheck && npm run test && npm run test:integration && bun audit --audit-level=moderate"
   },
   "devDependencies": {
-    "vitest": "^4.1.0"
+    "@biomejs/biome": "^2.4.12",
+    "vitest": "^4.1.4"
+  },
+  "overrides": {
+    "vite": "^8.0.8",
+    "picomatch": "^4.0.4"
   }
 }

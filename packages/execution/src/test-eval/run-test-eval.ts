@@ -1,13 +1,13 @@
 import { readdir, stat } from 'node:fs/promises'
 import path from 'node:path'
+import type { StreamJsonEvent, TestConfigRecord, TestResultRecord } from '@testdouble/harness-data'
+import { buildTestCaseId, extractMetrics, readJsonlFile } from '@testdouble/harness-data'
+import type { EvalProgressEvent, EvalResult, LlmJudgeEvalResult } from '@testdouble/harness-evals'
+import { evaluateTestRun } from '@testdouble/harness-evals'
+import { markAsReEvaluated } from '../re-eval-marker.js'
 import { resolveRunDir } from '../test-eval-steps/step-1-resolve-run-dir.js'
 import { writeResults } from '../test-eval-steps/step-4-write-results.js'
 import { printTotals } from '../test-runners/steps/step-9-print-totals.js'
-import { markAsReEvaluated } from '../re-eval-marker.js'
-import { evaluateTestRun } from '@testdouble/harness-evals'
-import type { EvalResult, LlmJudgeEvalResult, EvalProgressEvent } from '@testdouble/harness-evals'
-import { readJsonlFile, extractMetrics, buildTestCaseId } from '@testdouble/harness-data'
-import type { TestResultRecord, TestConfigRecord, StreamJsonEvent } from '@testdouble/harness-data'
 
 export interface RunTestEvalOptions {
   testRunId?: string
@@ -18,15 +18,19 @@ export interface RunTestEvalOptions {
 
 export function evalResultToTestResultRecord(result: EvalResult): TestResultRecord[] {
   if (result.kind === 'boolean') {
-    return [{
-      test_run_id: result.test_run_id,
-      suite: result.suite,
-      test_name: result.test_name,
-      expect_type: result.expect_type,
-      expect_value: result.expect_value,
-      passed: result.passed,
-      ...(result.status === 'infrastructure-error' ? { status: result.status, error_message: result.error_message } : {}),
-    }]
+    return [
+      {
+        test_run_id: result.test_run_id,
+        suite: result.suite,
+        test_name: result.test_name,
+        expect_type: result.expect_type,
+        expect_value: result.expect_value,
+        passed: result.passed,
+        ...(result.status === 'infrastructure-error'
+          ? { status: result.status, error_message: result.error_message }
+          : {}),
+      },
+    ]
   }
 
   // LLM judge: produce per-criterion records + aggregate record (matching original format)
@@ -85,7 +89,9 @@ export function logProgress(event: EvalProgressEvent): void {
           console.log(`  - [${label}] llm-judge "${cr.criterion}"`)
         }
         const label = r.passed ? 'PASS' : 'FAIL'
-        console.log(`  - [${label}] llm-judge-aggregate score=${r.judge_score.toFixed(2)} threshold=${r.judge_threshold}`)
+        console.log(
+          `  - [${label}] llm-judge-aggregate score=${r.judge_score.toFixed(2)} threshold=${r.judge_threshold}`,
+        )
       }
       break
     }
@@ -117,7 +123,7 @@ async function filterUnevaluated(ids: string[], outputDir: string): Promise<stri
   const out: string[] = []
   for (const id of ids) {
     const runDir = path.join(outputDir, id)
-    if (await isTestRunDir(runDir) && !await hasBeenEvaluated(runDir)) out.push(id)
+    if ((await isTestRunDir(runDir)) && !(await hasBeenEvaluated(runDir))) out.push(id)
   }
   return out
 }
@@ -126,7 +132,9 @@ function getTestSuiteDir(suite: string, testsDir: string): string {
   return path.join(testsDir, 'test-suites', suite)
 }
 
-async function computeMetrics(runDir: string): Promise<{ totalDurationMs: number; totalInputTokens: number; totalOutputTokens: number }> {
+async function computeMetrics(
+  runDir: string,
+): Promise<{ totalDurationMs: number; totalInputTokens: number; totalOutputTokens: number }> {
   type StoredEvent = StreamJsonEvent & { test_run_id: string; test_case: string }
   const storedEvents = await readJsonlFile<StoredEvent>(path.join(runDir, 'test-run.jsonl'))
   const testConfigs = await readJsonlFile<TestConfigRecord>(path.join(runDir, 'test-config.jsonl'))
@@ -155,8 +163,8 @@ export async function runTestEval(opts: RunTestEvalOptions): Promise<void> {
     testRunIds = [testRunId]
   } else {
     const allIds = (await readdir(outputDir, { withFileTypes: true }))
-      .filter(e => e.isDirectory())
-      .map(e => e.name)
+      .filter((e) => e.isDirectory())
+      .map((e) => e.name)
       .sort()
     testRunIds = await filterUnevaluated(allIds, outputDir)
     if (testRunIds.length === 0) {

@@ -1,5 +1,5 @@
-import type { Context } from 'hono'
 import { queryAcilHistory, queryAcilRunDetails } from '@testdouble/harness-data'
+import type { Context } from 'hono'
 
 export async function getAcilHistory(c: Context, dataDir: string): Promise<Response> {
   try {
@@ -19,7 +19,10 @@ export async function getAcilRunById(c: Context, dataDir: string): Promise<Respo
     const { summary, iterations } = await queryAcilRunDetails(dataDir, runId)
     return c.json({ summary, iterations })
   } catch (err) {
-    if (err instanceof Error && (err.message.startsWith('ACIL run not found:') || err.message.includes('No such file or directory'))) {
+    if (
+      err instanceof Error &&
+      (err.message.startsWith('ACIL run not found:') || err.message.includes('No such file or directory'))
+    ) {
       return c.json({ error: 'Not found' }, 404)
     }
     throw err

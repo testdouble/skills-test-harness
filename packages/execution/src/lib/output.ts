@@ -1,7 +1,5 @@
-import {
-  ensureOutputDir, appendTestConfig, appendTestRun, buildTestCaseId
-} from '@testdouble/harness-data'
-import type { TestCase, StreamJsonEvent } from '@testdouble/harness-data'
+import type { StreamJsonEvent, TestCase } from '@testdouble/harness-data'
+import { appendTestConfig, appendTestRun, buildTestCaseId, ensureOutputDir } from '@testdouble/harness-data'
 
 export async function writeTestOutput(
   runDir: string,
@@ -9,7 +7,7 @@ export async function writeTestOutput(
   suite: string,
   plugins: string[],
   test: TestCase,
-  events: StreamJsonEvent[]
+  events: StreamJsonEvent[],
 ): Promise<void> {
   await ensureOutputDir(runDir)
   await appendTestConfig(runDir, { test_run_id: testRunId, suite, plugins, test })

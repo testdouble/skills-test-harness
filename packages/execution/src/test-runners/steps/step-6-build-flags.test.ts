@@ -1,7 +1,7 @@
-import { describe, it, expect, vi } from 'vitest'
-import { buildFlags } from './step-6-build-flags.js'
 import { resolvePluginDirs } from '@testdouble/claude-integration'
 import type { TestSuiteConfig } from '@testdouble/harness-data'
+import { describe, expect, it, vi } from 'vitest'
+import { buildFlags } from './step-6-build-flags.js'
 
 vi.mock('@testdouble/claude-integration', () => ({
   resolvePluginDirs: vi.fn(() => ['/mock/repo/r-and-d']),

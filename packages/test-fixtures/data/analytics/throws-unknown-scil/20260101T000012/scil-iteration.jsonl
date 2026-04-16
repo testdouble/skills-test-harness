@@ -1,0 +1,1 @@
+{"test_run_id":"20260101T000012","iteration":1,"description":"test description","trainResults":[{"testName":"Skill Call: test","skillFile":"plugin:skill","expected":true,"actual":true,"passed":true,"runIndex":0}],"testResults":[],"trainAccuracy":1,"testAccuracy":null}

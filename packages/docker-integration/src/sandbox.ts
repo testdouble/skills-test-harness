@@ -1,5 +1,5 @@
-import type { SandboxResult } from './types.js'
 import { DockerError } from './errors.js'
+import type { SandboxResult } from './types.js'
 
 export const SANDBOX_NAME = 'claude-skills-harness'
 
@@ -9,10 +9,7 @@ export async function ensureSandboxExists(): Promise<void> {
   await proc.exited
 
   if (!output.includes(SANDBOX_NAME)) {
-    throw new DockerError(
-      `Sandbox "${SANDBOX_NAME}" not found. Run './harness sandbox-setup' first.`,
-      null
-    )
+    throw new DockerError(`Sandbox "${SANDBOX_NAME}" not found. Run './harness sandbox-setup' first.`, null)
   }
 }
 
@@ -20,14 +17,9 @@ export async function execInSandbox(
   command: string,
   args: string[],
   scaffoldPath: string | null,
-  debug: boolean
+  debug: boolean,
 ): Promise<SandboxResult> {
-  const execArgs = [
-    'docker', 'sandbox', 'exec', SANDBOX_NAME,
-    command,
-    scaffoldPath ?? '',
-    ...args
-  ]
+  const execArgs = ['docker', 'sandbox', 'exec', SANDBOX_NAME, command, scaffoldPath ?? '', ...args]
 
   const proc = Bun.spawn(execArgs, { stdout: 'pipe', stderr: 'pipe' })
   const reader = (proc.stdout as ReadableStream<Uint8Array>).getReader()

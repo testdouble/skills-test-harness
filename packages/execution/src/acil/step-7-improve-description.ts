@@ -1,36 +1,35 @@
-import { getResultText, parseStreamJsonLines, buildAcilImprovementPrompt } from '@testdouble/harness-data'
-import type { Phase } from '@testdouble/harness-data'
-
-import type { AcilQueryResult, AcilIterationResult } from './types.js'
 import { runClaude } from '@testdouble/claude-integration'
+import type { Phase } from '@testdouble/harness-data'
+import { buildAcilImprovementPrompt, getResultText, parseStreamJsonLines } from '@testdouble/harness-data'
+import type { AcilIterationResult, AcilQueryResult } from './types.js'
 
 const MAX_DESCRIPTION_LENGTH = 1024
 
 export interface ImproveDescriptionOptions {
-  agentName:      string
+  agentName: string
   currentDescription: string
-  agentBody:      string
-  trainResults:   AcilQueryResult[]
-  testResults?:   AcilQueryResult[]
-  iterations:     AcilIterationResult[]
-  holdout:        number
-  phase:          Phase
-  model:          string
-  debug:          boolean
+  agentBody: string
+  trainResults: AcilQueryResult[]
+  testResults?: AcilQueryResult[]
+  iterations: AcilIterationResult[]
+  holdout: number
+  phase: Phase
+  model: string
+  debug: boolean
 }
 
 export { buildAcilImprovementPrompt }
 
 export async function improveDescription(opts: ImproveDescriptionOptions): Promise<string | null> {
   const prompt = buildAcilImprovementPrompt({
-    agentName:          opts.agentName,
+    agentName: opts.agentName,
     currentDescription: opts.currentDescription,
-    agentBody:          opts.agentBody,
-    trainResults:       opts.trainResults,
-    testResults:        opts.testResults,
-    iterations:         opts.iterations,
-    holdout:            opts.holdout,
-    phase:              opts.phase,
+    agentBody: opts.agentBody,
+    trainResults: opts.trainResults,
+    testResults: opts.testResults,
+    iterations: opts.iterations,
+    holdout: opts.holdout,
+    phase: opts.phase,
   })
 
   const { stdout, stderr } = await runClaude({
@@ -41,9 +40,11 @@ export async function improveDescription(opts: ImproveDescriptionOptions): Promi
   const events = parseStreamJsonLines(stdout)
   const resultText = getResultText(events)
 
-  if (!resultText || !resultText.trim()) {
+  if (!resultText?.trim()) {
     const stderrHint = stderr?.trim() ? ` (stderr: ${stderr.trim()})` : ''
-    process.stderr.write(`  Warning: no result text returned from improvement prompt${stderrHint}, keeping current description\n`)
+    process.stderr.write(
+      `  Warning: no result text returned from improvement prompt${stderrHint}, keeping current description\n`,
+    )
     return null
   }
 
@@ -53,7 +54,9 @@ export async function improveDescription(opts: ImproveDescriptionOptions): Promi
   const looksLikeError = /^(credit balance|rate limit|unauthorized|internal server error)/i.test(trimmed)
   if (trimmed.length < 20 || looksLikeError) {
     const stderrHint = stderr?.trim() ? ` (stderr: ${stderr.trim()})` : ''
-    process.stderr.write(`  Warning: improvement returned invalid text (got: "${trimmed}")${stderrHint}, keeping current description\n`)
+    process.stderr.write(
+      `  Warning: improvement returned invalid text (got: "${trimmed}")${stderrHint}, keeping current description\n`,
+    )
     return null
   }
 

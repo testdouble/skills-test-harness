@@ -4,7 +4,7 @@ export type EntityType = 'skill' | 'agent'
 
 interface IterationSummary {
   trainAccuracy: number
-  testAccuracy:  number | null
+  testAccuracy: number | null
 }
 
 export function getPhaseInstructions(
@@ -13,13 +13,10 @@ export function getPhaseInstructions(
   iterations: IterationSummary[],
   holdoutFailures?: string[],
 ): string {
-  const what = entityType === 'skill'
-    ? 'WHAT the skill does / WHEN to use it'
-    : 'WHAT the agent does / WHEN to delegate to it'
+  const what =
+    entityType === 'skill' ? 'WHAT the skill does / WHEN to use it' : 'WHAT the agent does / WHEN to delegate to it'
 
-  const trigger = entityType === 'skill'
-    ? 'trigger the skill'
-    : 'trigger delegation'
+  const trigger = entityType === 'skill' ? 'trigger the skill' : 'trigger delegation'
 
   const structural = `Describe ${what}. Include boundary statements. Keep to 3-5 sentences, under 1024 characters. Generalize rather than listing specific cases.`
 
@@ -31,13 +28,12 @@ export function getPhaseInstructions(
       return `Identify patterns that correlated with higher accuracy across previous iterations. Combine the strongest elements from the best-performing iterations while still experimenting with boundary statements and trigger phrasing to ${trigger}.\n\n${structural}`
     }
     case 'converge': {
-      const bestTrain = iterations.length > 0
-        ? Math.max(...iterations.map(i => isNaN(i.trainAccuracy) ? 0 : i.trainAccuracy))
-        : 0
+      const bestTrain =
+        iterations.length > 0 ? Math.max(...iterations.map((i) => (isNaN(i.trainAccuracy) ? 0 : i.trainAccuracy))) : 0
 
       let holdoutSection = ''
       if (bestTrain >= 1.0 && holdoutFailures && holdoutFailures.length > 0) {
-        const failingQueries = holdoutFailures.map(q => `- "${q}"`).join('\n')
+        const failingQueries = holdoutFailures.map((q) => `- "${q}"`).join('\n')
         holdoutSection = `\n\nThe following held-out user messages are not yet handled by the current description. These are additional user messages your description should handle:\n${failingQueries}`
       }
 

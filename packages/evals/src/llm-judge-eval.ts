@@ -1,19 +1,17 @@
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
-import {
-  getResultText, parseStreamJsonLines, readJsonlFile, buildTestCaseId
-} from '@testdouble/harness-data'
-import type { TestConfigRecord, StreamJsonEvent, TestExpectation } from '@testdouble/harness-data'
 import { runClaude } from '@testdouble/claude-integration'
-import { parseRubricSections } from './rubric-parser.js'
+import type { StreamJsonEvent, TestConfigRecord, TestExpectation } from '@testdouble/harness-data'
+import { buildTestCaseId, getResultText, parseStreamJsonLines, readJsonlFile } from '@testdouble/harness-data'
 import { buildJudgePrompt } from './llm-judge-prompt.js'
-import type { LlmJudgeEvalResult, LlmJudgeCriterionResult, OnProgress } from './types.js'
+import { parseRubricSections } from './rubric-parser.js'
+import type { LlmJudgeCriterionResult, LlmJudgeEvalResult, OnProgress } from './types.js'
 
 interface JudgeCriterionResponse {
-  criterion:   string
-  passed:      boolean
-  confidence?: "partial" | "full"
-  reasoning:   string
+  criterion: string
+  passed: boolean
+  confidence?: 'partial' | 'full'
+  reasoning: string
 }
 
 interface OutputFileRecord {
@@ -45,11 +43,11 @@ export async function evaluateLlmJudge(
   testRunId: string,
   suiteDir: string,
   runDir: string,
-  onProgress?: OnProgress
+  onProgress?: OnProgress,
 ): Promise<LlmJudgeEvalResult[]> {
   const { suite, test } = record
   const judgeExpectations = test.expect.filter(
-    (e: TestExpectation): e is Extract<TestExpectation, { type: 'llm-judge' }> => e.type === 'llm-judge'
+    (e: TestExpectation): e is Extract<TestExpectation, { type: 'llm-judge' }> => e.type === 'llm-judge',
   )
   if (judgeExpectations.length === 0) return []
 
@@ -66,7 +64,7 @@ export async function evaluateLlmJudge(
       const rubricMarkdown = await readFile(rubricPath, 'utf8')
       const sections = parseRubricSections(rubricMarkdown)
 
-      const allCriteria = sections.flatMap(s => s.criteria)
+      const allCriteria = sections.flatMap((s) => s.criteria)
       if (allCriteria.length === 0) {
         results.push({
           kind: 'llm-judge',
@@ -91,22 +89,29 @@ export async function evaluateLlmJudge(
       const scaffoldDir = test.scaffold ? path.join(suiteDir, 'scaffolds', test.scaffold) : null
 
       // Load output files for file-scoped rubric sections
-      const hasFileSections = sections.some(s => s.type === 'file')
-      const outputFiles = hasFileSections ? await loadOutputFiles(runDir, buildTestCaseId(suite, test.name)) : new Map<string, string>()
+      const hasFileSections = sections.some((s) => s.type === 'file')
+      const outputFiles = hasFileSections
+        ? await loadOutputFiles(runDir, buildTestCaseId(suite, test.name))
+        : new Map<string, string>()
 
       const { prompt: judgePrompt, autoFailCriteria } = await buildJudgePrompt(
-        sections, resultText, scaffoldDir, events, outputFiles, { testType: test.type }
+        sections,
+        resultText,
+        scaffoldDir,
+        events,
+        outputFiles,
+        { testType: test.type },
       )
 
       // Build auto-fail results for missing file criteria
-      const autoFailResults: LlmJudgeCriterionResult[] = autoFailCriteria.map(criterion => ({
+      const autoFailResults: LlmJudgeCriterionResult[] = autoFailCriteria.map((criterion) => ({
         criterion,
         passed: false,
         reasoning: 'Output file was not produced by the agent',
       }))
 
       // Only call judge if there are criteria to evaluate (non-auto-fail)
-      let judgeCriteriaResults: LlmJudgeCriterionResult[] = []
+      const judgeCriteriaResults: LlmJudgeCriterionResult[] = []
       const judgeCriteriaCount = allCriteria.length - autoFailCriteria.length
 
       if (judgeCriteriaCount > 0) {
@@ -119,7 +124,10 @@ export async function evaluateLlmJudge(
           throw new Error('Judge returned no result text')
         }
 
-        const jsonText = judgeResultText.replace(/^[\s\S]*?```(?:json)?\s*\n?/, '').replace(/\n?```[\s\S]*$/, '').trim()
+        const jsonText = judgeResultText
+          .replace(/^[\s\S]*?```(?:json)?\s*\n?/, '')
+          .replace(/\n?```[\s\S]*$/, '')
+          .trim()
         const parsed = JSON.parse(jsonText || judgeResultText) as { criteria: JudgeCriterionResponse[] }
 
         for (const cr of parsed.criteria) {

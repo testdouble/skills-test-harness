@@ -12,9 +12,10 @@
   "dependencies": {
     "@testdouble/harness-data": "workspace:*",
     "hono": "latest",
+    "marked": "^15",
+    "picomatch": "^4.0.4",
     "react": "^18",
     "react-dom": "^18",
-    "marked": "^15",
     "react-router-dom": "^6",
     "yargs": "^18.0.0"
   },
@@ -26,6 +27,6 @@
     "@vitejs/plugin-react": "^6.0.1",
     "bun-types": "^1.3.11",
     "tailwindcss": "latest",
-    "vite": "^8.0.1"
+    "vite": "^8.0.8"
   }
 }

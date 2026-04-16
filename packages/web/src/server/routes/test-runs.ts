@@ -1,5 +1,5 @@
+import { queryTestRunDetails, queryTestRunSummaries } from '@testdouble/harness-data'
 import type { Context } from 'hono'
-import { queryTestRunSummaries, queryTestRunDetails } from '@testdouble/harness-data'
 
 export async function getTestRuns(c: Context, dataDir: string): Promise<Response> {
   const runs = await queryTestRunSummaries(dataDir)

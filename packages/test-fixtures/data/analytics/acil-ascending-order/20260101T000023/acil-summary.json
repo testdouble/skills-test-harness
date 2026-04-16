@@ -1,0 +1,11 @@
+{
+  "test_run_id": "20260101T000023",
+  "originalDescription": "v1",
+  "bestIteration": 3,
+  "bestDescription": "v3",
+  "iterations": [
+    { "iteration": 1, "trainAccuracy": 0.5, "testAccuracy": null, "description": "v1" },
+    { "iteration": 2, "trainAccuracy": 0.75, "testAccuracy": null, "description": "v2" },
+    { "iteration": 3, "trainAccuracy": 1, "testAccuracy": null, "description": "v3" }
+  ]
+}

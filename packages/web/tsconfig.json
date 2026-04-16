@@ -4,7 +4,10 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "strict": true,
+    "skipLibCheck": true,
     "jsx": "react-jsx",
     "types": ["bun-types"]
-  }
+  },
+  "include": ["src"],
+  "exclude": ["dist", "src/server/index.ts"]
 }

@@ -1,27 +1,27 @@
-import path from 'node:path'
 import { existsSync } from 'node:fs'
-import { readTestSuiteConfig, TEST_CONFIG_FILENAME } from '@testdouble/harness-data'
+import path from 'node:path'
 import type { TestCase } from '@testdouble/harness-data'
+import { readTestSuiteConfig, TEST_CONFIG_FILENAME } from '@testdouble/harness-data'
 import { HarnessError } from '../lib/errors.js'
 
 export interface ResolvedAgentAndTests {
-  agentFile:   string
+  agentFile: string
   agentMdPath: string
-  tests:       TestCase[]
+  tests: TestCase[]
 }
 
 export async function resolveAndLoad(
   suite: string,
   agent: string | undefined,
   testsDir: string,
-  repoRoot: string
+  repoRoot: string,
 ): Promise<ResolvedAgentAndTests> {
   const testSuiteDir = path.join(testsDir, 'test-suites', suite)
   const configPath = path.join(testSuiteDir, TEST_CONFIG_FILENAME)
   const config = await readTestSuiteConfig(configPath)
 
   // Filter to agent-call tests only
-  const agentCallTests = config.tests.filter(t => t.type === 'agent-call')
+  const agentCallTests = config.tests.filter((t) => t.type === 'agent-call')
 
   if (agent) {
     // Validate agent identifier format (must be plugin:agent)
@@ -44,11 +44,11 @@ export async function resolveAndLoad(
     }
 
     // Filter tests to those targeting this agent
-    const filtered = agentCallTests.filter(t => {
+    const filtered = agentCallTests.filter((t) => {
       // Check test-level agentFile
       if (t.agentFile === agent) return true
       // Check expectations for agent-call type with matching agentFile
-      return t.expect.some(e => e.type === 'agent-call' && 'agentFile' in e && e.agentFile === agent)
+      return t.expect.some((e) => e.type === 'agent-call' && 'agentFile' in e && e.agentFile === agent)
     })
 
     if (filtered.length === 0) {
@@ -74,15 +74,15 @@ export async function resolveAndLoad(
 
   if (agentFiles.size > 1) {
     const options = Array.from(agentFiles).join(', ')
-    throw new HarnessError(
-      `Multiple agents found in suite "${suite}": ${options}. Use --agent to specify one.`
-    )
+    throw new HarnessError(`Multiple agents found in suite "${suite}": ${options}. Use --agent to specify one.`)
   }
 
   const inferredAgent = Array.from(agentFiles)[0]
 
   if (!/^[a-z0-9-]+:[a-z0-9-]+$/.test(inferredAgent)) {
-    throw new HarnessError(`Invalid agent identifier "${inferredAgent}" inferred from test expectations. Expected format: plugin-name:agent-name`)
+    throw new HarnessError(
+      `Invalid agent identifier "${inferredAgent}" inferred from test expectations. Expected format: plugin-name:agent-name`,
+    )
   }
 
   const [pluginName, agentName] = inferredAgent.split(':')

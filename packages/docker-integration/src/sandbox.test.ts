@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DockerError } from './errors.js'
 
 function makeStream(content: string): ReadableStream<Uint8Array> {
@@ -6,7 +6,7 @@ function makeStream(content: string): ReadableStream<Uint8Array> {
     start(controller) {
       if (content) controller.enqueue(new TextEncoder().encode(content))
       controller.close()
-    }
+    },
   })
 }
 

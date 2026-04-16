@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@testdouble/docker-integration', () => ({
   removeSandbox: vi.fn(),
@@ -13,9 +13,9 @@ vi.mock('@testdouble/docker-integration', () => ({
   },
 }))
 
-import { removeSandbox, DockerError } from '@testdouble/docker-integration'
-import { handler, command, describe as commandDescribe } from './clean.js'
+import { DockerError, removeSandbox } from '@testdouble/docker-integration'
 import { HarnessError } from '@testdouble/harness-execution'
+import { command, describe as commandDescribe, handler } from './clean.js'
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -53,7 +53,9 @@ describe('clean handler', () => {
   })
 
   it('throws HarnessError when removeSandbox throws DockerError', async () => {
-    vi.mocked(removeSandbox).mockRejectedValue(new DockerError('Docker sandbox rm failed (exit code 1): error output', 1))
+    vi.mocked(removeSandbox).mockRejectedValue(
+      new DockerError('Docker sandbox rm failed (exit code 1): error output', 1),
+    )
 
     await expect(handler()).rejects.toThrow(HarnessError)
   })

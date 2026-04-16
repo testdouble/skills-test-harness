@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const { HarnessError } = vi.hoisted(() => {
   class HarnessError extends Error {
@@ -17,11 +17,10 @@ vi.mock('@testdouble/harness-execution', () => ({
 vi.mock('../paths.js', () => ({
   outputDir: '/mock/output',
   testsDir: '/mock/tests',
-  repoRoot: '/mock/repo',
 }))
 
-import { handler, command, describe as commandDescribe, builder } from './acil.js'
 import { runAcilLoop } from '@testdouble/harness-execution'
+import { builder, command, describe as commandDescribe, handler } from './acil.js'
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -29,15 +28,16 @@ beforeEach(() => {
 
 function fullArgv(): Record<string, unknown> {
   return {
-    suite:                'my-suite',
-    agent:                'plugin:agent',
-    'max-iterations':     10,
-    holdout:              0.2,
-    concurrency:          4,
-    'runs-per-query':     3,
-    model:                'sonnet',
-    debug:                true,
-    apply:                true,
+    suite: 'my-suite',
+    agent: 'plugin:agent',
+    'max-iterations': 10,
+    holdout: 0.2,
+    concurrency: 4,
+    'runs-per-query': 3,
+    model: 'sonnet',
+    debug: true,
+    apply: true,
+    'repo-root': '/mock/repo',
   }
 }
 
@@ -67,7 +67,7 @@ describe('acil builder', () => {
 
   it('configures suite as a required string option', () => {
     const options = buildOptions()
-    expect(options['suite']).toMatchObject({ type: 'string', demandOption: true })
+    expect(options.suite).toMatchObject({ type: 'string', demandOption: true })
   })
 
   it('configures max-iterations with default 5', () => {
@@ -77,12 +77,12 @@ describe('acil builder', () => {
 
   it('configures holdout with default 0', () => {
     const options = buildOptions()
-    expect(options['holdout']).toMatchObject({ type: 'number', default: 0 })
+    expect(options.holdout).toMatchObject({ type: 'number', default: 0 })
   })
 
   it('configures concurrency with default 1', () => {
     const options = buildOptions()
-    expect(options['concurrency']).toMatchObject({ type: 'number', default: 1 })
+    expect(options.concurrency).toMatchObject({ type: 'number', default: 1 })
   })
 
   it('configures runs-per-query with default 1', () => {
@@ -92,23 +92,28 @@ describe('acil builder', () => {
 
   it('configures model with default opus', () => {
     const options = buildOptions()
-    expect(options['model']).toMatchObject({ type: 'string', default: 'opus' })
+    expect(options.model).toMatchObject({ type: 'string', default: 'opus' })
   })
 
   it('configures debug with default false', () => {
     const options = buildOptions()
-    expect(options['debug']).toMatchObject({ type: 'boolean', default: false })
+    expect(options.debug).toMatchObject({ type: 'boolean', default: false })
   })
 
   it('configures apply with default false', () => {
     const options = buildOptions()
-    expect(options['apply']).toMatchObject({ type: 'boolean', default: false })
+    expect(options.apply).toMatchObject({ type: 'boolean', default: false })
   })
 
   it('configures agent as an optional string', () => {
     const options = buildOptions()
-    expect(options['agent']).toMatchObject({ type: 'string' })
-    expect(options['agent']).not.toHaveProperty('demandOption')
+    expect(options.agent).toMatchObject({ type: 'string' })
+    expect(options.agent).not.toHaveProperty('demandOption')
+  })
+
+  it('configures repo-root with default process.cwd()', () => {
+    const options = buildOptions()
+    expect(options['repo-root']).toMatchObject({ type: 'string', default: process.cwd() })
   })
 })
 
@@ -118,18 +123,18 @@ describe('acil handler', () => {
 
     expect(runAcilLoop).toHaveBeenCalledOnce()
     expect(runAcilLoop).toHaveBeenCalledWith({
-      suite:             'my-suite',
-      agent:             'plugin:agent',
-      maxIterations:     10,
-      holdout:           0.2,
-      concurrency:       4,
-      runsPerQuery:      3,
-      model:             'sonnet',
-      debug:             true,
-      apply:             true,
-      outputDir:         '/mock/output',
-      testsDir:          '/mock/tests',
-      repoRoot:          '/mock/repo',
+      suite: 'my-suite',
+      agent: 'plugin:agent',
+      maxIterations: 10,
+      holdout: 0.2,
+      concurrency: 4,
+      runsPerQuery: 3,
+      model: 'sonnet',
+      debug: true,
+      apply: true,
+      outputDir: '/mock/output',
+      testsDir: '/mock/tests',
+      repoRoot: '/mock/repo',
     })
   })
 

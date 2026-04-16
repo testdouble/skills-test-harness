@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { readTestSuiteConfig, readPromptFile } from './config.js'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { readPromptFile, readTestSuiteConfig } from './config.js'
 
 function makeBunFile(exists: boolean, text?: string) {
   return {
@@ -30,156 +30,140 @@ describe('readTestSuiteConfig', () => {
   it('normalizes result-contains expectations from {type: value} shorthand to {type, value} objects', async () => {
     const raw = JSON.stringify({
       plugins: ['plugin-a'],
-      tests: [{
-        name: 'my test',
-        type: 'skill-prompt',
-        promptFile: 'prompt.md',
-        expect: [
-          { 'result-contains': 'hello' },
-        ],
-      }],
+      tests: [
+        {
+          name: 'my test',
+          type: 'skill-prompt',
+          promptFile: 'prompt.md',
+          expect: [{ 'result-contains': 'hello' }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     const config = await readTestSuiteConfig('/suite/tests.json')
-    expect(config.tests[0].expect).toEqual([
-      { type: 'result-contains', value: 'hello' },
-    ])
+    expect(config.tests[0].expect).toEqual([{ type: 'result-contains', value: 'hello' }])
   })
 
   it('normalizes result-does-not-contain as a standalone expectation', async () => {
     const raw = JSON.stringify({
       plugins: ['plugin-a'],
-      tests: [{
-        name: 'my test',
-        type: 'skill-prompt',
-        promptFile: 'prompt.md',
-        expect: [
-          { 'result-does-not-contain': 'goodbye' },
-        ],
-      }],
+      tests: [
+        {
+          name: 'my test',
+          type: 'skill-prompt',
+          promptFile: 'prompt.md',
+          expect: [{ 'result-does-not-contain': 'goodbye' }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     const config = await readTestSuiteConfig('/suite/tests.json')
-    expect(config.tests[0].expect).toEqual([
-      { type: 'result-does-not-contain', value: 'goodbye' },
-    ])
+    expect(config.tests[0].expect).toEqual([{ type: 'result-does-not-contain', value: 'goodbye' }])
   })
 
   it('normalizes skill-call expectations with boolean value and skillFile from the test definition', async () => {
     const raw = JSON.stringify({
       plugins: ['plugin-a'],
-      tests: [{
-        name: 'my test',
-        type: 'skill-call',
-        promptFile: 'prompt.md',
-        skillFile: 'r-and-d:code-review',
-        expect: [
-          { 'skill-call': true },
-        ],
-      }],
+      tests: [
+        {
+          name: 'my test',
+          type: 'skill-call',
+          promptFile: 'prompt.md',
+          skillFile: 'r-and-d:code-review',
+          expect: [{ 'skill-call': true }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     const config = await readTestSuiteConfig('/suite/tests.json')
-    expect(config.tests[0].expect).toEqual([
-      { type: 'skill-call', value: true, skillFile: 'r-and-d:code-review' },
-    ])
+    expect(config.tests[0].expect).toEqual([{ type: 'skill-call', value: true, skillFile: 'r-and-d:code-review' }])
   })
 
   it('normalizes skill-call expectations with value: false when skill should not be called', async () => {
     const raw = JSON.stringify({
       plugins: ['plugin-a'],
-      tests: [{
-        name: 'my test',
-        type: 'skill-call',
-        promptFile: 'prompt.md',
-        skillFile: 'r-and-d:code-review',
-        expect: [
-          { 'skill-call': false },
-        ],
-      }],
+      tests: [
+        {
+          name: 'my test',
+          type: 'skill-call',
+          promptFile: 'prompt.md',
+          skillFile: 'r-and-d:code-review',
+          expect: [{ 'skill-call': false }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     const config = await readTestSuiteConfig('/suite/tests.json')
-    expect(config.tests[0].expect).toEqual([
-      { type: 'skill-call', value: false, skillFile: 'r-and-d:code-review' },
-    ])
+    expect(config.tests[0].expect).toEqual([{ type: 'skill-call', value: false, skillFile: 'r-and-d:code-review' }])
   })
 
   it('normalizes full skill-call object format with expected: true', async () => {
     const raw = JSON.stringify({
       plugins: ['plugin-a'],
-      tests: [{
-        name: 'my test',
-        type: 'skill-call',
-        promptFile: 'prompt.md',
-        expect: [
-          { 'skill-call': { skill: 'r-and-d:code-review', expected: true } },
-        ],
-      }],
+      tests: [
+        {
+          name: 'my test',
+          type: 'skill-call',
+          promptFile: 'prompt.md',
+          expect: [{ 'skill-call': { skill: 'r-and-d:code-review', expected: true } }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     const config = await readTestSuiteConfig('/suite/tests.json')
-    expect(config.tests[0].expect).toEqual([
-      { type: 'skill-call', value: true, skillFile: 'r-and-d:code-review' },
-    ])
+    expect(config.tests[0].expect).toEqual([{ type: 'skill-call', value: true, skillFile: 'r-and-d:code-review' }])
   })
 
   it('normalizes full skill-call object format with expected: false', async () => {
     const raw = JSON.stringify({
       plugins: ['plugin-a'],
-      tests: [{
-        name: 'my test',
-        type: 'skill-call',
-        promptFile: 'prompt.md',
-        expect: [
-          { 'skill-call': { skill: 'r-and-d:code-review', expected: false } },
-        ],
-      }],
+      tests: [
+        {
+          name: 'my test',
+          type: 'skill-call',
+          promptFile: 'prompt.md',
+          expect: [{ 'skill-call': { skill: 'r-and-d:code-review', expected: false } }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     const config = await readTestSuiteConfig('/suite/tests.json')
-    expect(config.tests[0].expect).toEqual([
-      { type: 'skill-call', value: false, skillFile: 'r-and-d:code-review' },
-    ])
+    expect(config.tests[0].expect).toEqual([{ type: 'skill-call', value: false, skillFile: 'r-and-d:code-review' }])
   })
 
   it('full format skill takes precedence over test.skillFile', async () => {
     const raw = JSON.stringify({
       plugins: ['plugin-a'],
-      tests: [{
-        name: 'my test',
-        type: 'skill-call',
-        promptFile: 'prompt.md',
-        skillFile: 'r-and-d:investigate',
-        expect: [
-          { 'skill-call': { skill: 'r-and-d:code-review', expected: true } },
-        ],
-      }],
+      tests: [
+        {
+          name: 'my test',
+          type: 'skill-call',
+          promptFile: 'prompt.md',
+          skillFile: 'r-and-d:investigate',
+          expect: [{ 'skill-call': { skill: 'r-and-d:code-review', expected: true } }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     const config = await readTestSuiteConfig('/suite/tests.json')
-    expect(config.tests[0].expect).toEqual([
-      { type: 'skill-call', value: true, skillFile: 'r-and-d:code-review' },
-    ])
+    expect(config.tests[0].expect).toEqual([{ type: 'skill-call', value: true, skillFile: 'r-and-d:code-review' }])
   })
 
   it('full format ignores extra unknown properties', async () => {
     const raw = JSON.stringify({
       plugins: ['plugin-a'],
-      tests: [{
-        name: 'my test',
-        type: 'skill-call',
-        promptFile: 'prompt.md',
-        expect: [
-          { 'skill-call': { skill: 'r-and-d:code-review', expected: true, extra: 'ignored' } },
-        ],
-      }],
+      tests: [
+        {
+          name: 'my test',
+          type: 'skill-call',
+          promptFile: 'prompt.md',
+          expect: [{ 'skill-call': { skill: 'r-and-d:code-review', expected: true, extra: 'ignored' } }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     const config = await readTestSuiteConfig('/suite/tests.json')
-    expect(config.tests[0].expect).toEqual([
-      { type: 'skill-call', value: true, skillFile: 'r-and-d:code-review' },
-    ])
+    expect(config.tests[0].expect).toEqual([{ type: 'skill-call', value: true, skillFile: 'r-and-d:code-review' }])
   })
 
   it('defaults model to "sonnet" when absent', async () => {
@@ -222,12 +206,14 @@ describe('readTestSuiteConfig', () => {
   it('silently drops all but first key when an expectation object has multiple keys (EC4)', async () => {
     const raw = JSON.stringify({
       plugins: [],
-      tests: [{
-        name: 't',
-        type: 'skill-prompt',
-        promptFile: 'p.md',
-        expect: [{ 'result-contains': 'hello', 'result-does-not-contain': 'goodbye' }],
-      }],
+      tests: [
+        {
+          name: 't',
+          type: 'skill-prompt',
+          promptFile: 'p.md',
+          expect: [{ 'result-contains': 'hello', 'result-does-not-contain': 'goodbye' }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     const config = await readTestSuiteConfig('/suite/tests.json')
@@ -239,12 +225,14 @@ describe('readTestSuiteConfig', () => {
   it('throws when full format is missing skill property', async () => {
     const raw = JSON.stringify({
       plugins: [],
-      tests: [{
-        name: 't',
-        type: 'skill-prompt',
-        promptFile: 'p.md',
-        expect: [{ 'skill-call': { expected: true } }],
-      }],
+      tests: [
+        {
+          name: 't',
+          type: 'skill-prompt',
+          promptFile: 'p.md',
+          expect: [{ 'skill-call': { expected: true } }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     await expect(readTestSuiteConfig('/suite/tests.json')).rejects.toThrow('missing required "skill" string')
@@ -253,12 +241,14 @@ describe('readTestSuiteConfig', () => {
   it('throws when full format is missing expected property', async () => {
     const raw = JSON.stringify({
       plugins: [],
-      tests: [{
-        name: 't',
-        type: 'skill-prompt',
-        promptFile: 'p.md',
-        expect: [{ 'skill-call': { skill: 'r-and-d:code-review' } }],
-      }],
+      tests: [
+        {
+          name: 't',
+          type: 'skill-prompt',
+          promptFile: 'p.md',
+          expect: [{ 'skill-call': { skill: 'r-and-d:code-review' } }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     await expect(readTestSuiteConfig('/suite/tests.json')).rejects.toThrow('missing required "expected" boolean')
@@ -267,12 +257,14 @@ describe('readTestSuiteConfig', () => {
   it('throws when full format is an empty object', async () => {
     const raw = JSON.stringify({
       plugins: [],
-      tests: [{
-        name: 't',
-        type: 'skill-prompt',
-        promptFile: 'p.md',
-        expect: [{ 'skill-call': {} }],
-      }],
+      tests: [
+        {
+          name: 't',
+          type: 'skill-prompt',
+          promptFile: 'p.md',
+          expect: [{ 'skill-call': {} }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     await expect(readTestSuiteConfig('/suite/tests.json')).rejects.toThrow('missing required "skill" string')
@@ -281,12 +273,14 @@ describe('readTestSuiteConfig', () => {
   it('throws when full format skill is not a string', async () => {
     const raw = JSON.stringify({
       plugins: [],
-      tests: [{
-        name: 't',
-        type: 'skill-prompt',
-        promptFile: 'p.md',
-        expect: [{ 'skill-call': { skill: 123, expected: true } }],
-      }],
+      tests: [
+        {
+          name: 't',
+          type: 'skill-prompt',
+          promptFile: 'p.md',
+          expect: [{ 'skill-call': { skill: 123, expected: true } }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     await expect(readTestSuiteConfig('/suite/tests.json')).rejects.toThrow('missing required "skill" string')
@@ -295,12 +289,14 @@ describe('readTestSuiteConfig', () => {
   it('throws when full format expected is not a boolean', async () => {
     const raw = JSON.stringify({
       plugins: [],
-      tests: [{
-        name: 't',
-        type: 'skill-prompt',
-        promptFile: 'p.md',
-        expect: [{ 'skill-call': { skill: 'r-and-d:code-review', expected: 'yes' } }],
-      }],
+      tests: [
+        {
+          name: 't',
+          type: 'skill-prompt',
+          promptFile: 'p.md',
+          expect: [{ 'skill-call': { skill: 'r-and-d:code-review', expected: 'yes' } }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     await expect(readTestSuiteConfig('/suite/tests.json')).rejects.toThrow('missing required "expected" boolean')
@@ -309,13 +305,15 @@ describe('readTestSuiteConfig', () => {
   it('throws when simplified format value is not a boolean', async () => {
     const raw = JSON.stringify({
       plugins: [],
-      tests: [{
-        name: 't',
-        type: 'skill-call',
-        promptFile: 'p.md',
-        skillFile: 'r-and-d:code-review',
-        expect: [{ 'skill-call': 'yes' }],
-      }],
+      tests: [
+        {
+          name: 't',
+          type: 'skill-call',
+          promptFile: 'p.md',
+          skillFile: 'r-and-d:code-review',
+          expect: [{ 'skill-call': 'yes' }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     await expect(readTestSuiteConfig('/suite/tests.json')).rejects.toThrow('requires a boolean value or object')
@@ -324,15 +322,19 @@ describe('readTestSuiteConfig', () => {
   it('throws when simplified format is used without test.skillFile (EC3)', async () => {
     const raw = JSON.stringify({
       plugins: [],
-      tests: [{
-        name: 't',
-        type: 'skill-call',
-        promptFile: 'p.md',
-        expect: [{ 'skill-call': true }],
-      }],
+      tests: [
+        {
+          name: 't',
+          type: 'skill-call',
+          promptFile: 'p.md',
+          expect: [{ 'skill-call': true }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
-    await expect(readTestSuiteConfig('/suite/tests.json')).rejects.toThrow('requires test.skillFile when using simplified boolean format')
+    await expect(readTestSuiteConfig('/suite/tests.json')).rejects.toThrow(
+      'requires test.skillFile when using simplified boolean format',
+    )
   })
 })
 
@@ -340,110 +342,102 @@ describe('readTestSuiteConfig (agent-call expectations)', () => {
   it('normalizes agent-call expectations with boolean value and agentFile from the test definition', async () => {
     const raw = JSON.stringify({
       plugins: ['plugin-a'],
-      tests: [{
-        name: 'my test',
-        type: 'agent-call',
-        promptFile: 'prompt.md',
-        agentFile: 'r-and-d:gap-analyzer',
-        expect: [
-          { 'agent-call': true },
-        ],
-      }],
+      tests: [
+        {
+          name: 'my test',
+          type: 'agent-call',
+          promptFile: 'prompt.md',
+          agentFile: 'r-and-d:gap-analyzer',
+          expect: [{ 'agent-call': true }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     const config = await readTestSuiteConfig('/suite/tests.json')
-    expect(config.tests[0].expect).toEqual([
-      { type: 'agent-call', value: true, agentFile: 'r-and-d:gap-analyzer' },
-    ])
+    expect(config.tests[0].expect).toEqual([{ type: 'agent-call', value: true, agentFile: 'r-and-d:gap-analyzer' }])
   })
 
   it('normalizes agent-call expectations with value: false when agent should not be called', async () => {
     const raw = JSON.stringify({
       plugins: ['plugin-a'],
-      tests: [{
-        name: 'my test',
-        type: 'agent-call',
-        promptFile: 'prompt.md',
-        agentFile: 'r-and-d:gap-analyzer',
-        expect: [
-          { 'agent-call': false },
-        ],
-      }],
+      tests: [
+        {
+          name: 'my test',
+          type: 'agent-call',
+          promptFile: 'prompt.md',
+          agentFile: 'r-and-d:gap-analyzer',
+          expect: [{ 'agent-call': false }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     const config = await readTestSuiteConfig('/suite/tests.json')
-    expect(config.tests[0].expect).toEqual([
-      { type: 'agent-call', value: false, agentFile: 'r-and-d:gap-analyzer' },
-    ])
+    expect(config.tests[0].expect).toEqual([{ type: 'agent-call', value: false, agentFile: 'r-and-d:gap-analyzer' }])
   })
 
   it('normalizes full agent-call object format with expected: true', async () => {
     const raw = JSON.stringify({
       plugins: ['plugin-a'],
-      tests: [{
-        name: 'my test',
-        type: 'agent-call',
-        promptFile: 'prompt.md',
-        expect: [
-          { 'agent-call': { agent: 'r-and-d:gap-analyzer', expected: true } },
-        ],
-      }],
+      tests: [
+        {
+          name: 'my test',
+          type: 'agent-call',
+          promptFile: 'prompt.md',
+          expect: [{ 'agent-call': { agent: 'r-and-d:gap-analyzer', expected: true } }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     const config = await readTestSuiteConfig('/suite/tests.json')
-    expect(config.tests[0].expect).toEqual([
-      { type: 'agent-call', value: true, agentFile: 'r-and-d:gap-analyzer' },
-    ])
+    expect(config.tests[0].expect).toEqual([{ type: 'agent-call', value: true, agentFile: 'r-and-d:gap-analyzer' }])
   })
 
   it('normalizes full agent-call object format with expected: false', async () => {
     const raw = JSON.stringify({
       plugins: ['plugin-a'],
-      tests: [{
-        name: 'my test',
-        type: 'agent-call',
-        promptFile: 'prompt.md',
-        expect: [
-          { 'agent-call': { agent: 'r-and-d:gap-analyzer', expected: false } },
-        ],
-      }],
+      tests: [
+        {
+          name: 'my test',
+          type: 'agent-call',
+          promptFile: 'prompt.md',
+          expect: [{ 'agent-call': { agent: 'r-and-d:gap-analyzer', expected: false } }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     const config = await readTestSuiteConfig('/suite/tests.json')
-    expect(config.tests[0].expect).toEqual([
-      { type: 'agent-call', value: false, agentFile: 'r-and-d:gap-analyzer' },
-    ])
+    expect(config.tests[0].expect).toEqual([{ type: 'agent-call', value: false, agentFile: 'r-and-d:gap-analyzer' }])
   })
 
   it('full format agent takes precedence over test.agentFile', async () => {
     const raw = JSON.stringify({
       plugins: ['plugin-a'],
-      tests: [{
-        name: 'my test',
-        type: 'agent-call',
-        promptFile: 'prompt.md',
-        agentFile: 'r-and-d:structural-analyst',
-        expect: [
-          { 'agent-call': { agent: 'r-and-d:gap-analyzer', expected: true } },
-        ],
-      }],
+      tests: [
+        {
+          name: 'my test',
+          type: 'agent-call',
+          promptFile: 'prompt.md',
+          agentFile: 'r-and-d:structural-analyst',
+          expect: [{ 'agent-call': { agent: 'r-and-d:gap-analyzer', expected: true } }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     const config = await readTestSuiteConfig('/suite/tests.json')
-    expect(config.tests[0].expect).toEqual([
-      { type: 'agent-call', value: true, agentFile: 'r-and-d:gap-analyzer' },
-    ])
+    expect(config.tests[0].expect).toEqual([{ type: 'agent-call', value: true, agentFile: 'r-and-d:gap-analyzer' }])
   })
 
   it('throws when full format is missing agent property', async () => {
     const raw = JSON.stringify({
       plugins: [],
-      tests: [{
-        name: 't',
-        type: 'skill-prompt',
-        promptFile: 'p.md',
-        expect: [{ 'agent-call': { expected: true } }],
-      }],
+      tests: [
+        {
+          name: 't',
+          type: 'skill-prompt',
+          promptFile: 'p.md',
+          expect: [{ 'agent-call': { expected: true } }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     await expect(readTestSuiteConfig('/suite/tests.json')).rejects.toThrow('missing required "agent" string')
@@ -452,12 +446,14 @@ describe('readTestSuiteConfig (agent-call expectations)', () => {
   it('throws when full format is missing expected property', async () => {
     const raw = JSON.stringify({
       plugins: [],
-      tests: [{
-        name: 't',
-        type: 'skill-prompt',
-        promptFile: 'p.md',
-        expect: [{ 'agent-call': { agent: 'r-and-d:gap-analyzer' } }],
-      }],
+      tests: [
+        {
+          name: 't',
+          type: 'skill-prompt',
+          promptFile: 'p.md',
+          expect: [{ 'agent-call': { agent: 'r-and-d:gap-analyzer' } }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     await expect(readTestSuiteConfig('/suite/tests.json')).rejects.toThrow('missing required "expected" boolean')
@@ -466,12 +462,14 @@ describe('readTestSuiteConfig (agent-call expectations)', () => {
   it('throws when full format is an empty object', async () => {
     const raw = JSON.stringify({
       plugins: [],
-      tests: [{
-        name: 't',
-        type: 'skill-prompt',
-        promptFile: 'p.md',
-        expect: [{ 'agent-call': {} }],
-      }],
+      tests: [
+        {
+          name: 't',
+          type: 'skill-prompt',
+          promptFile: 'p.md',
+          expect: [{ 'agent-call': {} }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     await expect(readTestSuiteConfig('/suite/tests.json')).rejects.toThrow('missing required "agent" string')
@@ -480,12 +478,14 @@ describe('readTestSuiteConfig (agent-call expectations)', () => {
   it('throws when full format agent is not a string', async () => {
     const raw = JSON.stringify({
       plugins: [],
-      tests: [{
-        name: 't',
-        type: 'skill-prompt',
-        promptFile: 'p.md',
-        expect: [{ 'agent-call': { agent: 123, expected: true } }],
-      }],
+      tests: [
+        {
+          name: 't',
+          type: 'skill-prompt',
+          promptFile: 'p.md',
+          expect: [{ 'agent-call': { agent: 123, expected: true } }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     await expect(readTestSuiteConfig('/suite/tests.json')).rejects.toThrow('missing required "agent" string')
@@ -494,12 +494,14 @@ describe('readTestSuiteConfig (agent-call expectations)', () => {
   it('throws when full format expected is not a boolean', async () => {
     const raw = JSON.stringify({
       plugins: [],
-      tests: [{
-        name: 't',
-        type: 'skill-prompt',
-        promptFile: 'p.md',
-        expect: [{ 'agent-call': { agent: 'r-and-d:gap-analyzer', expected: 'yes' } }],
-      }],
+      tests: [
+        {
+          name: 't',
+          type: 'skill-prompt',
+          promptFile: 'p.md',
+          expect: [{ 'agent-call': { agent: 'r-and-d:gap-analyzer', expected: 'yes' } }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     await expect(readTestSuiteConfig('/suite/tests.json')).rejects.toThrow('missing required "expected" boolean')
@@ -508,13 +510,15 @@ describe('readTestSuiteConfig (agent-call expectations)', () => {
   it('throws when simplified format value is not a boolean', async () => {
     const raw = JSON.stringify({
       plugins: [],
-      tests: [{
-        name: 't',
-        type: 'agent-call',
-        promptFile: 'p.md',
-        agentFile: 'r-and-d:gap-analyzer',
-        expect: [{ 'agent-call': 'yes' }],
-      }],
+      tests: [
+        {
+          name: 't',
+          type: 'agent-call',
+          promptFile: 'p.md',
+          agentFile: 'r-and-d:gap-analyzer',
+          expect: [{ 'agent-call': 'yes' }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     await expect(readTestSuiteConfig('/suite/tests.json')).rejects.toThrow('requires a boolean value or object')
@@ -523,15 +527,19 @@ describe('readTestSuiteConfig (agent-call expectations)', () => {
   it('throws when simplified format is used without test.agentFile', async () => {
     const raw = JSON.stringify({
       plugins: [],
-      tests: [{
-        name: 't',
-        type: 'agent-call',
-        promptFile: 'p.md',
-        expect: [{ 'agent-call': true }],
-      }],
+      tests: [
+        {
+          name: 't',
+          type: 'agent-call',
+          promptFile: 'p.md',
+          expect: [{ 'agent-call': true }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
-    await expect(readTestSuiteConfig('/suite/tests.json')).rejects.toThrow('requires test.agentFile when using simplified boolean format')
+    await expect(readTestSuiteConfig('/suite/tests.json')).rejects.toThrow(
+      'requires test.agentFile when using simplified boolean format',
+    )
   })
 
   it('preserves agentFile field on test cases', async () => {
@@ -547,20 +555,18 @@ describe('readTestSuiteConfig (agent-call expectations)', () => {
   it('full format ignores extra unknown properties', async () => {
     const raw = JSON.stringify({
       plugins: ['plugin-a'],
-      tests: [{
-        name: 'my test',
-        type: 'agent-call',
-        promptFile: 'prompt.md',
-        expect: [
-          { 'agent-call': { agent: 'r-and-d:gap-analyzer', expected: true, extra: 'ignored' } },
-        ],
-      }],
+      tests: [
+        {
+          name: 'my test',
+          type: 'agent-call',
+          promptFile: 'prompt.md',
+          expect: [{ 'agent-call': { agent: 'r-and-d:gap-analyzer', expected: true, extra: 'ignored' } }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     const config = await readTestSuiteConfig('/suite/tests.json')
-    expect(config.tests[0].expect).toEqual([
-      { type: 'agent-call', value: true, agentFile: 'r-and-d:gap-analyzer' },
-    ])
+    expect(config.tests[0].expect).toEqual([{ type: 'agent-call', value: true, agentFile: 'r-and-d:gap-analyzer' }])
   })
 })
 
@@ -568,14 +574,14 @@ describe('readTestSuiteConfig (llm-judge expectations)', () => {
   it('normalizes llm-judge expectation with all fields', async () => {
     const raw = JSON.stringify({
       plugins: [],
-      tests: [{
-        name: 't',
-        type: 'skill-prompt',
-        promptFile: 'p.md',
-        expect: [
-          { 'llm-judge': { rubricFile: 'rubric.md', model: 'opus', threshold: 0.8 } },
-        ],
-      }],
+      tests: [
+        {
+          name: 't',
+          type: 'skill-prompt',
+          promptFile: 'p.md',
+          expect: [{ 'llm-judge': { rubricFile: 'rubric.md', model: 'opus', threshold: 0.8 } }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     const config = await readTestSuiteConfig('/suite/tests.json')
@@ -587,14 +593,14 @@ describe('readTestSuiteConfig (llm-judge expectations)', () => {
   it('defaults model and threshold to undefined when omitted', async () => {
     const raw = JSON.stringify({
       plugins: [],
-      tests: [{
-        name: 't',
-        type: 'skill-prompt',
-        promptFile: 'p.md',
-        expect: [
-          { 'llm-judge': { rubricFile: 'rubric.md' } },
-        ],
-      }],
+      tests: [
+        {
+          name: 't',
+          type: 'skill-prompt',
+          promptFile: 'p.md',
+          expect: [{ 'llm-judge': { rubricFile: 'rubric.md' } }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     const config = await readTestSuiteConfig('/suite/tests.json')
@@ -606,14 +612,14 @@ describe('readTestSuiteConfig (llm-judge expectations)', () => {
   it('throws when rubricFile is missing', async () => {
     const raw = JSON.stringify({
       plugins: [],
-      tests: [{
-        name: 't',
-        type: 'skill-prompt',
-        promptFile: 'p.md',
-        expect: [
-          { 'llm-judge': { model: 'opus' } },
-        ],
-      }],
+      tests: [
+        {
+          name: 't',
+          type: 'skill-prompt',
+          promptFile: 'p.md',
+          expect: [{ 'llm-judge': { model: 'opus' } }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     await expect(readTestSuiteConfig('/suite/tests.json')).rejects.toThrow('missing required "rubricFile" string')
@@ -622,14 +628,14 @@ describe('readTestSuiteConfig (llm-judge expectations)', () => {
   it('throws when rubricFile is not a string', async () => {
     const raw = JSON.stringify({
       plugins: [],
-      tests: [{
-        name: 't',
-        type: 'skill-prompt',
-        promptFile: 'p.md',
-        expect: [
-          { 'llm-judge': { rubricFile: 123 } },
-        ],
-      }],
+      tests: [
+        {
+          name: 't',
+          type: 'skill-prompt',
+          promptFile: 'p.md',
+          expect: [{ 'llm-judge': { rubricFile: 123 } }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     await expect(readTestSuiteConfig('/suite/tests.json')).rejects.toThrow('missing required "rubricFile" string')
@@ -638,14 +644,14 @@ describe('readTestSuiteConfig (llm-judge expectations)', () => {
   it('treats non-string model as undefined', async () => {
     const raw = JSON.stringify({
       plugins: [],
-      tests: [{
-        name: 't',
-        type: 'skill-prompt',
-        promptFile: 'p.md',
-        expect: [
-          { 'llm-judge': { rubricFile: 'rubric.md', model: 42 } },
-        ],
-      }],
+      tests: [
+        {
+          name: 't',
+          type: 'skill-prompt',
+          promptFile: 'p.md',
+          expect: [{ 'llm-judge': { rubricFile: 'rubric.md', model: 42 } }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     const config = await readTestSuiteConfig('/suite/tests.json')
@@ -655,14 +661,14 @@ describe('readTestSuiteConfig (llm-judge expectations)', () => {
   it('treats non-number threshold as undefined', async () => {
     const raw = JSON.stringify({
       plugins: [],
-      tests: [{
-        name: 't',
-        type: 'skill-prompt',
-        promptFile: 'p.md',
-        expect: [
-          { 'llm-judge': { rubricFile: 'rubric.md', threshold: 'high' } },
-        ],
-      }],
+      tests: [
+        {
+          name: 't',
+          type: 'skill-prompt',
+          promptFile: 'p.md',
+          expect: [{ 'llm-judge': { rubricFile: 'rubric.md', threshold: 'high' } }],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     const config = await readTestSuiteConfig('/suite/tests.json')
@@ -674,18 +680,20 @@ describe('readTestSuiteConfig (mixed expectations)', () => {
   it('parses mixed expectation types in a single test case', async () => {
     const raw = JSON.stringify({
       plugins: ['plugin-a'],
-      tests: [{
-        name: 'mixed test',
-        type: 'agent-call',
-        promptFile: 'prompt.md',
-        skillFile: 'r-and-d:code-review',
-        agentFile: 'r-and-d:gap-analyzer',
-        expect: [
-          { 'result-contains': 'hello' },
-          { 'agent-call': true },
-          { 'skill-call': { skill: 'r-and-d:investigate', expected: false } },
-        ],
-      }],
+      tests: [
+        {
+          name: 'mixed test',
+          type: 'agent-call',
+          promptFile: 'prompt.md',
+          skillFile: 'r-and-d:code-review',
+          agentFile: 'r-and-d:gap-analyzer',
+          expect: [
+            { 'result-contains': 'hello' },
+            { 'agent-call': true },
+            { 'skill-call': { skill: 'r-and-d:investigate', expected: false } },
+          ],
+        },
+      ],
     })
     ;(globalThis as any).Bun.file.mockReturnValue(makeBunFile(true, raw))
     const config = await readTestSuiteConfig('/suite/tests.json')

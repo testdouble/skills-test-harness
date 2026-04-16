@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { evaluateLlmJudge } from './llm-judge-eval.js'
 import type { TestConfigRecord } from '@testdouble/harness-data'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { evaluateLlmJudge } from './llm-judge-eval.js'
 
 vi.mock('node:fs/promises', () => ({
   readFile: vi.fn(),
@@ -88,7 +88,9 @@ describe('evaluateLlmJudge', () => {
     vi.mocked(parseRubricSections).mockReturnValue([{ type: 'transcript', criteria: ['criterion one'] }])
     vi.mocked(getResultText)
       .mockReturnValueOnce('some result')
-      .mockReturnValueOnce(JSON.stringify({ criteria: [{ criterion: 'criterion one', passed: true, reasoning: 'good' }] }))
+      .mockReturnValueOnce(
+        JSON.stringify({ criteria: [{ criterion: 'criterion one', passed: true, reasoning: 'good' }] }),
+      )
     vi.mocked(buildJudgePrompt).mockResolvedValue({ prompt: 'judge prompt', autoFailCriteria: [] })
     vi.mocked(runClaude).mockResolvedValue({ exitCode: 0, stdout: '', stderr: '' })
     vi.mocked(parseStreamJsonLines).mockReturnValue([])
@@ -131,7 +133,9 @@ describe('evaluateLlmJudge', () => {
     vi.mocked(parseRubricSections).mockReturnValue([{ type: 'transcript', criteria: ['criterion one'] }])
     vi.mocked(getResultText)
       .mockReturnValueOnce('some result')
-      .mockReturnValueOnce(JSON.stringify({ criteria: [{ criterion: 'criterion one', passed: true, reasoning: 'good' }] }))
+      .mockReturnValueOnce(
+        JSON.stringify({ criteria: [{ criterion: 'criterion one', passed: true, reasoning: 'good' }] }),
+      )
     vi.mocked(buildJudgePrompt).mockResolvedValue({ prompt: 'judge prompt', autoFailCriteria: [] })
     vi.mocked(runClaude).mockResolvedValue({ exitCode: 0, stdout: '', stderr: '' })
     vi.mocked(parseStreamJsonLines).mockReturnValue([])
@@ -153,7 +157,7 @@ describe('evaluateLlmJudge', () => {
       null,
       [],
       expect.any(Map),
-      { testType: 'agent-prompt' }
+      { testType: 'agent-prompt' },
     )
   })
 
@@ -171,15 +175,22 @@ describe('evaluateLlmJudge', () => {
 
   it('passes output files to judge prompt when matched by buildTestCaseId', async () => {
     vi.mocked(readJsonlFile).mockResolvedValue([
-      { test_run_id: '20260327T120000', test_name: 'test-suite-my test', file_path: 'docs/output.md', file_content: '# Analysis' }
+      {
+        test_run_id: '20260327T120000',
+        test_name: 'test-suite-my test',
+        file_path: 'docs/output.md',
+        file_content: '# Analysis',
+      },
     ])
     vi.mocked(readFile).mockResolvedValue('## File: docs/output.md\n### Presence\n- The file contains analysis')
     vi.mocked(parseRubricSections).mockReturnValue([
-      { type: 'file', filePath: 'docs/output.md', criteria: ['The file contains analysis'] }
+      { type: 'file', filePath: 'docs/output.md', criteria: ['The file contains analysis'] },
     ])
     vi.mocked(getResultText)
       .mockReturnValueOnce('some result')
-      .mockReturnValueOnce(JSON.stringify({ criteria: [{ criterion: 'The file contains analysis', passed: true, reasoning: 'good' }] }))
+      .mockReturnValueOnce(
+        JSON.stringify({ criteria: [{ criterion: 'The file contains analysis', passed: true, reasoning: 'good' }] }),
+      )
     vi.mocked(buildJudgePrompt).mockResolvedValue({ prompt: 'judge prompt', autoFailCriteria: [] })
     vi.mocked(runClaude).mockResolvedValue({ exitCode: 0, stdout: '', stderr: '' })
     vi.mocked(parseStreamJsonLines).mockReturnValue([])
@@ -193,7 +204,7 @@ describe('evaluateLlmJudge', () => {
       null,
       [],
       new Map([['docs/output.md', '# Analysis']]),
-      expect.anything()
+      expect.anything(),
     )
     expect(results).toHaveLength(1)
     expect(results[0].passed).toBe(true)
@@ -203,7 +214,7 @@ describe('evaluateLlmJudge', () => {
   it('auto-fails criteria for missing output files', async () => {
     vi.mocked(readFile).mockResolvedValue('## File: docs/output.md\n- The file contains analysis')
     vi.mocked(parseRubricSections).mockReturnValue([
-      { type: 'file', filePath: 'docs/output.md', criteria: ['The file contains analysis'] }
+      { type: 'file', filePath: 'docs/output.md', criteria: ['The file contains analysis'] },
     ])
     vi.mocked(getResultText).mockReturnValue('some result')
     vi.mocked(buildJudgePrompt).mockResolvedValue({

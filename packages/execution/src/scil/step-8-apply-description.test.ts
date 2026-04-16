@@ -1,13 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('node:fs/promises', () => ({
-  readFile:  vi.fn(),
+  readFile: vi.fn(),
   writeFile: vi.fn().mockResolvedValue(undefined),
 }))
 
 import { readFile, writeFile } from 'node:fs/promises'
-import { applyDescription } from './step-8-apply-description.js'
 import { HarnessError } from '../lib/errors.js'
+import { applyDescription } from './step-8-apply-description.js'
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -15,9 +15,7 @@ beforeEach(() => {
 
 describe('applyDescription', () => {
   it('replaces a single-line quoted description', async () => {
-    vi.mocked(readFile).mockResolvedValue(
-      '---\nname: "my-skill"\ndescription: "old description"\n---\n\nBody text'
-    )
+    vi.mocked(readFile).mockResolvedValue('---\nname: "my-skill"\ndescription: "old description"\n---\n\nBody text')
 
     await applyDescription('/skill/SKILL.md', 'new description')
 
@@ -27,9 +25,7 @@ describe('applyDescription', () => {
   })
 
   it('replaces a single-line unquoted description', async () => {
-    vi.mocked(readFile).mockResolvedValue(
-      '---\nname: my-skill\ndescription: old description here\n---\n\nBody'
-    )
+    vi.mocked(readFile).mockResolvedValue('---\nname: my-skill\ndescription: old description here\n---\n\nBody')
 
     await applyDescription('/skill/SKILL.md', 'new description')
 
@@ -40,7 +36,7 @@ describe('applyDescription', () => {
 
   it('replaces a multi-line block scalar description', async () => {
     vi.mocked(readFile).mockResolvedValue(
-      '---\nname: my-skill\ndescription: >\n  This is a long\n  multi-line description\nallowed-tools: Read\n---\n\nBody'
+      '---\nname: my-skill\ndescription: >\n  This is a long\n  multi-line description\nallowed-tools: Read\n---\n\nBody',
     )
 
     await applyDescription('/skill/SKILL.md', 'replaced')
@@ -51,9 +47,7 @@ describe('applyDescription', () => {
   })
 
   it('preserves the body after frontmatter', async () => {
-    vi.mocked(readFile).mockResolvedValue(
-      '---\ndescription: "old"\n---\n\n# Step 1\n\nDo the thing.'
-    )
+    vi.mocked(readFile).mockResolvedValue('---\ndescription: "old"\n---\n\n# Step 1\n\nDo the thing.')
 
     await applyDescription('/skill/SKILL.md', 'new')
 
@@ -64,7 +58,7 @@ describe('applyDescription', () => {
 
   it('preserves other frontmatter fields', async () => {
     vi.mocked(readFile).mockResolvedValue(
-      '---\nname: "my-skill"\ndescription: "old"\nallowed-tools: Read, Grep\n---\n\nBody'
+      '---\nname: "my-skill"\ndescription: "old"\nallowed-tools: Read, Grep\n---\n\nBody',
     )
 
     await applyDescription('/skill/SKILL.md', 'new')
@@ -77,29 +71,20 @@ describe('applyDescription', () => {
   it('throws when no frontmatter is found', async () => {
     vi.mocked(readFile).mockResolvedValue('No frontmatter here')
 
-    await expect(applyDescription('/skill/SKILL.md', 'new'))
-      .rejects.toThrow(HarnessError)
+    await expect(applyDescription('/skill/SKILL.md', 'new')).rejects.toThrow(HarnessError)
   })
 
   it('reads from and writes to the correct file path', async () => {
-    vi.mocked(readFile).mockResolvedValue(
-      '---\ndescription: "old"\n---\n\nBody'
-    )
+    vi.mocked(readFile).mockResolvedValue('---\ndescription: "old"\n---\n\nBody')
 
     await applyDescription('/some/path/SKILL.md', 'new')
 
     expect(vi.mocked(readFile)).toHaveBeenCalledWith('/some/path/SKILL.md', 'utf-8')
-    expect(vi.mocked(writeFile)).toHaveBeenCalledWith(
-      '/some/path/SKILL.md',
-      expect.any(String),
-      'utf-8'
-    )
+    expect(vi.mocked(writeFile)).toHaveBeenCalledWith('/some/path/SKILL.md', expect.any(String), 'utf-8')
   })
 
   it('wraps the new description in quotes', async () => {
-    vi.mocked(readFile).mockResolvedValue(
-      '---\ndescription: unquoted old\n---\n\nBody'
-    )
+    vi.mocked(readFile).mockResolvedValue('---\ndescription: unquoted old\n---\n\nBody')
 
     await applyDescription('/skill/SKILL.md', 'new desc')
 
@@ -109,7 +94,7 @@ describe('applyDescription', () => {
 
   it('handles block scalar with pipe indicator', async () => {
     vi.mocked(readFile).mockResolvedValue(
-      '---\nname: my-skill\ndescription: |\n  Line one\n  Line two\nallowed-tools: Read\n---\n\nBody'
+      '---\nname: my-skill\ndescription: |\n  Line one\n  Line two\nallowed-tools: Read\n---\n\nBody',
     )
 
     await applyDescription('/skill/SKILL.md', 'replaced')
@@ -120,9 +105,7 @@ describe('applyDescription', () => {
   })
 
   it('maintains proper frontmatter delimiters', async () => {
-    vi.mocked(readFile).mockResolvedValue(
-      '---\ndescription: "old"\n---\n\nBody'
-    )
+    vi.mocked(readFile).mockResolvedValue('---\ndescription: "old"\n---\n\nBody')
 
     await applyDescription('/skill/SKILL.md', 'new')
 
@@ -132,9 +115,7 @@ describe('applyDescription', () => {
   })
 
   it('escapes double quotes in the description', async () => {
-    vi.mocked(readFile).mockResolvedValue(
-      '---\ndescription: "old"\n---\n\nBody'
-    )
+    vi.mocked(readFile).mockResolvedValue('---\ndescription: "old"\n---\n\nBody')
 
     await applyDescription('/skill/SKILL.md', 'Use for "important" tasks')
 
@@ -143,9 +124,7 @@ describe('applyDescription', () => {
   })
 
   it('handles dollar signs in description without regex substitution', async () => {
-    vi.mocked(readFile).mockResolvedValue(
-      '---\ndescription: "old"\n---\n\nBody'
-    )
+    vi.mocked(readFile).mockResolvedValue('---\ndescription: "old"\n---\n\nBody')
 
     await applyDescription('/skill/SKILL.md', 'Costs $100 or $& more')
 
@@ -154,9 +133,7 @@ describe('applyDescription', () => {
   })
 
   it('escapes backslashes in the description', async () => {
-    vi.mocked(readFile).mockResolvedValue(
-      '---\ndescription: "old"\n---\n\nBody'
-    )
+    vi.mocked(readFile).mockResolvedValue('---\ndescription: "old"\n---\n\nBody')
 
     await applyDescription('/skill/SKILL.md', 'path\\to\\thing')
 
@@ -165,17 +142,14 @@ describe('applyDescription', () => {
   })
 
   it('throws when frontmatter has no description field', async () => {
-    vi.mocked(readFile).mockResolvedValue(
-      '---\nname: "my-skill"\nallowed-tools: Read\n---\n\nBody'
-    )
+    vi.mocked(readFile).mockResolvedValue('---\nname: "my-skill"\nallowed-tools: Read\n---\n\nBody')
 
-    await expect(applyDescription('/skill/SKILL.md', 'new'))
-      .rejects.toThrow(HarnessError)
+    await expect(applyDescription('/skill/SKILL.md', 'new')).rejects.toThrow(HarnessError)
   })
 
   it('handles block scalar with chomping indicator >-', async () => {
     vi.mocked(readFile).mockResolvedValue(
-      '---\nname: my-skill\ndescription: >-\n  Line one\n  Line two\nallowed-tools: Read\n---\n\nBody'
+      '---\nname: my-skill\ndescription: >-\n  Line one\n  Line two\nallowed-tools: Read\n---\n\nBody',
     )
 
     await applyDescription('/skill/SKILL.md', 'replaced')

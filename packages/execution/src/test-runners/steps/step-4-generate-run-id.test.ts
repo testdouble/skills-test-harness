@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { generateRunId } from './step-4-generate-run-id.js'
 
 afterEach(() => {

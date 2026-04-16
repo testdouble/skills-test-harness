@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import path from 'path'
+import path from 'node:path'
+import { describe, expect, it } from 'vitest'
 import { createPathConfig } from './path-config.js'
 
 describe('createPathConfig', () => {
@@ -11,11 +11,6 @@ describe('createPathConfig', () => {
   it('sets harnessDir to packages under root', () => {
     const config = createPathConfig('/my/root')
     expect(config.harnessDir).toBe(path.join('/my/root', 'packages'))
-  })
-
-  it('sets repoRoot to parent of root', () => {
-    const config = createPathConfig('/my/root')
-    expect(config.repoRoot).toBe(path.join('/my/root', '..'))
   })
 
   it('sets outputDir to output under root', () => {

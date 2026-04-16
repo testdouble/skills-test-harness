@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import { parseRubricSections, parseRubricCriteria } from './rubric-parser.js'
+import { describe, expect, it } from 'vitest'
+import { parseRubricCriteria, parseRubricSections } from './rubric-parser.js'
 
 describe('parseRubricSections', () => {
   it('parses transcript-only rubric (existing format)', () => {
@@ -120,10 +120,7 @@ describe('parseRubricSections', () => {
 `
     const sections = parseRubricSections(markdown)
     expect(sections).toHaveLength(1)
-    expect(sections[0].criteria).toEqual([
-      'valid criterion',
-      'another valid criterion',
-    ])
+    expect(sections[0].criteria).toEqual(['valid criterion', 'another valid criterion'])
   })
 })
 
@@ -137,11 +134,7 @@ describe('parseRubricCriteria (backward-compatible wrapper)', () => {
 - file criterion two
 `
     const criteria = parseRubricCriteria(markdown)
-    expect(criteria).toEqual([
-      'transcript criterion one',
-      'file criterion one',
-      'file criterion two',
-    ])
+    expect(criteria).toEqual(['transcript criterion one', 'file criterion one', 'file criterion two'])
   })
 
   it('returns empty array for empty rubric', () => {

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('../paths.js', () => ({
   outputDir: '/mock-output',
@@ -13,8 +13,8 @@ vi.mock('@testdouble/harness-execution', () => ({
 }))
 
 import { updateAllParquet } from '@testdouble/harness-data'
-import { getReEvaluatedRuns, clearReEvaluatedRuns } from '@testdouble/harness-execution'
-import { handler, command, describe as commandDescribe, builder } from './update-analytics.js'
+import { clearReEvaluatedRuns, getReEvaluatedRuns } from '@testdouble/harness-execution'
+import { builder, command, describe as commandDescribe, handler } from './update-analytics.js'
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -42,7 +42,10 @@ describe('update-analytics builder', () => {
   it('configures output-dir with a default from paths', () => {
     const options: Record<string, unknown> = {}
     const fakeYargs = {
-      option(name: string, opts: unknown) { options[name] = opts; return fakeYargs },
+      option(name: string, opts: unknown) {
+        options[name] = opts
+        return fakeYargs
+      },
     } as any
     builder(fakeYargs)
     expect(options['output-dir']).toMatchObject({ type: 'string', default: '/mock-output' })
@@ -51,7 +54,10 @@ describe('update-analytics builder', () => {
   it('configures data-dir with a default from paths', () => {
     const options: Record<string, unknown> = {}
     const fakeYargs = {
-      option(name: string, opts: unknown) { options[name] = opts; return fakeYargs },
+      option(name: string, opts: unknown) {
+        options[name] = opts
+        return fakeYargs
+      },
     } as any
     builder(fakeYargs)
     expect(options['data-dir']).toMatchObject({ type: 'string', default: '/mock-data' })
@@ -73,9 +79,11 @@ describe('update-analytics handler', () => {
 
     await handler({ 'output-dir': '/mock-output', 'data-dir': '/mock-data' })
 
-    expect(vi.mocked(updateAllParquet)).toHaveBeenCalledWith(expect.objectContaining({
-      reEvaluatedRunIds: ['run-1', 'run-2'],
-    }))
+    expect(vi.mocked(updateAllParquet)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        reEvaluatedRunIds: ['run-1', 'run-2'],
+      }),
+    )
   })
 
   it('clears re-evaluated run IDs from the marker after updateAllParquet succeeds', async () => {

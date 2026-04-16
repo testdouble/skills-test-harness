@@ -1,14 +1,9 @@
 .DS_Store
 .claude/settings.local.json
-dist/code/
-dist/cowork/
-dist/.cowork-staging/
-dist/.gist-staging/
-# plugin-marketplace-dist/ is generated but committed to git (needed for marketplace resolution)
 *.zip
 .env
-output/
-analytics/
+/output/
+/analytics/
 node_modules/
 logs/
 harness-web

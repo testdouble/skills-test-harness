@@ -3,9 +3,9 @@ import { parseDescription } from '@testdouble/harness-data'
 import { HarnessError } from '../lib/errors.js'
 
 export interface AgentFileContent {
-  name:        string
+  name: string
   description: string
-  body:        string
+  body: string
 }
 
 export async function readAgent(agentMdPath: string): Promise<AgentFileContent> {

@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@testdouble/harness-data', async (importOriginal) => {
-  const actual = await importOriginal() as Record<string, unknown>
+  const actual = (await importOriginal()) as Record<string, unknown>
   return {
     ...actual,
     parseStreamJsonLines: vi.fn().mockReturnValue([]),
@@ -12,13 +12,13 @@ vi.mock('@testdouble/claude-integration', () => ({
   runClaude: vi.fn().mockResolvedValue({ exitCode: 0, stdout: '', stderr: '' }),
 }))
 
-import { parseStreamJsonLines, getResultText } from '@testdouble/harness-data'
 import { runClaude } from '@testdouble/claude-integration'
-import { buildImprovementPrompt, improveDescription } from './step-7-improve-description.js'
+import type { Phase } from '@testdouble/harness-data'
+import { getResultText, parseStreamJsonLines } from '@testdouble/harness-data'
 
 import type { ImproveDescriptionOptions } from './step-7-improve-description.js'
-import type { QueryResult, IterationResult } from './types.js'
-import type { Phase } from '@testdouble/harness-data'
+import { buildImprovementPrompt, improveDescription } from './step-7-improve-description.js'
+import type { IterationResult, QueryResult } from './types.js'
 
 function makeQueryResult(overrides: Partial<QueryResult> = {}): QueryResult {
   return {
@@ -125,7 +125,9 @@ describe('buildImprovementPrompt', () => {
       phase: 'explore',
     })
 
-    expect(prompt).toContain('### Should NOT trigger (expected=false):\n- "false-pos" (user said: "do the thing") → FAIL: skill WAS invoked')
+    expect(prompt).toContain(
+      '### Should NOT trigger (expected=false):\n- "false-pos" (user said: "do the thing") → FAIL: skill WAS invoked',
+    )
   })
 
   it('formats should-NOT-trigger PASS results', () => {
@@ -139,7 +141,9 @@ describe('buildImprovementPrompt', () => {
       phase: 'explore',
     })
 
-    expect(prompt).toContain('### Should NOT trigger (expected=false):\n- "correct-skip" (user said: "do the thing") → PASS')
+    expect(prompt).toContain(
+      '### Should NOT trigger (expected=false):\n- "correct-skip" (user said: "do the thing") → PASS',
+    )
   })
 
   it('shows "(none)" for both sections when trainResults is empty', () => {
@@ -365,7 +369,8 @@ describe('improveDescription', () => {
   })
 
   it('accepts a valid description that mentions errors in context', async () => {
-    const desc = 'Review code for error handling patterns, security vulnerabilities, and performance issues in the current codebase.'
+    const desc =
+      'Review code for error handling patterns, security vulnerabilities, and performance issues in the current codebase.'
     vi.mocked(getResultText).mockReturnValue(desc)
     const result = await improveDescription(makeOpts())
     expect(result).toBe(desc)
@@ -373,11 +378,13 @@ describe('improveDescription', () => {
 
   it('passes phase and testResults to buildImprovementPrompt', async () => {
     const testResults = [makeQueryResult({ passed: false, promptContent: 'check this' })]
-    await improveDescription(makeOpts({
-      phase: 'converge',
-      testResults,
-      iterations: [makeIterationResult({ trainAccuracy: 1.0 })],
-    }))
+    await improveDescription(
+      makeOpts({
+        phase: 'converge',
+        testResults,
+        iterations: [makeIterationResult({ trainAccuracy: 1.0 })],
+      }),
+    )
     const promptArg = vi.mocked(runClaude).mock.calls[0][0].prompt
     expect(promptArg).toContain('surgical edits')
   })

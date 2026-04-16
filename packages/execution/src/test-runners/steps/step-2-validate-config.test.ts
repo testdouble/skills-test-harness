@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { validateConfig } from './step-2-validate-config.js'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ConfigNotFoundError } from '../../lib/errors.js'
+import { validateConfig } from './step-2-validate-config.js'
 
 function makeBunFile(exists: boolean) {
   return { exists: vi.fn().mockResolvedValue(exists) }

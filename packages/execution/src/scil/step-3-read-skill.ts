@@ -3,11 +3,11 @@ import { parseDescription } from '@testdouble/harness-data'
 import { HarnessError } from '../lib/errors.js'
 
 export interface SkillFileContent {
-  name:           string
-  description:    string
+  name: string
+  description: string
   frontmatterRaw: string
-  body:           string
-  fullContent:    string
+  body: string
+  fullContent: string
 }
 
 export async function readSkill(skillMdPath: string): Promise<SkillFileContent> {

@@ -1,7 +1,9 @@
 import path from 'node:path'
 import { createInterface } from 'node:readline/promises'
-import type { AcilConfig, AcilIterationResult } from './types.js'
+import { ensureSandboxExists } from '@testdouble/docker-integration'
 import { getPhase } from '@testdouble/harness-data'
+import { HarnessError } from '../lib/errors.js'
+import { generateRunId } from '../test-runners/steps/step-4-generate-run-id.js'
 import { resolveAndLoad } from './step-1-resolve-and-load.js'
 import { splitSets } from './step-2-split-sets.js'
 import { readAgent } from './step-3-read-agent.js'
@@ -11,15 +13,18 @@ import { scoreResults, selectBestIteration } from './step-6-score.js'
 import { improveDescription } from './step-7-improve-description.js'
 import { applyDescription } from './step-8-apply-description.js'
 import { writeIterationOutput, writeSummaryOutput } from './step-9-write-output.js'
-import { printIterationProgress, printFinalSummary } from './step-10-print-report.js'
-import { ensureSandboxExists } from '@testdouble/docker-integration'
-import { HarnessError } from '../lib/errors.js'
-import { generateRunId } from '../test-runners/steps/step-4-generate-run-id.js'
+import { printFinalSummary, printIterationProgress } from './step-10-print-report.js'
+import type { AcilConfig, AcilIterationResult } from './types.js'
 
 export async function runAcilLoop(config: AcilConfig): Promise<void> {
   // Step 1: Resolve agent and load tests
   process.stderr.write(`Resolving agent and loading tests for suite "${config.suite}"...\n`)
-  const { agentFile, agentMdPath, tests } = await resolveAndLoad(config.suite, config.agent, config.testsDir, config.repoRoot)
+  const { agentFile, agentMdPath, tests } = await resolveAndLoad(
+    config.suite,
+    config.agent,
+    config.testsDir,
+    config.repoRoot,
+  )
   process.stderr.write(`Loaded ${tests.length} agent-call test(s) for ${agentFile}\n`)
 
   // Step 2: Split train/test sets
@@ -29,7 +34,7 @@ export async function runAcilLoop(config: AcilConfig): Promise<void> {
     process.stderr.write(`Using all ${tests.length} tests for training (no holdout)\n`)
   }
   const splitTests = splitSets(config.suite, agentFile, tests, config.holdout)
-  const trainTestNames = new Set(splitTests.filter(t => t.set === 'train').map(t => t.name))
+  const trainTestNames = new Set(splitTests.filter((t) => t.set === 'train').map((t) => t.name))
 
   // Step 3: Read agent .md
   process.stderr.write(`Reading agent .md: ${agentMdPath}\n`)
@@ -41,7 +46,7 @@ export async function runAcilLoop(config: AcilConfig): Promise<void> {
   await ensureSandboxExists()
 
   // Generate run ID and output directory
-  const runId  = generateRunId()
+  const runId = generateRunId()
   const runDir = path.join(config.outputDir, runId)
   process.stderr.write(`Run ID: ${runId}\n\n`)
 
@@ -58,22 +63,24 @@ export async function runAcilLoop(config: AcilConfig): Promise<void> {
     const { tempDir } = await buildIterationPlugin(agentFile, runDir, currentDescription, config.repoRoot, i)
 
     // Step 5: Run eval on all test cases
-    process.stderr.write(`Iteration ${i}/${config.maxIterations} — running eval (${splitTests.length} tests, concurrency ${config.concurrency})...\n`)
+    process.stderr.write(
+      `Iteration ${i}/${config.maxIterations} — running eval (${splitTests.length} tests, concurrency ${config.concurrency})...\n`,
+    )
     const allResults = await runEval({
       tempDir,
-      testCases:    splitTests,
-      suite:        config.suite,
-      testsDir:     config.testsDir,
-      concurrency:  config.concurrency,
+      testCases: splitTests,
+      suite: config.suite,
+      testsDir: config.testsDir,
+      concurrency: config.concurrency,
       runsPerQuery: config.runsPerQuery,
-      debug:        config.debug,
-      testRunId:    runId,
+      debug: config.debug,
+      testRunId: runId,
       runDir,
     })
 
     // Split results back into train/test by set membership
-    const trainResults = allResults.filter(r => trainTestNames.has(r.testName))
-    const testResults  = allResults.filter(r => !trainTestNames.has(r.testName))
+    const trainResults = allResults.filter((r) => trainTestNames.has(r.testName))
+    const testResults = allResults.filter((r) => !trainTestNames.has(r.testName))
 
     // Step 6: Score
     const { trainAccuracy, testAccuracy } = scoreResults(trainResults, testResults)
@@ -99,24 +106,22 @@ export async function runAcilLoop(config: AcilConfig): Promise<void> {
     // During explore/transition phases, always generate new descriptions regardless of accuracy
     // During converge, only improve if accuracy is imperfect
     let newDescription: string | null = null
-    const needsImprovement = phase !== 'converge' || (
-      trainAccuracy < 1.0 ||
-      (config.holdout > 0 && testAccuracy !== null && testAccuracy < 1.0)
-    )
+    const needsImprovement =
+      phase !== 'converge' || trainAccuracy < 1.0 || (config.holdout > 0 && testAccuracy !== null && testAccuracy < 1.0)
 
     if (i < config.maxIterations && needsImprovement) {
       process.stderr.write('  Generating improved description...\n')
       newDescription = await improveDescription({
-        agentName:          agent.name,
+        agentName: agent.name,
         currentDescription,
-        agentBody:          agent.body,
+        agentBody: agent.body,
         trainResults,
         testResults,
         iterations,
-        holdout:            config.holdout,
+        holdout: config.holdout,
         phase,
-        model:              config.model,
-        debug:              config.debug,
+        model: config.model,
+        debug: config.debug,
       })
       if (newDescription !== null) {
         process.stderr.write(`  New description: ${newDescription}\n`)
@@ -127,7 +132,7 @@ export async function runAcilLoop(config: AcilConfig): Promise<void> {
 
     // Early exit on perfect accuracy — only during or after converge phase
     const perfectTrain = trainAccuracy === 1.0
-    const perfectTest  = testAccuracy === 1.0 || testAccuracy === null
+    const perfectTest = testAccuracy === 1.0 || testAccuracy === null
     if (perfectTrain && perfectTest && hasReachedConverge) break
 
     if (newDescription !== null) currentDescription = newDescription

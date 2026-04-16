@@ -1,0 +1,20 @@
+{
+  "test_run_id": "20260101T000011",
+  "originalDescription": "test description",
+  "bestIteration": 1,
+  "bestDescription": "test description",
+  "iterations": [
+    {
+      "iteration": 1,
+      "trainAccuracy": 1,
+      "testAccuracy": null,
+      "description": "test description"
+    },
+    {
+      "iteration": 2,
+      "trainAccuracy": 1,
+      "testAccuracy": null,
+      "description": "test description"
+    }
+  ]
+}

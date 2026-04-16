@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@testdouble/harness-data', async (importOriginal) => {
-  const actual = await importOriginal() as Record<string, unknown>
+  const actual = (await importOriginal()) as Record<string, unknown>
   return {
     ...actual,
     parseStreamJsonLines: vi.fn().mockReturnValue([]),
@@ -12,10 +12,10 @@ vi.mock('@testdouble/claude-integration', () => ({
   runClaude: vi.fn().mockResolvedValue({ exitCode: 0, stdout: '', stderr: '' }),
 }))
 
-import { parseStreamJsonLines, getResultText } from '@testdouble/harness-data'
 import { runClaude } from '@testdouble/claude-integration'
-import { improveDescription } from './step-7-improve-description.js'
+import { getResultText, parseStreamJsonLines } from '@testdouble/harness-data'
 import type { ImproveDescriptionOptions } from './step-7-improve-description.js'
+import { improveDescription } from './step-7-improve-description.js'
 
 function makeOpts(overrides: Partial<ImproveDescriptionOptions> = {}): ImproveDescriptionOptions {
   return {
@@ -93,13 +93,15 @@ describe('improveDescription (ACIL)', () => {
   })
 
   // TP-004 (T4/EC3): truncation and length boundaries
-  it('accepts text exactly 20 characters long', async () => { // EC3 boundary
+  it('accepts text exactly 20 characters long', async () => {
+    // EC3 boundary
     const text = 'x'.repeat(20)
     vi.mocked(getResultText).mockReturnValue(text)
     expect(await improveDescription(makeOpts())).toBe(text)
   })
 
-  it('rejects text that is 19 characters long', async () => { // EC3 boundary
+  it('rejects text that is 19 characters long', async () => {
+    // EC3 boundary
     vi.mocked(getResultText).mockReturnValue('x'.repeat(19))
     expect(await improveDescription(makeOpts())).toBeNull()
   })
@@ -134,9 +136,9 @@ describe('improveDescription (ACIL)', () => {
 
     await improveDescription(makeOpts())
 
-    const warningCall = stderrSpy.mock.calls.find(c => String(c[0]).includes('Warning'))
+    const warningCall = stderrSpy.mock.calls.find((c) => String(c[0]).includes('Warning'))
     expect(warningCall).toBeDefined()
-    expect(String(warningCall![0])).toContain('(stderr: connection timeout)')
+    expect(String(warningCall?.[0])).toContain('(stderr: connection timeout)')
   })
 
   it('omits stderr hint when stderr is empty', async () => {
@@ -145,13 +147,14 @@ describe('improveDescription (ACIL)', () => {
 
     await improveDescription(makeOpts())
 
-    const warningCall = stderrSpy.mock.calls.find(c => String(c[0]).includes('Warning'))
+    const warningCall = stderrSpy.mock.calls.find((c) => String(c[0]).includes('Warning'))
     expect(warningCall).toBeDefined()
-    expect(String(warningCall![0])).not.toContain('(stderr:')
+    expect(String(warningCall?.[0])).not.toContain('(stderr:')
   })
 
   it('accepts a valid description that mentions errors in context', async () => {
-    const desc = 'Review code for error handling patterns, security vulnerabilities, and performance issues in the current codebase.'
+    const desc =
+      'Review code for error handling patterns, security vulnerabilities, and performance issues in the current codebase.'
     vi.mocked(getResultText).mockReturnValue(desc)
     expect(await improveDescription(makeOpts())).toBe(desc)
   })

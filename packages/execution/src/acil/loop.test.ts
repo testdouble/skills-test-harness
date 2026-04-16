@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('./step-1-resolve-and-load.js', () => ({
   resolveAndLoad: vi.fn(),
@@ -46,7 +46,10 @@ vi.mock('node:readline/promises', () => ({
   createInterface: vi.fn(),
 }))
 
-import type { AcilConfig, AcilTestCase, AcilQueryResult } from './types.js'
+import { createInterface } from 'node:readline/promises'
+import { ensureSandboxExists } from '@testdouble/docker-integration'
+import { getPhase } from '@testdouble/harness-data'
+import { generateRunId } from '../test-runners/steps/step-4-generate-run-id.js'
 import { runAcilLoop } from './loop.js'
 import { resolveAndLoad } from './step-1-resolve-and-load.js'
 import { splitSets } from './step-2-split-sets.js'
@@ -57,40 +60,37 @@ import { scoreResults, selectBestIteration } from './step-6-score.js'
 import { improveDescription } from './step-7-improve-description.js'
 import { applyDescription } from './step-8-apply-description.js'
 import { writeIterationOutput, writeSummaryOutput } from './step-9-write-output.js'
-import { printIterationProgress, printFinalSummary } from './step-10-print-report.js'
-import { ensureSandboxExists } from '@testdouble/docker-integration'
-import { getPhase } from '@testdouble/harness-data'
-import { generateRunId } from '../test-runners/steps/step-4-generate-run-id.js'
-import { createInterface } from 'node:readline/promises'
+import { printFinalSummary, printIterationProgress } from './step-10-print-report.js'
+import type { AcilConfig, AcilQueryResult, AcilTestCase } from './types.js'
 
 function makeConfig(overrides: Partial<AcilConfig> = {}): AcilConfig {
   return {
-    suite:             'my-suite',
-    agent:             'r-and-d:gap-analyzer',
-    maxIterations:     5,
-    holdout:           0,
-    concurrency:       1,
-    runsPerQuery:      1,
-    model:             'opus',
-    debug:             false,
-    apply:             true,
-    outputDir:         '/mock-output',
-    testsDir:          '/mock-tests',
-    repoRoot:          '/mock-repo',
+    suite: 'my-suite',
+    agent: 'r-and-d:gap-analyzer',
+    maxIterations: 5,
+    holdout: 0,
+    concurrency: 1,
+    runsPerQuery: 1,
+    model: 'opus',
+    debug: false,
+    apply: true,
+    outputDir: '/mock-output',
+    testsDir: '/mock-tests',
+    repoRoot: '/mock-repo',
     ...overrides,
   }
 }
 
 function makeQueryResult(overrides: Partial<AcilQueryResult> = {}): AcilQueryResult {
   return {
-    testName:     'test-1',
-    agentFile:    'r-and-d:gap-analyzer',
+    testName: 'test-1',
+    agentFile: 'r-and-d:gap-analyzer',
     promptContent: 'test prompt',
-    expected:     true,
-    actual:       true,
-    passed:       true,
-    runIndex:     0,
-    events:       [],
+    expected: true,
+    actual: true,
+    passed: true,
+    runIndex: 0,
+    events: [],
     ...overrides,
   }
 }
@@ -105,11 +105,24 @@ beforeEach(() => {
   vi.mocked(resolveAndLoad).mockResolvedValue({
     agentFile: 'r-and-d:gap-analyzer',
     agentMdPath: '/repo/r-and-d/agents/gap-analyzer.md',
-    tests: [{ name: 'test-1', type: 'agent-call', promptFile: 'test-1.md', expect: [{ type: 'agent-call', value: true, agentFile: 'r-and-d:gap-analyzer' }] }],
+    tests: [
+      {
+        name: 'test-1',
+        type: 'agent-call',
+        promptFile: 'test-1.md',
+        expect: [{ type: 'agent-call', value: true, agentFile: 'r-and-d:gap-analyzer' }],
+      },
+    ],
   })
 
   vi.mocked(splitSets).mockReturnValue([
-    { name: 'test-1', type: 'agent-call', promptFile: 'test-1.md', set: 'train', expect: [{ type: 'agent-call', value: true, agentFile: 'r-and-d:gap-analyzer' }] },
+    {
+      name: 'test-1',
+      type: 'agent-call',
+      promptFile: 'test-1.md',
+      set: 'train',
+      expect: [{ type: 'agent-call', value: true, agentFile: 'r-and-d:gap-analyzer' }],
+    },
   ] as AcilTestCase[])
 
   vi.mocked(readAgent).mockResolvedValue({
@@ -241,10 +254,7 @@ describe('runAcilLoop', () => {
 
     await runAcilLoop(makeConfig({ apply: true }))
 
-    expect(applyDescription).toHaveBeenCalledWith(
-      '/repo/r-and-d/agents/gap-analyzer.md',
-      'improved description',
-    )
+    expect(applyDescription).toHaveBeenCalledWith('/repo/r-and-d/agents/gap-analyzer.md', 'improved description')
     expect(createInterface).not.toHaveBeenCalled()
   })
 
@@ -298,33 +308,78 @@ describe('runAcilLoop', () => {
   it('passes correct options to runEval', async () => {
     await runAcilLoop(makeConfig({ concurrency: 4, runsPerQuery: 3 }))
 
-    expect(runEval).toHaveBeenCalledWith(expect.objectContaining({
-      tempDir: '/tmp/acil-plugin',
-      suite: 'my-suite',
-      testsDir: '/mock-tests',
-      concurrency: 4,
-      runsPerQuery: 3,
-      debug: false,
-      testRunId: 'run-abc',
-      runDir: '/mock-output/run-abc',
-    }))
+    expect(runEval).toHaveBeenCalledWith(
+      expect.objectContaining({
+        tempDir: '/tmp/acil-plugin',
+        suite: 'my-suite',
+        testsDir: '/mock-tests',
+        concurrency: 4,
+        runsPerQuery: 3,
+        debug: false,
+        testRunId: 'run-abc',
+        runDir: '/mock-output/run-abc',
+      }),
+    )
   })
 
   it('calls steps in correct sequential order', async () => {
     const callOrder: string[] = []
-    vi.mocked(resolveAndLoad).mockImplementation(async () => { callOrder.push('resolveAndLoad'); return { agentFile: 'r-and-d:gap-analyzer', agentMdPath: '/agent.md', tests: [] } })
-    vi.mocked(splitSets).mockImplementation(() => { callOrder.push('splitSets'); return [] as any })
-    vi.mocked(readAgent).mockImplementation(async () => { callOrder.push('readAgent'); return { name: 'agent', description: 'desc', body: '' } })
-    vi.mocked(ensureSandboxExists).mockImplementation(async () => { callOrder.push('ensureSandboxExists') })
-    vi.mocked(generateRunId).mockImplementation(() => { callOrder.push('generateRunId'); return 'run-abc' })
-    vi.mocked(runEval).mockImplementation(async () => { callOrder.push('runEval'); return [] })
-    vi.mocked(scoreResults).mockImplementation(() => { callOrder.push('scoreResults'); return { trainAccuracy: 1.0, testAccuracy: null } })
-    vi.mocked(writeIterationOutput).mockImplementation(async () => { callOrder.push('writeIterationOutput') })
-    vi.mocked(printIterationProgress).mockImplementation(() => { callOrder.push('printIterationProgress') })
-    vi.mocked(selectBestIteration).mockImplementation((iters) => { callOrder.push('selectBestIteration'); return iters[0] ?? { iteration: 1, phase: 'explore', description: 'desc', trainResults: [], testResults: [], trainAccuracy: 1.0, testAccuracy: null } })
-    vi.mocked(printFinalSummary).mockImplementation(() => { callOrder.push('printFinalSummary') })
-    vi.mocked(writeSummaryOutput).mockImplementation(async () => { callOrder.push('writeSummaryOutput') })
-    vi.mocked(applyDescription).mockImplementation(async () => { callOrder.push('applyDescription') })
+    vi.mocked(resolveAndLoad).mockImplementation(async () => {
+      callOrder.push('resolveAndLoad')
+      return { agentFile: 'r-and-d:gap-analyzer', agentMdPath: '/agent.md', tests: [] }
+    })
+    vi.mocked(splitSets).mockImplementation(() => {
+      callOrder.push('splitSets')
+      return [] as any
+    })
+    vi.mocked(readAgent).mockImplementation(async () => {
+      callOrder.push('readAgent')
+      return { name: 'agent', description: 'desc', body: '' }
+    })
+    vi.mocked(ensureSandboxExists).mockImplementation(async () => {
+      callOrder.push('ensureSandboxExists')
+    })
+    vi.mocked(generateRunId).mockImplementation(() => {
+      callOrder.push('generateRunId')
+      return 'run-abc'
+    })
+    vi.mocked(runEval).mockImplementation(async () => {
+      callOrder.push('runEval')
+      return []
+    })
+    vi.mocked(scoreResults).mockImplementation(() => {
+      callOrder.push('scoreResults')
+      return { trainAccuracy: 1.0, testAccuracy: null }
+    })
+    vi.mocked(writeIterationOutput).mockImplementation(async () => {
+      callOrder.push('writeIterationOutput')
+    })
+    vi.mocked(printIterationProgress).mockImplementation(() => {
+      callOrder.push('printIterationProgress')
+    })
+    vi.mocked(selectBestIteration).mockImplementation((iters) => {
+      callOrder.push('selectBestIteration')
+      return (
+        iters[0] ?? {
+          iteration: 1,
+          phase: 'explore',
+          description: 'desc',
+          trainResults: [],
+          testResults: [],
+          trainAccuracy: 1.0,
+          testAccuracy: null,
+        }
+      )
+    })
+    vi.mocked(printFinalSummary).mockImplementation(() => {
+      callOrder.push('printFinalSummary')
+    })
+    vi.mocked(writeSummaryOutput).mockImplementation(async () => {
+      callOrder.push('writeSummaryOutput')
+    })
+    vi.mocked(applyDescription).mockImplementation(async () => {
+      callOrder.push('applyDescription')
+    })
 
     await runAcilLoop(makeConfig({ maxIterations: 1 }))
 
@@ -405,9 +460,7 @@ describe('runAcilLoop', () => {
 
   // Phase behavior: early stopping fires during converge
   it('exits early during converge phase at perfect accuracy', async () => {
-    vi.mocked(getPhase)
-      .mockReturnValueOnce('explore')
-      .mockReturnValueOnce('converge')
+    vi.mocked(getPhase).mockReturnValueOnce('explore').mockReturnValueOnce('converge')
 
     vi.mocked(scoreResults)
       .mockReturnValueOnce({ trainAccuracy: 0.5, testAccuracy: null })
@@ -420,9 +473,7 @@ describe('runAcilLoop', () => {
 
   // Phase: records phase on AcilIterationResult
   it('records phase from getPhase on each AcilIterationResult', async () => {
-    vi.mocked(getPhase)
-      .mockReturnValueOnce('explore')
-      .mockReturnValueOnce('converge')
+    vi.mocked(getPhase).mockReturnValueOnce('explore').mockReturnValueOnce('converge')
 
     vi.mocked(scoreResults)
       .mockReturnValueOnce({ trainAccuracy: 0.5, testAccuracy: null })

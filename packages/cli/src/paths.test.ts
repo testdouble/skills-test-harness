@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import path from 'path'
-import fs from 'fs'
-import { getTestSuiteDir, getAllTestSuites } from './paths.js'
+import fs from 'node:fs'
+import path from 'node:path'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { getAllTestSuites, getTestSuiteDir } from './paths.js'
 
 describe('getTestSuiteDir', () => {
   it('returns the path to the named test suite under cwd/test-suites', () => {
@@ -18,9 +18,12 @@ describe('getTestSuiteDir', () => {
 describe('getAllTestSuites', () => {
   beforeEach(() => {
     vi.spyOn(fs, 'readdirSync').mockReturnValue(['suite-a', 'suite-b', '.DS_Store'] as any)
-    vi.spyOn(fs, 'statSync').mockImplementation((p) => ({
-      isDirectory: () => !String(p).includes('.DS_Store'),
-    }) as fs.Stats)
+    vi.spyOn(fs, 'statSync').mockImplementation(
+      (p) =>
+        ({
+          isDirectory: () => !String(p).includes('.DS_Store'),
+        }) as fs.Stats,
+    )
   })
 
   it('returns only directory entries from test-suites/', () => {
@@ -29,8 +32,9 @@ describe('getAllTestSuites', () => {
   })
 
   it('throws ENOENT when test-suites directory does not exist (EC6)', () => {
-    vi.spyOn(fs, 'readdirSync').mockImplementation(() => { throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' }) })
+    vi.spyOn(fs, 'readdirSync').mockImplementation(() => {
+      throw Object.assign(new Error('ENOENT'), { code: 'ENOENT' })
+    })
     expect(() => getAllTestSuites()).toThrow('ENOENT')
   })
 })
-

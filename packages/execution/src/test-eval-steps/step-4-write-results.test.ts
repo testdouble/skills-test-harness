@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { writeResults } from './step-4-write-results.js'
-import { appendTestResults } from '@testdouble/harness-data'
 import type { TestResultRecord } from '@testdouble/harness-data'
+import { appendTestResults } from '@testdouble/harness-data'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { writeResults } from './step-4-write-results.js'
 
 vi.mock('@testdouble/harness-data', () => ({
   appendTestResults: vi.fn(),
@@ -14,7 +14,14 @@ vi.mock('node:fs/promises', () => ({
 import { unlink } from 'node:fs/promises'
 
 const mockRecords: TestResultRecord[] = [
-  { test_run_id: 'run-1', suite: 'code-review', test_name: 'my-test', expect_type: 'result-contains', expect_value: 'hello', passed: true },
+  {
+    test_run_id: 'run-1',
+    suite: 'code-review',
+    test_name: 'my-test',
+    expect_type: 'result-contains',
+    expect_value: 'hello',
+    passed: true,
+  },
 ]
 
 beforeEach(() => {
@@ -42,8 +49,12 @@ describe('writeResults', () => {
 
   it('calls appendTestResults after unlink', async () => {
     const callOrder: string[] = []
-    vi.mocked(unlink).mockImplementation(async () => { callOrder.push('unlink') })
-    vi.mocked(appendTestResults).mockImplementation(async () => { callOrder.push('appendTestResults') })
+    vi.mocked(unlink).mockImplementation(async () => {
+      callOrder.push('unlink')
+    })
+    vi.mocked(appendTestResults).mockImplementation(async () => {
+      callOrder.push('appendTestResults')
+    })
 
     await writeResults('/output/run-1', mockRecords)
     expect(callOrder).toEqual(['unlink', 'appendTestResults'])

@@ -1,0 +1,1 @@
+{"type":"result","test_run_id":"20260101T000001","test_case":"my-suite-test-one","result":"ok","total_cost_usd":0.05,"num_turns":3,"is_error":false,"usage":{"input_tokens":200,"output_tokens":100}}

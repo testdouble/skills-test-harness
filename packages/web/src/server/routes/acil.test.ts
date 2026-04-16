@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@testdouble/harness-data', () => ({
   queryAcilHistory: vi.fn(),
@@ -59,7 +59,9 @@ describe('getAcilHistory', () => {
   })
 
   it('returns empty runs when parquet file does not exist', async () => {
-    vi.mocked(queryAcilHistory).mockRejectedValue(new Error('IO Error: No such file or directory: acil-iteration.parquet'))
+    vi.mocked(queryAcilHistory).mockRejectedValue(
+      new Error('IO Error: No such file or directory: acil-iteration.parquet'),
+    )
     const { c, jsonMock } = makeMockContext()
 
     await getAcilHistory(c, '/data')
@@ -121,7 +123,9 @@ describe('getAcilRunById', () => {
   })
 
   it('returns 404 when parquet file does not exist', async () => {
-    vi.mocked(queryAcilRunDetails).mockRejectedValue(new Error('IO Error: No such file or directory: acil-summary.parquet'))
+    vi.mocked(queryAcilRunDetails).mockRejectedValue(
+      new Error('IO Error: No such file or directory: acil-summary.parquet'),
+    )
     const { c, jsonMock } = makeMockContext({ param: { runId: 'run-abc' } })
 
     await getAcilRunById(c, '/data')

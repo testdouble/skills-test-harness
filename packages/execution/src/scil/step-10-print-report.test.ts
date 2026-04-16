@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { printFinalSummary, printIterationProgress } from './step-10-print-report.js'
 import type { IterationResult, QueryResult } from './types.js'
-import { printIterationProgress, printFinalSummary } from './step-10-print-report.js'
 
 let output: string
 
@@ -14,27 +14,27 @@ beforeEach(() => {
 
 function makeQueryResult(overrides: Partial<QueryResult> = {}): QueryResult {
   return {
-    testName:  'Test A',
+    testName: 'Test A',
     skillFile: 'plugin:skill',
     promptContent: 'test prompt',
-    expected:  true,
-    actual:    true,
-    passed:    true,
-    runIndex:  0,
-    events:    [],
+    expected: true,
+    actual: true,
+    passed: true,
+    runIndex: 0,
+    events: [],
     ...overrides,
   }
 }
 
 function makeIteration(overrides: Partial<IterationResult> = {}): IterationResult {
   return {
-    iteration:     1,
-    phase:         'explore',
-    description:   'A description',
-    trainResults:  [makeQueryResult()],
-    testResults:   [],
+    iteration: 1,
+    phase: 'explore',
+    description: 'A description',
+    trainResults: [makeQueryResult()],
+    testResults: [],
     trainAccuracy: 1.0,
-    testAccuracy:  null,
+    testAccuracy: null,
     ...overrides,
   }
 }
@@ -48,11 +48,7 @@ describe('printIterationProgress', () => {
   })
 
   it('prints test accuracy when present', () => {
-    printIterationProgress(
-      makeIteration({ trainAccuracy: 0.8, testAccuracy: 0.6 }),
-      5,
-      null
-    )
+    printIterationProgress(makeIteration({ trainAccuracy: 0.8, testAccuracy: 0.6 }), 5, null)
 
     expect(output).toContain('test: 60%')
   })
@@ -70,11 +66,7 @@ describe('printIterationProgress', () => {
       actual: false,
       passed: false,
     })
-    printIterationProgress(
-      makeIteration({ trainResults: [failResult] }),
-      5,
-      null
-    )
+    printIterationProgress(makeIteration({ trainResults: [failResult] }), 5, null)
 
     expect(output).toContain('FAIL (should trigger): "bad-query"')
   })
@@ -86,11 +78,7 @@ describe('printIterationProgress', () => {
       actual: true,
       passed: false,
     })
-    printIterationProgress(
-      makeIteration({ trainResults: [failResult] }),
-      5,
-      null
-    )
+    printIterationProgress(makeIteration({ trainResults: [failResult] }), 5, null)
 
     expect(output).toContain('FAIL (should NOT trigger): "false-positive"')
   })
@@ -117,11 +105,7 @@ describe('printIterationProgress', () => {
   it('prints pass/total counts', () => {
     const pass = makeQueryResult({ passed: true })
     const fail = makeQueryResult({ passed: false })
-    printIterationProgress(
-      makeIteration({ trainResults: [pass, fail, pass], trainAccuracy: 0.67 }),
-      5,
-      null
-    )
+    printIterationProgress(makeIteration({ trainResults: [pass, fail, pass], trainAccuracy: 0.67 }), 5, null)
 
     expect(output).toContain('(2/3)')
   })
@@ -161,7 +145,7 @@ describe('printFinalSummary', () => {
     printFinalSummary([iter1, iter2], iter2, 'best desc')
 
     const lines = output.split('\n')
-    const bestLine = lines.find(l => l.includes('best'))
+    const bestLine = lines.find((l) => l.includes('best'))
     expect(bestLine).toContain('2')
     expect(bestLine).toContain('← best')
   })
@@ -210,11 +194,7 @@ describe('printFinalSummary', () => {
 
 describe('printIterationProgress — additional coverage', () => {
   it('displays 0% for NaN train accuracy', () => {
-    printIterationProgress(
-      makeIteration({ trainResults: [], trainAccuracy: NaN }),
-      5,
-      null
-    )
+    printIterationProgress(makeIteration({ trainResults: [], trainAccuracy: NaN }), 5, null)
 
     expect(output).toContain('train: 0%')
     expect(output).not.toContain('NaN')
@@ -223,11 +203,7 @@ describe('printIterationProgress — additional coverage', () => {
   it('prints test accuracy pass/total counts', () => {
     const pass = makeQueryResult({ passed: true })
     const fail = makeQueryResult({ passed: false })
-    printIterationProgress(
-      makeIteration({ testAccuracy: 0.5, testResults: [pass, fail] }),
-      5,
-      null
-    )
+    printIterationProgress(makeIteration({ testAccuracy: 0.5, testResults: [pass, fail] }), 5, null)
 
     expect(output).toContain('test: 50% (1/2)')
   })
@@ -244,7 +220,7 @@ describe('printIterationProgress — additional coverage', () => {
     printIterationProgress(
       makeIteration({ testAccuracy: 0, testResults: [makeQueryResult({ passed: false })] }),
       5,
-      null
+      null,
     )
 
     expect(output).toContain('test: 0%')

@@ -4,10 +4,7 @@ export function NavBar() {
   return (
     <header>
       <nav className="bg-[#0d0e0d] h-16 flex items-center px-10">
-        <span
-          className="text-[#75fe04] text-[23px] font-bold"
-          style={{ letterSpacing: '3px' }}
-        >
+        <span className="text-[#75fe04] text-[23px] font-bold" style={{ letterSpacing: '3px' }}>
           ⬡ HARNESS
         </span>
         <div className="flex-1" />
@@ -22,9 +19,7 @@ export function NavBar() {
           {({ isActive }) => (
             <>
               History
-              {isActive && (
-                <span className="absolute bottom-0 left-0 right-0 h-1 bg-[#75fe04] rounded-t-sm" />
-              )}
+              {isActive && <span className="absolute bottom-0 left-0 right-0 h-1 bg-[#75fe04] rounded-t-sm" />}
             </>
           )}
         </NavLink>
@@ -38,9 +33,7 @@ export function NavBar() {
           {({ isActive }) => (
             <>
               SCIL History
-              {isActive && (
-                <span className="absolute bottom-0 left-0 right-0 h-1 bg-[#75fe04] rounded-t-sm" />
-              )}
+              {isActive && <span className="absolute bottom-0 left-0 right-0 h-1 bg-[#75fe04] rounded-t-sm" />}
             </>
           )}
         </NavLink>
@@ -54,9 +47,7 @@ export function NavBar() {
           {({ isActive }) => (
             <>
               ACIL History
-              {isActive && (
-                <span className="absolute bottom-0 left-0 right-0 h-1 bg-[#75fe04] rounded-t-sm" />
-              )}
+              {isActive && <span className="absolute bottom-0 left-0 right-0 h-1 bg-[#75fe04] rounded-t-sm" />}
             </>
           )}
         </NavLink>
@@ -70,9 +61,7 @@ export function NavBar() {
           {({ isActive }) => (
             <>
               Analytics
-              {isActive && (
-                <span className="absolute bottom-0 left-0 right-0 h-1 bg-[#75fe04] rounded-t-sm" />
-              )}
+              {isActive && <span className="absolute bottom-0 left-0 right-0 h-1 bg-[#75fe04] rounded-t-sm" />}
             </>
           )}
         </NavLink>

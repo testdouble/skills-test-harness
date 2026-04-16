@@ -1,10 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import {
-  ensureOutputDir,
-  appendTestConfig,
-  appendTestRun,
-  appendTestResults,
-} from './jsonl-writer.js'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { appendTestConfig, appendTestResults, appendTestRun, ensureOutputDir } from './jsonl-writer.js'
 import type { StreamJsonEvent, TestConfigRecord, TestResultRecord } from './types.js'
 
 vi.mock('node:fs/promises', () => ({
@@ -13,9 +8,11 @@ vi.mock('node:fs/promises', () => ({
 }))
 
 import { mkdir } from 'node:fs/promises'
+
 const mockMkdir = mkdir as ReturnType<typeof vi.fn>
 
 import { appendFile } from 'node:fs/promises'
+
 const mockAppendFile = appendFile as ReturnType<typeof vi.fn>
 
 beforeEach(() => {
@@ -38,10 +35,7 @@ describe('appendTestConfig', () => {
       test: { name: 'test 1', promptFile: 'prompt.md', expect: [] },
     }
     await appendTestConfig('/output/run-1', record)
-    expect(mockAppendFile).toHaveBeenCalledWith(
-      '/output/run-1/test-config.jsonl',
-      JSON.stringify(record) + '\n'
-    )
+    expect(mockAppendFile).toHaveBeenCalledWith('/output/run-1/test-config.jsonl', `${JSON.stringify(record)}\n`)
   })
 })
 
@@ -53,7 +47,10 @@ describe('appendTestRun', () => {
     ]
     await appendTestRun('/output/run-1', events, 'run-1', 'suite-test-name')
     const written = mockAppendFile.mock.calls[0][1] as string
-    const lines = written.trim().split('\n').map(l => JSON.parse(l))
+    const lines = written
+      .trim()
+      .split('\n')
+      .map((l) => JSON.parse(l))
     expect(lines[0].test_run_id).toBe('run-1')
     expect(lines[1].test_run_id).toBe('run-1')
   })
@@ -65,7 +62,10 @@ describe('appendTestRun', () => {
     ]
     await appendTestRun('/output/run-1', events, 'run-1', 'suite-test-name')
     const written = mockAppendFile.mock.calls[0][1] as string
-    const lines = written.trim().split('\n').map(l => JSON.parse(l))
+    const lines = written
+      .trim()
+      .split('\n')
+      .map((l) => JSON.parse(l))
     expect(lines[0].test_case).toBe('suite-test-name')
     expect(lines[1].test_case).toBe('suite-test-name')
   })
@@ -85,12 +85,29 @@ describe('appendTestRun', () => {
 describe('appendTestResults', () => {
   it('writes each record as a JSON line', async () => {
     const records: TestResultRecord[] = [
-      { test_run_id: 'run-1', suite: 's', test_name: 'n', expect_type: 'result-contains', expect_value: 'ok', passed: true },
-      { test_run_id: 'run-1', suite: 's', test_name: 'n', expect_type: 'skill-call', expect_value: 'my-skill', passed: false },
+      {
+        test_run_id: 'run-1',
+        suite: 's',
+        test_name: 'n',
+        expect_type: 'result-contains',
+        expect_value: 'ok',
+        passed: true,
+      },
+      {
+        test_run_id: 'run-1',
+        suite: 's',
+        test_name: 'n',
+        expect_type: 'skill-call',
+        expect_value: 'my-skill',
+        passed: false,
+      },
     ]
     await appendTestResults('/output/run-1', records)
     const written = mockAppendFile.mock.calls[0][1] as string
-    const lines = written.trim().split('\n').map(l => JSON.parse(l))
+    const lines = written
+      .trim()
+      .split('\n')
+      .map((l) => JSON.parse(l))
     expect(lines).toHaveLength(2)
     expect(lines[0]).toMatchObject(records[0])
     expect(lines[1]).toMatchObject(records[1])

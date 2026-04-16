@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest'
-import type { QueryResult, IterationResult } from './types.js'
+import { describe, expect, it } from 'vitest'
 import type { Phase } from './phase.js'
 import { buildImprovementPrompt } from './scil-prompt.js'
+import type { IterationResult, QueryResult } from './types.js'
 
 function makeQueryResult(overrides: Partial<QueryResult> = {}): QueryResult {
   return {

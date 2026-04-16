@@ -1,7 +1,7 @@
-import type { Argv } from 'yargs'
-import { outputDir, dataDir } from '../paths.js'
 import { updateAllParquet } from '@testdouble/harness-data'
-import { getReEvaluatedRuns, clearReEvaluatedRuns } from '@testdouble/harness-execution'
+import { clearReEvaluatedRuns, getReEvaluatedRuns } from '@testdouble/harness-execution'
+import type { Argv } from 'yargs'
+import { dataDir, outputDir } from '../paths.js'
 
 export const command = 'update-analytics-data'
 export const describe = 'Import JSONL output files into Parquet for analytics'

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { parseDescription, replaceDescription, sanitizeForYaml } from './skill-frontmatter.js'
 
 describe('parseDescription', () => {
@@ -97,7 +97,9 @@ model: opus`
 
   it('extracts description from agent .md frontmatter', () => {
     const desc = parseDescription(agentFrontmatter)
-    expect(desc).toBe('Assumes gaps exist until proven otherwise. Systematically compares a current state against a desired state.')
+    expect(desc).toBe(
+      'Assumes gaps exist until proven otherwise. Systematically compares a current state against a desired state.',
+    )
   })
 
   it('round-trips replaceDescription on agent frontmatter', () => {
@@ -118,7 +120,9 @@ model: opus`
 describe('sanitizeForYaml — agent description edge cases', () => {
   it('collapses multi-line agent descriptions to single line', () => {
     const multiLine = 'Assumes gaps exist.\nCompares current vs desired state.\nWrites analysis to file.'
-    expect(sanitizeForYaml(multiLine)).toBe('Assumes gaps exist. Compares current vs desired state. Writes analysis to file.')
+    expect(sanitizeForYaml(multiLine)).toBe(
+      'Assumes gaps exist. Compares current vs desired state. Writes analysis to file.',
+    )
   })
 
   it('handles colons in agent descriptions', () => {

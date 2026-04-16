@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { resolvePaths } from './step-1-resolve-paths.js'
 
 describe('resolvePaths', () => {

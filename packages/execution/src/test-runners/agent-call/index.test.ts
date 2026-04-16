@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import type { RunTotals, TestCase, TestSuiteConfig } from '@testdouble/harness-data'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { runAgentCallTests } from './index.js'
-import type { TestCase, TestSuiteConfig, RunTotals } from '@testdouble/harness-data'
 
 vi.mock('@testdouble/harness-data', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@testdouble/harness-data')>()
@@ -41,10 +41,10 @@ vi.mock('./build-temp-plugin.js', () => ({
   buildTempAgentPlugin: vi.fn().mockResolvedValue({ tempDir: '/tmp/temp-agents/r-and-d-gap-analyzer' }),
 }))
 
-import { readPromptFile } from '@testdouble/harness-data'
 import { runClaude } from '@testdouble/claude-integration'
-import { buildTempAgentPlugin } from './build-temp-plugin.js'
+import { readPromptFile } from '@testdouble/harness-data'
 import { writeTestOutput } from '../../lib/output.js'
+import { buildTempAgentPlugin } from './build-temp-plugin.js'
 
 const defaultTotals: RunTotals = { totalDurationMs: 0, totalInputTokens: 0, totalOutputTokens: 0, failures: 0 }
 
@@ -78,14 +78,34 @@ afterEach(() => {
 describe('runAgentCallTests', () => {
   it('calls buildTempAgentPlugin with the test agentFile', async () => {
     const test = makeAgentTest()
-    await runAgentCallTests([test], mockConfig, 'gap-analysis', '/mock/suite', false, 'run-001', { ...defaultTotals }, '/mock/output', '/mock/repo')
+    await runAgentCallTests(
+      [test],
+      mockConfig,
+      'gap-analysis',
+      '/mock/suite',
+      false,
+      'run-001',
+      { ...defaultTotals },
+      '/mock/output',
+      '/mock/repo',
+    )
 
     expect(buildTempAgentPlugin).toHaveBeenCalledWith('r-and-d:gap-analyzer', '/mock/output/run-001', '/mock/repo')
   })
 
   it('executes Claude with the temp plugin dir', async () => {
     const test = makeAgentTest()
-    await runAgentCallTests([test], mockConfig, 'gap-analysis', '/mock/suite', false, 'run-001', { ...defaultTotals }, '/mock/output', '/mock/repo')
+    await runAgentCallTests(
+      [test],
+      mockConfig,
+      'gap-analysis',
+      '/mock/suite',
+      false,
+      'run-001',
+      { ...defaultTotals },
+      '/mock/output',
+      '/mock/repo',
+    )
 
     expect(runClaude).toHaveBeenCalledWith({
       model: 'sonnet',
@@ -98,7 +118,17 @@ describe('runAgentCallTests', () => {
 
   it('uses custom model when specified on the test', async () => {
     const test = makeAgentTest({ model: 'opus' })
-    await runAgentCallTests([test], mockConfig, 'gap-analysis', '/mock/suite', false, 'run-001', { ...defaultTotals }, '/mock/output', '/mock/repo')
+    await runAgentCallTests(
+      [test],
+      mockConfig,
+      'gap-analysis',
+      '/mock/suite',
+      false,
+      'run-001',
+      { ...defaultTotals },
+      '/mock/output',
+      '/mock/repo',
+    )
 
     const claudeCall = vi.mocked(runClaude).mock.calls[0][0]
     expect(claudeCall.model).toBe('opus')
@@ -106,7 +136,17 @@ describe('runAgentCallTests', () => {
 
   it('resolves scaffold path when test has a scaffold', async () => {
     const test = makeAgentTest({ scaffold: 'my-scaffold' })
-    await runAgentCallTests([test], mockConfig, 'gap-analysis', '/mock/suite', false, 'run-001', { ...defaultTotals }, '/mock/output', '/mock/repo')
+    await runAgentCallTests(
+      [test],
+      mockConfig,
+      'gap-analysis',
+      '/mock/suite',
+      false,
+      'run-001',
+      { ...defaultTotals },
+      '/mock/output',
+      '/mock/repo',
+    )
 
     const claudeCall = vi.mocked(runClaude).mock.calls[0][0]
     expect(claudeCall.scaffold).toBe('/mock/suite/scaffolds/my-scaffold')
@@ -114,7 +154,17 @@ describe('runAgentCallTests', () => {
 
   it('prints agentFile in test config output', async () => {
     const test = makeAgentTest()
-    await runAgentCallTests([test], mockConfig, 'gap-analysis', '/mock/suite', false, 'run-001', { ...defaultTotals }, '/mock/output', '/mock/repo')
+    await runAgentCallTests(
+      [test],
+      mockConfig,
+      'gap-analysis',
+      '/mock/suite',
+      false,
+      'run-001',
+      { ...defaultTotals },
+      '/mock/output',
+      '/mock/repo',
+    )
 
     const stderrOutput = stderrSpy.mock.calls.map((c: [string]) => c[0]).join('')
     expect(stderrOutput).toContain('agentFile: r-and-d:gap-analyzer')
@@ -122,10 +172,25 @@ describe('runAgentCallTests', () => {
 
   it('writes test output for each test', async () => {
     const test = makeAgentTest()
-    await runAgentCallTests([test], mockConfig, 'gap-analysis', '/mock/suite', false, 'run-001', { ...defaultTotals }, '/mock/output', '/mock/repo')
+    await runAgentCallTests(
+      [test],
+      mockConfig,
+      'gap-analysis',
+      '/mock/suite',
+      false,
+      'run-001',
+      { ...defaultTotals },
+      '/mock/output',
+      '/mock/repo',
+    )
 
     expect(writeTestOutput).toHaveBeenCalledWith(
-      '/mock/output/run-001', 'run-001', 'gap-analysis', ['r-and-d'], test, []
+      '/mock/output/run-001',
+      'run-001',
+      'gap-analysis',
+      ['r-and-d'],
+      test,
+      [],
     )
   })
 
@@ -134,7 +199,17 @@ describe('runAgentCallTests', () => {
       makeAgentTest({ name: 'Test 1', agentFile: 'r-and-d:agent-a' }),
       makeAgentTest({ name: 'Test 2', agentFile: 'r-and-d:agent-b' }),
     ]
-    await runAgentCallTests(tests, mockConfig, 'gap-analysis', '/mock/suite', false, 'run-001', { ...defaultTotals }, '/mock/output', '/mock/repo')
+    await runAgentCallTests(
+      tests,
+      mockConfig,
+      'gap-analysis',
+      '/mock/suite',
+      false,
+      'run-001',
+      { ...defaultTotals },
+      '/mock/output',
+      '/mock/repo',
+    )
 
     expect(buildTempAgentPlugin).toHaveBeenCalledTimes(2)
     expect(runClaude).toHaveBeenCalledTimes(2)
@@ -143,7 +218,17 @@ describe('runAgentCallTests', () => {
   it('increments failures when exit code is non-zero', async () => {
     vi.mocked(runClaude).mockResolvedValueOnce({ exitCode: 1, stdout: '', stderr: '' })
     const test = makeAgentTest()
-    const result = await runAgentCallTests([test], mockConfig, 'gap-analysis', '/mock/suite', false, 'run-001', { ...defaultTotals }, '/mock/output', '/mock/repo')
+    const result = await runAgentCallTests(
+      [test],
+      mockConfig,
+      'gap-analysis',
+      '/mock/suite',
+      false,
+      'run-001',
+      { ...defaultTotals },
+      '/mock/output',
+      '/mock/repo',
+    )
 
     expect(result.failures).toBe(1)
   })
@@ -158,7 +243,17 @@ describe('runAgentCallTests', () => {
       result: '',
     })
     const test = makeAgentTest()
-    const result = await runAgentCallTests([test], mockConfig, 'gap-analysis', '/mock/suite', false, 'run-001', { ...defaultTotals }, '/mock/output', '/mock/repo')
+    const result = await runAgentCallTests(
+      [test],
+      mockConfig,
+      'gap-analysis',
+      '/mock/suite',
+      false,
+      'run-001',
+      { ...defaultTotals },
+      '/mock/output',
+      '/mock/repo',
+    )
 
     expect(result.failures).toBe(1)
   })
@@ -174,7 +269,17 @@ describe('runAgentCallTests', () => {
       result: '',
     })
     const test = makeAgentTest()
-    const result = await runAgentCallTests([test], mockConfig, 'gap-analysis', '/mock/suite', false, 'run-001', { ...defaultTotals }, '/mock/output', '/mock/repo')
+    const result = await runAgentCallTests(
+      [test],
+      mockConfig,
+      'gap-analysis',
+      '/mock/suite',
+      false,
+      'run-001',
+      { ...defaultTotals },
+      '/mock/output',
+      '/mock/repo',
+    )
 
     expect(result.failures).toBe(2)
   })
@@ -183,11 +288,18 @@ describe('runAgentCallTests', () => {
     vi.mocked(runClaude)
       .mockResolvedValueOnce({ exitCode: 1, stdout: '', stderr: '' })
       .mockResolvedValueOnce({ exitCode: 1, stdout: '', stderr: '' })
-    const tests = [
-      makeAgentTest({ name: 'Test 1' }),
-      makeAgentTest({ name: 'Test 2' }),
-    ]
-    const result = await runAgentCallTests(tests, mockConfig, 'gap-analysis', '/mock/suite', false, 'run-001', { ...defaultTotals }, '/mock/output', '/mock/repo')
+    const tests = [makeAgentTest({ name: 'Test 1' }), makeAgentTest({ name: 'Test 2' })]
+    const result = await runAgentCallTests(
+      tests,
+      mockConfig,
+      'gap-analysis',
+      '/mock/suite',
+      false,
+      'run-001',
+      { ...defaultTotals },
+      '/mock/output',
+      '/mock/repo',
+    )
 
     expect(result.failures).toBe(2)
   })
@@ -196,21 +308,51 @@ describe('runAgentCallTests', () => {
     vi.mocked(runClaude).mockResolvedValueOnce({ exitCode: 1, stdout: '', stderr: '' })
     const test = makeAgentTest()
     const incomingTotals = { ...defaultTotals, failures: 3 }
-    const result = await runAgentCallTests([test], mockConfig, 'gap-analysis', '/mock/suite', false, 'run-001', incomingTotals, '/mock/output', '/mock/repo')
+    const result = await runAgentCallTests(
+      [test],
+      mockConfig,
+      'gap-analysis',
+      '/mock/suite',
+      false,
+      'run-001',
+      incomingTotals,
+      '/mock/output',
+      '/mock/repo',
+    )
 
     expect(result.failures).toBe(4)
   })
 
   it('forwards debug=true to runClaude (TP-003)', async () => {
     const test = makeAgentTest()
-    await runAgentCallTests([test], mockConfig, 'gap-analysis', '/mock/suite', true, 'run-001', { ...defaultTotals }, '/mock/output', '/mock/repo')
+    await runAgentCallTests(
+      [test],
+      mockConfig,
+      'gap-analysis',
+      '/mock/suite',
+      true,
+      'run-001',
+      { ...defaultTotals },
+      '/mock/output',
+      '/mock/repo',
+    )
 
     const claudeCall = vi.mocked(runClaude).mock.calls[0][0]
     expect(claudeCall.debug).toBe(true)
   })
 
   it('returns empty array for no tests', async () => {
-    const result = await runAgentCallTests([], mockConfig, 'gap-analysis', '/mock/suite', false, 'run-001', { ...defaultTotals }, '/mock/output', '/mock/repo')
+    const result = await runAgentCallTests(
+      [],
+      mockConfig,
+      'gap-analysis',
+      '/mock/suite',
+      false,
+      'run-001',
+      { ...defaultTotals },
+      '/mock/output',
+      '/mock/repo',
+    )
 
     expect(result).toEqual(defaultTotals)
     expect(runClaude).not.toHaveBeenCalled()
@@ -221,7 +363,17 @@ describe('runAgentCallTests', () => {
     const test = makeAgentTest()
 
     await expect(
-      runAgentCallTests([test], mockConfig, 'gap-analysis', '/mock/suite', false, 'run-001', { ...defaultTotals }, '/mock/output', '/mock/repo')
+      runAgentCallTests(
+        [test],
+        mockConfig,
+        'gap-analysis',
+        '/mock/suite',
+        false,
+        'run-001',
+        { ...defaultTotals },
+        '/mock/output',
+        '/mock/repo',
+      ),
     ).rejects.toThrow('Prompt file not found')
   })
 })

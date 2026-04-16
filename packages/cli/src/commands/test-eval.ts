@@ -1,5 +1,5 @@
+import { exitWithResult, runTestEval } from '@testdouble/harness-execution'
 import type { Argv } from 'yargs'
-import { runTestEval, exitWithResult } from '@testdouble/harness-execution'
 import { outputDir, testsDir } from '../paths.js'
 
 export const command = 'test-eval [test_run_id]'

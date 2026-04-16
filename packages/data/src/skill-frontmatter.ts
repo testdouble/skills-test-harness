@@ -13,7 +13,7 @@ export function parseDescription(frontmatter: string): string {
   if (blockMatch) {
     return blockMatch[1]
       .split('\n')
-      .map(line => line.replace(/^ {2}/, ''))
+      .map((line) => line.replace(/^ {2}/, ''))
       .join('\n')
       .trim()
   }
@@ -40,8 +40,5 @@ export function replaceDescription(frontmatter: string, newDescription: string):
 }
 
 export function sanitizeForYaml(description: string): string {
-  return description
-    .replace(/\r?\n/g, ' ')
-    .replace(/  +/g, ' ')
-    .trim()
+  return description.replace(/\r?\n/g, ' ').replace(/ {2,}/g, ' ').trim()
 }

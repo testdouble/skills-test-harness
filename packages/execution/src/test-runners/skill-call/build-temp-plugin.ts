@@ -1,10 +1,14 @@
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { mkdir, writeFile, readFile } from 'node:fs/promises'
 import { replaceDescription, sanitizeForYaml } from '@testdouble/harness-data'
 
 const NOOP_BODY = '\nRespond with: "skill triggered" — nothing else.\n'
 
-export async function buildTempPlugin(skillFile: string, runDir: string, repoRoot: string): Promise<{ tempDir: string }> {
+export async function buildTempPlugin(
+  skillFile: string,
+  runDir: string,
+  repoRoot: string,
+): Promise<{ tempDir: string }> {
   const [pluginName, skillName] = skillFile.split(':')
 
   const skillMdPath = path.join(repoRoot, pluginName, 'skills', skillName, 'SKILL.md')
@@ -19,7 +23,11 @@ export async function buildTempPlugin(skillFile: string, runDir: string, repoRoo
   await mkdir(path.join(tempDir, '.claude-plugin'), { recursive: true })
   await mkdir(path.join(tempDir, 'skills', skillName), { recursive: true })
 
-  const pluginJson = JSON.stringify({ name: pluginName, description: '', version: '0.0.0', skills: './skills' }, null, 2)
+  const pluginJson = JSON.stringify(
+    { name: pluginName, description: '', version: '0.0.0', skills: './skills' },
+    null,
+    2,
+  )
   await writeFile(path.join(tempDir, '.claude-plugin', 'plugin.json'), pluginJson)
   await writeFile(path.join(tempDir, 'skills', skillName, 'SKILL.md'), skillMd)
 
@@ -31,7 +39,7 @@ export async function buildTempPluginWithDescription(
   runDir: string,
   overrideDescription: string,
   repoRoot: string,
-  iteration?: number
+  iteration?: number,
 ): Promise<{ tempDir: string }> {
   const [pluginName, skillName] = skillFile.split(':')
 
@@ -55,7 +63,11 @@ export async function buildTempPluginWithDescription(
   await mkdir(path.join(tempDir, '.claude-plugin'), { recursive: true })
   await mkdir(path.join(tempDir, 'skills', skillName), { recursive: true })
 
-  const pluginJson = JSON.stringify({ name: pluginName, description: '', version: '0.0.0', skills: './skills' }, null, 2)
+  const pluginJson = JSON.stringify(
+    { name: pluginName, description: '', version: '0.0.0', skills: './skills' },
+    null,
+    2,
+  )
   await writeFile(path.join(tempDir, '.claude-plugin', 'plugin.json'), pluginJson)
   await writeFile(path.join(tempDir, 'skills', skillName, 'SKILL.md'), skillMd)
 

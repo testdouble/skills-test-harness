@@ -1,5 +1,5 @@
-import { execInSandbox } from '@testdouble/docker-integration'
 import { resolveRelativePath } from '@testdouble/bun-helpers'
+import { execInSandbox } from '@testdouble/docker-integration'
 
 export interface OutputFile {
   path: string
@@ -9,7 +9,7 @@ export interface OutputFile {
 const extractScript = resolveRelativePath(
   import.meta,
   '../sandbox-extract.sh',
-  'packages/claude-integration/sandbox-extract.sh'
+  'packages/claude-integration/sandbox-extract.sh',
 )
 
 export async function extractOutputFiles(debug: boolean): Promise<OutputFile[]> {
