@@ -24,41 +24,37 @@ However, several issues need attention:
 
 **Context:** When this was a sub-folder (e.g., `parent-repo/tests/`), `repoRoot` pointed to `parent-repo/` where plugins like `r-and-d/` lived. Now that the harness is standalone, the parent directory is arbitrary (e.g., `/Users/mxriverlynn/dev/testdouble/`).
 
-**Resolution:** Add a `--repo-root` CLI flag to both `harness` and `harness-web`, defaulting to `process.cwd()`. This makes the harness a standalone tool that can point at any target repo containing plugins/skills.
+**Resolution:** Add a `--repo-root` CLI flag to `harness` commands that need it, defaulting to `process.cwd()`. This makes the harness a standalone tool that can point at any target repo containing plugins/skills.
 
 ### Implementation details
 
-**1. `createPathConfig` — accept `repoRoot` as an explicit parameter**
+**1. `createPathConfig` — remove `repoRoot` from the return value**
 
-`packages/execution/src/lib/path-config.ts` currently derives `repoRoot` as `path.join(testsDir, '..')`. Change the function signature to `createPathConfig(rootDir: string, repoRoot: string)` and use the passed value directly instead of deriving it.
+`packages/execution/src/lib/path-config.ts` currently derives `repoRoot` as `path.join(testsDir, '..')`. Since `repoRoot` is no longer derivable from the harness directory, and every execution function already receives `repoRoot` via its own config/options parameter (not via `PathConfig`), remove `repoRoot` from both the `PathConfig` interface and the `createPathConfig` return value.
 
-Update `packages/execution/src/lib/path-config.test.ts` accordingly — the test at line 16 ("sets repoRoot to parent of root") should assert the passed-through value instead.
+Update `packages/execution/src/lib/path-config.test.ts` — remove the test at line 16 ("sets repoRoot to parent of root").
 
-**2. `paths.ts` — make `repoRoot` settable instead of derived**
+**2. `paths.ts` — remove `repoRoot` export**
 
-`packages/cli/src/paths.ts` currently calls `createPathConfig(process.cwd())` at module load time and re-exports the static results. This pattern doesn't support per-command CLI flags.
+`packages/cli/src/paths.ts` currently calls `createPathConfig(process.cwd())` at module load time and re-exports the static results including `repoRoot`. Since only `repoRoot` needs to become dynamic (all other values — `testsDir`, `outputDir`, `dataDir`, `harnessDir` — are correctly derived from `process.cwd()`), the simplest change is to remove the `repoRoot` export from `paths.ts` rather than restructuring the entire module.
 
-Replace the static module-level exports with a `createPaths(repoRoot: string)` function that commands call from their handlers, passing the `--repo-root` argv value. Each command already imports from `paths.ts` and passes values individually to execution functions, so this is a straightforward change.
+Remove the `repoRoot` re-export. The utility functions `getTestSuiteDir` and `getAllTestSuites` depend on `testsDir` (not `repoRoot`), so they continue to work unchanged. Each CLI command that needs `repoRoot` will get it from its `--repo-root` argv value instead.
 
 **3. Add `--repo-root` option to CLI commands (`harness`)**
 
 Add the option to the builder of each command that uses `repoRoot`:
 
-- `packages/cli/src/commands/test-run.ts` — add `--repo-root` option (string, default `process.cwd()`), call `createPaths(argv['repo-root'])`, pass result to `runTestSuite`
-- `packages/cli/src/commands/scil.ts` — same pattern, pass into `ScilConfig`
-- `packages/cli/src/commands/acil.ts` — same pattern, pass into `AcilConfig`
-- `packages/cli/src/commands/sandbox-setup.ts` — same pattern, pass to `createSandbox`
+- `packages/cli/src/commands/test-run.ts` — add `--repo-root` option (string, default `process.cwd()`), pass `argv['repo-root']` as `repoRoot` to `runTestSuite`
+- `packages/cli/src/commands/scil.ts` — same pattern, pass `argv['repo-root']` as `repoRoot` into `ScilConfig`
+- `packages/cli/src/commands/acil.ts` — same pattern, pass `argv['repo-root']` as `repoRoot` into `AcilConfig`
+- `packages/cli/src/commands/sandbox-setup.ts` — same pattern, pass `argv['repo-root']` to `createSandbox`
 
 Update corresponding test files to include `'repo-root'` in builder assertions and `repoRoot` in handler call expectations:
 - `packages/cli/src/commands/test-run.test.ts`
 - `packages/cli/src/commands/scil.test.ts`
 - `packages/cli/src/commands/acil.test.ts`
 
-**4. Add `--repo-root` option to web server (`harness-web`)**
-
-`packages/web/src/server/index.ts` already uses yargs for `--port` and `--data-dir`. Add `--repo-root` (string, default `process.cwd()`) alongside them. The web server doesn't currently use `repoRoot`, but it should be wired through for consistency — if future routes need it, the plumbing is in place.
-
-**5. Makefile — no changes needed**
+**4. Makefile — no changes needed**
 
 The Makefile invokes `./harness` and `./harness-web` without path flags, so it will pick up the `process.cwd()` default automatically. No Makefile changes required for this issue.
 
@@ -97,7 +93,7 @@ The Makefile uses `bunx vitest` which hits this error. Running `bun run vitest r
 **Resolution:** Update the Makefile `test` target to use `bun run vitest` instead of `bunx vitest`. This is a known bun issue where `bunx` resolves the binary differently than `bun run`.
 
 **Files to change:**
-- `Makefile` line 43 — change `bunx vitest run` to `bun run vitest run`
+- `Makefile` line 44 — change `bunx vitest run` to `bun run vitest run`
 
 ---
 
@@ -123,10 +119,27 @@ The Makefile uses `bunx vitest` which hits this error. Running `bun run vitest r
 
 **Impact:** Running `bun test` gives different results than `make test`. Developers might be confused about which to use.
 
-**Resolution:** Align root `package.json` test script to use the same config as the Makefile, or document the difference. Since the Makefile is the primary interface (per project conventions), the `package.json` scripts should match.
+**Resolution:** The separation is intentional — `vitest.config.ts` excludes integration tests (fast feedback), while `vitest.all.config.ts` includes them with a 30s timeout (may need Docker). Keep `package.json` `"test"` as unit-only. Align `"test:all"` to use the single `vitest.all.config.ts` config instead of running two separate vitest passes. Document in CLAUDE.md that `make test` is the canonical way to run all tests.
 
 **Files to change:**
-- `package.json` — update `"test"` script to use `--config vitest.all.config.ts`
+- `package.json` — update `"test:all"` script to `vitest run --config vitest.all.config.ts` (single pass instead of two separate runs)
+
+---
+
+## Issue 6: `project-discovery.md` has stale `tests/` prefixed paths
+
+**Status:** Needs cleanup
+
+**Evidence:** `docs/project-discovery.md` prefixes all paths with `tests/` (e.g., `tests/docs/`, `tests/packages/cli/`, `tests/README.md`, `tests/Makefile`). This was correct when the harness lived at `parent-repo/tests/`, but now that it's a standalone repo, the root is the repo itself.
+
+Additionally, the "Commands and Tests" section references `bunx vitest run` which hits the same Issue 3 resolution failure.
+
+**Impact:** Misleading documentation — any tool or agent consuming `project-discovery.md` will look for files at wrong paths.
+
+**Resolution:** Remove the `tests/` prefix from all paths. Update `bunx vitest` references to `bun run vitest`.
+
+**Files to change:**
+- `docs/project-discovery.md` — strip `tests/` prefix from all paths; update vitest commands
 
 ---
 
@@ -140,3 +153,18 @@ These were investigated and found to be fine:
 - **bun.lock:** Present and correct for all workspace dependencies
 - **Test suites:** All 14 test suite directories are present with valid `tests.json` configs
 - **Shell scripts:** `packages/claude-integration/sandbox-run.sh` and `sandbox-extract.sh` use relative path resolution via `bun-helpers` — no hardcoded paths
+
+---
+
+## Iteration Summary
+
+- **Iterations completed:** 3
+- **Assumptions challenged:** 6
+  - `createPathConfig` needs a second `repoRoot` parameter → **Refuted**: simpler to remove `repoRoot` from `PathConfig` entirely since execution functions already receive it via their own config objects
+  - Web server needs `--repo-root` for consistency → **Refuted**: YAGNI — `harness-web` doesn't use `repoRoot` and adding it is speculative
+  - `paths.ts` needs full restructuring to `createPaths()` → **Refuted**: only `repoRoot` is dynamic; simpler to remove that one export and keep everything else static
+  - `package.json` `test` should match Makefile's all-tests config → **Refuted**: the separation is intentional (unit-only for fast feedback vs. all for CI)
+  - `project-discovery.md` paths are correct → **Refuted**: all paths have stale `tests/` prefix from old repo structure
+  - `getTestSuiteDir`/`getAllTestSuites` need refactoring → **Verified as fine**: they depend on `testsDir` (static from cwd), not `repoRoot`
+- **New issues added:** 1 (Issue 6: `project-discovery.md` stale paths)
+- **Consolidations made:** Simplified Issue 1 implementation (3 steps instead of 5; removed web server scope and PathConfig restructuring)
