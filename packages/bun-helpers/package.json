@@ -1,0 +1,9 @@
+{
+  "name": "@testdouble/bun-helpers",
+  "version": "0.1.0",
+  "private": true,
+  "module": "index.ts",
+  "devDependencies": {
+    "bun-types": "latest"
+  }
+}

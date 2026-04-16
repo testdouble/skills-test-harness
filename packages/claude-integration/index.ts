@@ -1,0 +1,6 @@
+export { runClaude } from './src/run-claude.js'
+export { extractOutputFiles } from './src/extract-output-files.js'
+export { resolvePluginDirs } from './src/plugin-flags.js'
+export { ClaudeError } from './src/errors.js'
+export type { ClaudeRunResult, ClaudeRunOptions } from './src/types.js'
+export type { OutputFile } from './src/extract-output-files.js'

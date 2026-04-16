@@ -1,0 +1,7 @@
+{
+  "durationMs": 1234,
+  "inputTokens": 500,
+  "outputTokens": 200,
+  "isError": false,
+  "result": "Test complete"
+}

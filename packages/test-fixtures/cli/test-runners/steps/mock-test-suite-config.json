@@ -1,0 +1,25 @@
+{
+  "plugins": ["r-and-d"],
+  "tests": [
+    {
+      "name": "Prompt: /code-review",
+      "type": "skill-prompt",
+      "promptFile": "prompt-code-review.md",
+      "model": "opus",
+      "expect": [
+        { "type": "result-contains", "value": "# Code Review:" },
+        { "type": "skill-call", "value": true, "skillFile": "r-and-d:code-review" }
+      ]
+    },
+    {
+      "name": "Prompt: no op",
+      "type": "skill-prompt",
+      "promptFile": "prompt-no-op.md",
+      "model": "sonnet",
+      "expect": [
+        { "type": "result-does-not-contain", "value": "# Code Review:" },
+        { "type": "skill-call", "value": false, "skillFile": "r-and-d:code-review" }
+      ]
+    }
+  ]
+}

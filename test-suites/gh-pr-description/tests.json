@@ -1,0 +1,25 @@
+{
+  "plugins": ["r-and-d"],
+  "tests": [
+    {
+      "name": "Prompt: /gh-pr-description",
+      "type": "skill-prompt",
+      "promptFile": "prompt-gh-pr-description.md",
+      "model": "opus",
+      "expect": [
+        { "result-contains": "gh CLI" },
+        { "skill-call": { "skill": "r-and-d:gh-pr-description", "expected": true } }
+      ]
+    },
+    {
+      "name": "Prompt: no op",
+      "type": "skill-prompt",
+      "model": "sonnet",
+      "promptFile": "prompt-no-op.md",
+      "expect": [
+        { "result-does-not-contain": "gh CLI" },
+        { "skill-call": { "skill": "r-and-d:gh-pr-description", "expected": false } }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "plugins": ["r-and-d"],
+  "tests": [
+    {
+      "name": "Prompt: /create-adr",
+      "type": "skill-prompt",
+      "promptFile": "prompt-create-adr.md",
+      "model": "opus",
+      "scaffold": "node-project",
+      "expect": [
+        { "result-contains": "ADR" },
+        { "skill-call": { "skill": "r-and-d:create-adr", "expected": true } }
+      ]
+    },
+    {
+      "name": "Prompt: no op",
+      "type": "skill-prompt",
+      "model": "sonnet",
+      "promptFile": "prompt-no-op.md",
+      "expect": [
+        { "result-does-not-contain": "ADR" },
+        { "skill-call": { "skill": "r-and-d:create-adr", "expected": false } }
+      ]
+    },
+    {
+      "name": "Skill Call: /create-adr",
+      "type": "skill-call",
+      "model": "opus",
+      "skillFile": "r-and-d:create-adr",
+      "promptFile": "skill-call-create-adr.md",
+      "scaffold": "node-project",
+      "expect": [
+        { "skill-call": true }
+      ]
+    },
+    {
+      "name": "Skill Call: no create-adr",
+      "type": "skill-call",
+      "model": "sonnet",
+      "skillFile": "r-and-d:create-adr",
+      "promptFile": "skill-call-no-create-adr.md",
+      "expect": [
+        { "skill-call": false }
+      ]
+    }
+  ]
+}

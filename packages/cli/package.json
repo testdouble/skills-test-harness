@@ -1,0 +1,22 @@
+{
+  "name": "@testdouble/harness-cli",
+  "version": "0.1.0",
+  "private": true,
+  "bin": {
+    "harness": "./index.ts"
+  },
+  "dependencies": {
+    "@testdouble/claude-integration": "workspace:*",
+    "@testdouble/docker-integration": "workspace:*",
+    "@testdouble/harness-data": "workspace:*",
+    "@testdouble/harness-evals": "workspace:*",
+    "@testdouble/harness-execution": "workspace:*",
+    "cli-table3": "latest",
+    "yargs": "latest"
+  },
+  "devDependencies": {
+    "@testdouble/test-fixtures": "workspace:*",
+    "@types/yargs": "latest",
+    "bun-types": "latest"
+  }
+}

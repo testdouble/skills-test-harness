@@ -1,0 +1,59 @@
+[
+  {
+    "_comment": "Assistant event: Claude delegates to a custom agent via the Agent tool",
+    "type": "assistant",
+    "message": {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "toolu_0189f8WHzBQDbnGMggvJYkeu",
+          "name": "Agent",
+          "input": {
+            "subagent_type": "r-and-d:gap-analyzer",
+            "description": "Compare CLAUDE.md vs skill-building docs",
+            "prompt": "(prompt content omitted for brevity)"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "_comment": "User event: Agent execution result returned to parent conversation",
+    "type": "user",
+    "message": {
+      "role": "user",
+      "content": [
+        {
+          "tool_use_id": "toolu_0189f8WHzBQDbnGMggvJYkeu",
+          "type": "tool_result",
+          "content": "(agent response content omitted)"
+        }
+      ]
+    },
+    "tool_use_result": {
+      "status": "completed",
+      "agentId": "ae0cc5e57350ea3cb",
+      "agentType": "r-and-d:gap-analyzer",
+      "totalDurationMs": 219806,
+      "totalTokens": 76750,
+      "totalToolUseCount": 30
+    }
+  },
+  {
+    "_comment": "System event: Agent task started",
+    "type": "system",
+    "subtype": "task_started",
+    "task_id": "ae0cc5e57350ea3cb",
+    "tool_use_id": "toolu_0189f8WHzBQDbnGMggvJYkeu",
+    "task_type": "local_agent"
+  },
+  {
+    "_comment": "System event: Agent task completed notification",
+    "type": "system",
+    "subtype": "task_notification",
+    "task_id": "ae0cc5e57350ea3cb",
+    "tool_use_id": "toolu_0189f8WHzBQDbnGMggvJYkeu",
+    "status": "completed"
+  }
+]

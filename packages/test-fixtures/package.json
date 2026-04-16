@@ -1,0 +1,12 @@
+{
+  "name": "@testdouble/test-fixtures",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./load-fixtures.ts",
+    "./*": "./*"
+  },
+  "dependencies": {
+    "@testdouble/bun-helpers": "workspace:*"
+  }
+}

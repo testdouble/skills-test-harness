@@ -1,0 +1,14 @@
+{
+  "name": "@testdouble/harness-evals",
+  "version": "0.1.0",
+  "private": true,
+  "module": "index.ts",
+  "dependencies": {
+    "@testdouble/harness-data": "workspace:*",
+    "@testdouble/claude-integration": "workspace:*"
+  },
+  "devDependencies": {
+    "@testdouble/test-fixtures": "workspace:*",
+    "bun-types": "latest"
+  }
+}
