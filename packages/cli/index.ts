@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
+import { HarnessError } from '@testdouble/harness-execution'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { HarnessError } from '@testdouble/harness-execution'
 
 try {
   await yargs(hideBin(process.argv))

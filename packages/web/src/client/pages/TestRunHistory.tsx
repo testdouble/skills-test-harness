@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom'
 
 interface TestRunSummary {
   test_run_id: string
-  suite:       string
-  date:        string
+  suite: string
+  date: string
   total_tests: number
-  passed:      number
-  failed:      number
+  passed: number
+  failed: number
 }
 
 export function TestRunHistory(): JSX.Element {
@@ -17,23 +17,20 @@ export function TestRunHistory(): JSX.Element {
 
   useEffect(() => {
     fetch('/api/test-runs')
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         setRuns(data.runs)
         setLoading(false)
       })
-      .catch(err => {
+      .catch((err) => {
         setError(String(err))
         setLoading(false)
       })
   }, [])
 
-  if (loading) return (
-    <div className="flex items-center justify-center h-64 text-[#4f4f4f]">Loading...</div>
-  )
-  if (error) return (
-    <div className="mx-10 mt-8 p-4 bg-[#1f1000] border border-[#d63c00] rounded-lg text-[#d63c00]">{error}</div>
-  )
+  if (loading) return <div className="flex items-center justify-center h-64 text-[#4f4f4f]">Loading...</div>
+  if (error)
+    return <div className="mx-10 mt-8 p-4 bg-[#1f1000] border border-[#d63c00] rounded-lg text-[#d63c00]">{error}</div>
   if (!runs || runs.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 text-[#4f4f4f]">
@@ -44,23 +41,16 @@ export function TestRunHistory(): JSX.Element {
 
   const totalRuns = runs.length
   const totalTests = runs.reduce((s, r) => s + r.total_tests, 0)
-  const avgPassRate = Math.round(
-    runs.reduce((s, r) => s + (r.passed / r.total_tests) * 100, 0) / runs.length
-  )
+  const avgPassRate = Math.round(runs.reduce((s, r) => s + (r.passed / r.total_tests) * 100, 0) / runs.length)
 
   return (
     <div className="px-10 py-8">
       {/* Page header */}
       <div className="mb-6">
-        <h1
-          className="text-[#f0f0f0] text-[35px] font-bold leading-tight"
-          style={{ letterSpacing: '-0.5px' }}
-        >
+        <h1 className="text-[#f0f0f0] text-[35px] font-bold leading-tight" style={{ letterSpacing: '-0.5px' }}>
           Test Run History
         </h1>
-        <p className="text-[#4f4f4f] text-[18px] mt-1.5">
-          Track and audit Claude skill test runs across all suites
-        </p>
+        <p className="text-[#4f4f4f] text-[18px] mt-1.5">Track and audit Claude skill test runs across all suites</p>
       </div>
 
       {/* Stats row */}
@@ -84,13 +74,48 @@ export function TestRunHistory(): JSX.Element {
         <table className="w-full border-collapse">
           <thead>
             <tr className="bg-[#1a1b1a]">
-              <th className="text-[#4f4f4f] text-[14px] font-bold text-left px-5 h-11 border-b border-[#252625]" style={{ letterSpacing: '1.5px' }}>RUN ID</th>
-              <th className="text-[#4f4f4f] text-[14px] font-bold text-left px-5 h-11 whitespace-nowrap border-b border-[#252625]" style={{ letterSpacing: '1.5px' }}>SUITE</th>
-              <th className="text-[#4f4f4f] text-[14px] font-bold text-left px-5 h-11 border-b border-[#252625]" style={{ letterSpacing: '1.5px' }}>DATE</th>
-              <th className="text-[#4f4f4f] text-[14px] font-bold text-left px-5 h-11 border-b border-[#252625]" style={{ letterSpacing: '1.5px' }}>TOTAL</th>
-              <th className="text-[#4f4f4f] text-[14px] font-bold text-left px-5 h-11 border-b border-[#252625]" style={{ letterSpacing: '1.5px' }}>PASSED</th>
-              <th className="text-[#4f4f4f] text-[14px] font-bold text-left px-5 h-11 border-b border-[#252625]" style={{ letterSpacing: '1.5px' }}>FAILED</th>
-              <th className="text-[#4f4f4f] text-[14px] font-bold text-left px-5 h-11 border-b border-[#252625]" style={{ letterSpacing: '1.5px' }}>PASS RATE</th>
+              <th
+                className="text-[#4f4f4f] text-[14px] font-bold text-left px-5 h-11 border-b border-[#252625]"
+                style={{ letterSpacing: '1.5px' }}
+              >
+                RUN ID
+              </th>
+              <th
+                className="text-[#4f4f4f] text-[14px] font-bold text-left px-5 h-11 whitespace-nowrap border-b border-[#252625]"
+                style={{ letterSpacing: '1.5px' }}
+              >
+                SUITE
+              </th>
+              <th
+                className="text-[#4f4f4f] text-[14px] font-bold text-left px-5 h-11 border-b border-[#252625]"
+                style={{ letterSpacing: '1.5px' }}
+              >
+                DATE
+              </th>
+              <th
+                className="text-[#4f4f4f] text-[14px] font-bold text-left px-5 h-11 border-b border-[#252625]"
+                style={{ letterSpacing: '1.5px' }}
+              >
+                TOTAL
+              </th>
+              <th
+                className="text-[#4f4f4f] text-[14px] font-bold text-left px-5 h-11 border-b border-[#252625]"
+                style={{ letterSpacing: '1.5px' }}
+              >
+                PASSED
+              </th>
+              <th
+                className="text-[#4f4f4f] text-[14px] font-bold text-left px-5 h-11 border-b border-[#252625]"
+                style={{ letterSpacing: '1.5px' }}
+              >
+                FAILED
+              </th>
+              <th
+                className="text-[#4f4f4f] text-[14px] font-bold text-left px-5 h-11 border-b border-[#252625]"
+                style={{ letterSpacing: '1.5px' }}
+              >
+                PASS RATE
+              </th>
             </tr>
           </thead>
           <tbody>

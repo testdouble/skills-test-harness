@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('node:fs/promises', () => ({
   readFile: vi.fn(),
@@ -9,8 +9,8 @@ vi.mock('@testdouble/harness-data', () => ({
 
 import { readFile } from 'node:fs/promises'
 import { parseDescription } from '@testdouble/harness-data'
-import { readAgent } from './step-3-read-agent.js'
 import { HarnessError } from '../lib/errors.js'
+import { readAgent } from './step-3-read-agent.js'
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -19,7 +19,7 @@ beforeEach(() => {
 describe('readAgent', () => {
   it('parses agent .md with name, description, and body', async () => {
     vi.mocked(readFile).mockResolvedValue(
-      '---\nname: gap-analyzer\ndescription: "Analyzes gaps"\n---\nAgent body content here'
+      '---\nname: gap-analyzer\ndescription: "Analyzes gaps"\n---\nAgent body content here',
     )
     vi.mocked(parseDescription).mockReturnValue('Analyzes gaps')
 
@@ -31,9 +31,7 @@ describe('readAgent', () => {
   })
 
   it('returns empty name when no name field in frontmatter', async () => {
-    vi.mocked(readFile).mockResolvedValue(
-      '---\ndescription: "No name agent"\n---\nBody'
-    )
+    vi.mocked(readFile).mockResolvedValue('---\ndescription: "No name agent"\n---\nBody')
     vi.mocked(parseDescription).mockReturnValue('No name agent')
 
     const result = await readAgent('/path/to/agent.md')
@@ -45,14 +43,11 @@ describe('readAgent', () => {
   it('throws HarnessError when no frontmatter found', async () => {
     vi.mocked(readFile).mockResolvedValue('No frontmatter here')
 
-    await expect(readAgent('/path/to/agent.md'))
-      .rejects.toThrow(HarnessError)
+    await expect(readAgent('/path/to/agent.md')).rejects.toThrow(HarnessError)
   })
 
   it('trims leading whitespace from body', async () => {
-    vi.mocked(readFile).mockResolvedValue(
-      '---\nname: test\ndescription: "test"\n---\n\n  Body with leading space'
-    )
+    vi.mocked(readFile).mockResolvedValue('---\nname: test\ndescription: "test"\n---\n\n  Body with leading space')
     vi.mocked(parseDescription).mockReturnValue('test')
 
     const result = await readAgent('/path/to/agent.md')
@@ -62,7 +57,7 @@ describe('readAgent', () => {
 
   it('parses frontmatter with CRLF line endings', async () => {
     vi.mocked(readFile).mockResolvedValue(
-      '---\r\nname: gap-analyzer\r\ndescription: "Analyzes gaps"\r\n---\r\nAgent body content here'
+      '---\r\nname: gap-analyzer\r\ndescription: "Analyzes gaps"\r\n---\r\nAgent body content here',
     )
     vi.mocked(parseDescription).mockReturnValue('Analyzes gaps')
 
@@ -74,9 +69,7 @@ describe('readAgent', () => {
   })
 
   it('handles quoted name values', async () => {
-    vi.mocked(readFile).mockResolvedValue(
-      '---\nname: "quoted-name"\ndescription: "desc"\n---\nBody'
-    )
+    vi.mocked(readFile).mockResolvedValue('---\nname: "quoted-name"\ndescription: "desc"\n---\nBody')
     vi.mocked(parseDescription).mockReturnValue('desc')
 
     const result = await readAgent('/path/to/agent.md')

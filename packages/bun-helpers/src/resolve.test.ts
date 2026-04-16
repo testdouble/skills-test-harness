@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import path from 'node:path'
 import fs from 'node:fs'
 import os from 'node:os'
+import path from 'node:path'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 function makeMeta(overrides: Partial<{ dir: string; dirname: string; url: string }>): ImportMeta {
   return {
@@ -62,11 +62,7 @@ describe('resolveRelativePath', () => {
     const subDir = path.join(tmpDir, 'sub')
     fs.mkdirSync(subDir)
 
-    const result = resolveRelativePath(
-      makeMeta({ dir: subDir }),
-      '../target.sh',
-      'irrelevant/path.sh'
-    )
+    const result = resolveRelativePath(makeMeta({ dir: subDir }), '../target.sh', 'irrelevant/path.sh')
     expect(result).toBe(targetFile)
   })
 
@@ -76,14 +72,18 @@ describe('resolveRelativePath', () => {
     fs.writeFileSync(targetFile, '#!/bin/sh\n')
 
     const originalExecPath = process.execPath
-    Object.defineProperty(process, 'execPath', { value: path.join(tmpDir, 'harness'), writable: true, configurable: true })
+    Object.defineProperty(process, 'execPath', {
+      value: path.join(tmpDir, 'harness'),
+      writable: true,
+      configurable: true,
+    })
 
     try {
       const { resolveRelativePath } = await import('./resolve.js')
       const result = resolveRelativePath(
         makeMeta({ dir: '/$bunfs/root' }),
         '../irrelevant.sh',
-        'packages/pkg/target.sh'
+        'packages/pkg/target.sh',
       )
       expect(result).toBe(targetFile)
     } finally {
@@ -93,27 +93,23 @@ describe('resolveRelativePath', () => {
 
   it('throws when resolved path does not exist in source mode', async () => {
     const { resolveRelativePath } = await import('./resolve.js')
-    expect(() =>
-      resolveRelativePath(
-        makeMeta({ dir: tmpDir }),
-        'nonexistent-file.sh',
-        'irrelevant/path.sh'
-      )
-    ).toThrow(/Resolved path does not exist/)
+    expect(() => resolveRelativePath(makeMeta({ dir: tmpDir }), 'nonexistent-file.sh', 'irrelevant/path.sh')).toThrow(
+      /Resolved path does not exist/,
+    )
   })
 
   it('throws when resolved path does not exist in compiled mode', async () => {
     const originalExecPath = process.execPath
-    Object.defineProperty(process, 'execPath', { value: path.join(tmpDir, 'harness'), writable: true, configurable: true })
+    Object.defineProperty(process, 'execPath', {
+      value: path.join(tmpDir, 'harness'),
+      writable: true,
+      configurable: true,
+    })
 
     try {
       const { resolveRelativePath } = await import('./resolve.js')
       expect(() =>
-        resolveRelativePath(
-          makeMeta({ dir: '/$bunfs/root' }),
-          '../irrelevant.sh',
-          'nonexistent/path.sh'
-        )
+        resolveRelativePath(makeMeta({ dir: '/$bunfs/root' }), '../irrelevant.sh', 'nonexistent/path.sh'),
       ).toThrow(/Resolved path does not exist/)
     } finally {
       Object.defineProperty(process, 'execPath', { value: originalExecPath, writable: true, configurable: true })

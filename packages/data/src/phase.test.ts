@@ -1,19 +1,19 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
+import type { EntityType, Phase } from './phase.js'
 import { getPhase, getPhaseInstructions } from './phase.js'
-import type { Phase, EntityType } from './phase.js'
 
 describe('getPhase', () => {
   // Parameterized tests covering the full allocation table from the PRD
   const allocationTable: { max: number; explore: number; transition: number; converge: number }[] = [
-    { max: 1,  explore: 1, transition: 0, converge: 0 },
-    { max: 2,  explore: 1, transition: 0, converge: 1 },
-    { max: 3,  explore: 2, transition: 0, converge: 1 },
-    { max: 4,  explore: 2, transition: 0, converge: 2 },
-    { max: 5,  explore: 3, transition: 0, converge: 2 },
-    { max: 6,  explore: 2, transition: 2, converge: 2 },
-    { max: 7,  explore: 3, transition: 2, converge: 2 },
-    { max: 8,  explore: 3, transition: 3, converge: 2 },
-    { max: 9,  explore: 3, transition: 3, converge: 3 },
+    { max: 1, explore: 1, transition: 0, converge: 0 },
+    { max: 2, explore: 1, transition: 0, converge: 1 },
+    { max: 3, explore: 2, transition: 0, converge: 1 },
+    { max: 4, explore: 2, transition: 0, converge: 2 },
+    { max: 5, explore: 3, transition: 0, converge: 2 },
+    { max: 6, explore: 2, transition: 2, converge: 2 },
+    { max: 7, explore: 3, transition: 2, converge: 2 },
+    { max: 8, explore: 3, transition: 3, converge: 2 },
+    { max: 9, explore: 3, transition: 3, converge: 3 },
     { max: 10, explore: 4, transition: 3, converge: 3 },
     { max: 11, explore: 4, transition: 4, converge: 3 },
     { max: 12, explore: 4, transition: 4, converge: 4 },
@@ -26,9 +26,9 @@ describe('getPhase', () => {
         phases.push(getPhase(i, max))
       }
 
-      const exploreCount = phases.filter(p => p === 'explore').length
-      const transitionCount = phases.filter(p => p === 'transition').length
-      const convergeCount = phases.filter(p => p === 'converge').length
+      const exploreCount = phases.filter((p) => p === 'explore').length
+      const transitionCount = phases.filter((p) => p === 'transition').length
+      const convergeCount = phases.filter((p) => p === 'converge').length
 
       expect(exploreCount).toBe(explore)
       expect(transitionCount).toBe(transition)
@@ -74,9 +74,9 @@ describe('getPhase', () => {
     for (let i = 1; i <= 20; i++) {
       phases.push(getPhase(i, 20))
     }
-    expect(phases.filter(p => p === 'explore').length).toBe(7)
-    expect(phases.filter(p => p === 'transition').length).toBe(7)
-    expect(phases.filter(p => p === 'converge').length).toBe(6)
+    expect(phases.filter((p) => p === 'explore').length).toBe(7)
+    expect(phases.filter((p) => p === 'transition').length).toBe(7)
+    expect(phases.filter((p) => p === 'converge').length).toBe(6)
   })
 
   it('handles maxIterations=100 without error', () => {
@@ -88,15 +88,14 @@ describe('getPhase', () => {
     for (let i = 1; i <= 100; i++) {
       phases.push(getPhase(i, 100))
     }
-    expect(phases.filter(p => p === 'explore').length).toBe(34)
-    expect(phases.filter(p => p === 'transition').length).toBe(33)
-    expect(phases.filter(p => p === 'converge').length).toBe(33)
+    expect(phases.filter((p) => p === 'explore').length).toBe(34)
+    expect(phases.filter((p) => p === 'transition').length).toBe(33)
+    expect(phases.filter((p) => p === 'converge').length).toBe(33)
   })
 })
 
 describe('getPhaseInstructions', () => {
-  const makeIterations = (accuracies: number[]) =>
-    accuracies.map(a => ({ trainAccuracy: a, testAccuracy: null }))
+  const makeIterations = (accuracies: number[]) => accuracies.map((a) => ({ trainAccuracy: a, testAccuracy: null }))
 
   // Phase × EntityType matrix (6 combinations)
   describe.each<{ phase: Phase; entityType: EntityType }>([
@@ -157,11 +156,7 @@ describe('getPhaseInstructions', () => {
 
   // Converge with holdout failures: includes failing query texts when train accuracy is 1.0
   it('converge includes holdout failures when train accuracy is 1.0 and holdoutFailures is non-empty', () => {
-    const result = getPhaseInstructions(
-      'converge', 'skill',
-      makeIterations([1.0]),
-      ['review my code', 'check this PR'],
-    )
+    const result = getPhaseInstructions('converge', 'skill', makeIterations([1.0]), ['review my code', 'check this PR'])
     expect(result).toContain('review my code')
     expect(result).toContain('check this PR')
     expect(result).toContain('additional user messages your description should handle')
@@ -169,51 +164,32 @@ describe('getPhaseInstructions', () => {
 
   // Converge without holdout failures: omits when train accuracy < 1.0
   it('converge omits holdout failures when train accuracy < 1.0', () => {
-    const result = getPhaseInstructions(
-      'converge', 'skill',
-      makeIterations([0.9]),
-      ['review my code'],
-    )
+    const result = getPhaseInstructions('converge', 'skill', makeIterations([0.9]), ['review my code'])
     expect(result).not.toContain('review my code')
     expect(result).not.toContain('additional user messages')
   })
 
   // Converge without holdout failures: omits when holdoutFailures is empty
   it('converge omits holdout failures when holdoutFailures is empty', () => {
-    const result = getPhaseInstructions(
-      'converge', 'skill',
-      makeIterations([1.0]),
-      [],
-    )
+    const result = getPhaseInstructions('converge', 'skill', makeIterations([1.0]), [])
     expect(result).not.toContain('additional user messages')
   })
 
   // Converge without holdout failures: omits when holdoutFailures is undefined
   it('converge omits holdout failures when holdoutFailures is undefined', () => {
-    const result = getPhaseInstructions(
-      'converge', 'skill',
-      makeIterations([1.0]),
-    )
+    const result = getPhaseInstructions('converge', 'skill', makeIterations([1.0]))
     expect(result).not.toContain('additional user messages')
   })
 
   // Explore and transition ignore holdoutFailures
   it('explore ignores holdoutFailures', () => {
-    const result = getPhaseInstructions(
-      'explore', 'skill',
-      makeIterations([1.0]),
-      ['review my code'],
-    )
+    const result = getPhaseInstructions('explore', 'skill', makeIterations([1.0]), ['review my code'])
     expect(result).not.toContain('review my code')
     expect(result).not.toContain('additional user messages')
   })
 
   it('transition ignores holdoutFailures', () => {
-    const result = getPhaseInstructions(
-      'transition', 'agent',
-      makeIterations([1.0]),
-      ['review my code'],
-    )
+    const result = getPhaseInstructions('transition', 'agent', makeIterations([1.0]), ['review my code'])
     expect(result).not.toContain('review my code')
     expect(result).not.toContain('additional user messages')
   })

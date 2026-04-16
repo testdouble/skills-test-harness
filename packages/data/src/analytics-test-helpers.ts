@@ -2,11 +2,19 @@
  * Test helpers for building analytics integration test fixtures.
  * Creates the same on-disk structure that run-test.ts produces.
  */
-import { mkdir, writeFile } from 'node:fs/promises'
-import { mkdtemp } from 'node:fs/promises'
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import type { TestConfigRecord, TestResultRecord, ScilIterationRecord, ScilSummaryRecord, ScilTrainResult, AcilIterationRecord, AcilSummaryRecord, AcilTrainResult } from './types.js'
+import type {
+  AcilIterationRecord,
+  AcilSummaryRecord,
+  AcilTrainResult,
+  ScilIterationRecord,
+  ScilSummaryRecord,
+  ScilTrainResult,
+  TestConfigRecord,
+  TestResultRecord,
+} from './types.js'
 
 // ─── directory helpers ────────────────────────────────────────────────────────
 
@@ -18,7 +26,7 @@ export async function makeTmpDir(): Promise<string> {
 /** Write an array of objects as newline-delimited JSON. */
 export async function writeJsonl(filePath: string, records: unknown[]): Promise<void> {
   await mkdir(path.dirname(filePath), { recursive: true })
-  const content = records.map(r => JSON.stringify(r)).join('\n') + '\n'
+  const content = `${records.map((r) => JSON.stringify(r)).join('\n')}\n`
   await writeFile(filePath, content, 'utf8')
 }
 
@@ -161,12 +169,12 @@ export async function writeRunFixture(opts: {
 /** Build a default ScilTrainResult. */
 function makeScilTrainResult(overrides?: Partial<ScilTrainResult>): ScilTrainResult {
   return {
-    testName:  'Skill Call: test',
+    testName: 'Skill Call: test',
     skillFile: 'plugin:skill',
-    expected:  true,
-    actual:    true,
-    passed:    true,
-    runIndex:  0,
+    expected: true,
+    actual: true,
+    passed: true,
+    runIndex: 0,
     ...overrides,
   }
 }
@@ -174,13 +182,14 @@ function makeScilTrainResult(overrides?: Partial<ScilTrainResult>): ScilTrainRes
 /** Build a default ScilIterationRecord. */
 export function makeScilIterationRecord(overrides?: Partial<ScilIterationRecord>): ScilIterationRecord {
   return {
-    test_run_id:   '20260101T200001',
-    iteration:     1,
-    description:   'test description',
-    trainResults:  [makeScilTrainResult()],
-    testResults:   [],
+    test_run_id: '20260101T200001',
+    iteration: 1,
+    phase: null,
+    description: 'test description',
+    trainResults: [makeScilTrainResult()],
+    testResults: [],
     trainAccuracy: 1.0,
-    testAccuracy:  null,
+    testAccuracy: null,
     ...overrides,
   }
 }
@@ -188,10 +197,10 @@ export function makeScilIterationRecord(overrides?: Partial<ScilIterationRecord>
 /** Build a default ScilSummaryRecord. */
 export function makeScilSummaryRecord(overrides?: Partial<ScilSummaryRecord>): ScilSummaryRecord {
   return {
-    test_run_id:         '20260101T200001',
+    test_run_id: '20260101T200001',
     originalDescription: 'original description',
-    bestIteration:       1,
-    bestDescription:     'best description',
+    bestIteration: 1,
+    bestDescription: 'best description',
     ...overrides,
   }
 }
@@ -210,24 +219,20 @@ export async function writeScilRunFixture(opts: {
   await writeJsonl(path.join(runDir, 'scil-iteration.jsonl'), opts.iterations)
 
   const summary: ScilSummaryRecord & { iterations: unknown[] } = {
-    test_run_id:         opts.runId,
+    test_run_id: opts.runId,
     originalDescription: opts.iterations[0]?.description ?? 'original',
-    bestIteration:       1,
-    bestDescription:     opts.iterations[0]?.description ?? 'best',
-    iterations: opts.iterations.map(i => ({
-      iteration:     i.iteration,
+    bestIteration: 1,
+    bestDescription: opts.iterations[0]?.description ?? 'best',
+    iterations: opts.iterations.map((i) => ({
+      iteration: i.iteration,
       trainAccuracy: i.trainAccuracy,
-      testAccuracy:  i.testAccuracy,
-      description:   i.description,
+      testAccuracy: i.testAccuracy,
+      description: i.description,
     })),
   }
 
   await mkdir(runDir, { recursive: true })
-  await writeFile(
-    path.join(runDir, 'scil-summary.json'),
-    JSON.stringify(summary, null, 2),
-    'utf8',
-  )
+  await writeFile(path.join(runDir, 'scil-summary.json'), JSON.stringify(summary, null, 2), 'utf8')
 }
 
 // ─── ACIL fixture factories ─────────────────────────────────────────────────
@@ -235,12 +240,12 @@ export async function writeScilRunFixture(opts: {
 /** Build a default AcilTrainResult. */
 function makeAcilTrainResult(overrides?: Partial<AcilTrainResult>): AcilTrainResult {
   return {
-    testName:  'Agent Call: test',
+    testName: 'Agent Call: test',
     agentFile: 'plugin:agent',
-    expected:  true,
-    actual:    true,
-    passed:    true,
-    runIndex:  0,
+    expected: true,
+    actual: true,
+    passed: true,
+    runIndex: 0,
     ...overrides,
   }
 }
@@ -248,13 +253,14 @@ function makeAcilTrainResult(overrides?: Partial<AcilTrainResult>): AcilTrainRes
 /** Build a default AcilIterationRecord. */
 export function makeAcilIterationRecord(overrides?: Partial<AcilIterationRecord>): AcilIterationRecord {
   return {
-    test_run_id:   '20260101T300001',
-    iteration:     1,
-    description:   'test agent description',
-    trainResults:  [makeAcilTrainResult()],
-    testResults:   [],
+    test_run_id: '20260101T300001',
+    iteration: 1,
+    phase: null,
+    description: 'test agent description',
+    trainResults: [makeAcilTrainResult()],
+    testResults: [],
     trainAccuracy: 1.0,
-    testAccuracy:  null,
+    testAccuracy: null,
     ...overrides,
   }
 }
@@ -262,10 +268,10 @@ export function makeAcilIterationRecord(overrides?: Partial<AcilIterationRecord>
 /** Build a default AcilSummaryRecord. */
 export function makeAcilSummaryRecord(overrides?: Partial<AcilSummaryRecord>): AcilSummaryRecord {
   return {
-    test_run_id:         '20260101T300001',
+    test_run_id: '20260101T300001',
     originalDescription: 'original agent description',
-    bestIteration:       1,
-    bestDescription:     'best agent description',
+    bestIteration: 1,
+    bestDescription: 'best agent description',
     ...overrides,
   }
 }
@@ -284,22 +290,18 @@ export async function writeAcilRunFixture(opts: {
   await writeJsonl(path.join(runDir, 'acil-iteration.jsonl'), opts.iterations)
 
   const summary: AcilSummaryRecord & { iterations: unknown[] } = {
-    test_run_id:         opts.runId,
+    test_run_id: opts.runId,
     originalDescription: opts.iterations[0]?.description ?? 'original',
-    bestIteration:       1,
-    bestDescription:     opts.iterations[0]?.description ?? 'best',
-    iterations: opts.iterations.map(i => ({
-      iteration:     i.iteration,
+    bestIteration: 1,
+    bestDescription: opts.iterations[0]?.description ?? 'best',
+    iterations: opts.iterations.map((i) => ({
+      iteration: i.iteration,
       trainAccuracy: i.trainAccuracy,
-      testAccuracy:  i.testAccuracy,
-      description:   i.description,
+      testAccuracy: i.testAccuracy,
+      description: i.description,
     })),
   }
 
   await mkdir(runDir, { recursive: true })
-  await writeFile(
-    path.join(runDir, 'acil-summary.json'),
-    JSON.stringify(summary, null, 2),
-    'utf8',
-  )
+  await writeFile(path.join(runDir, 'acil-summary.json'), JSON.stringify(summary, null, 2), 'utf8')
 }

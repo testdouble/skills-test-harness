@@ -1,16 +1,16 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { rm, mkdir } from 'node:fs/promises'
-import { InvalidRunIdError } from './types.js'
+import { mkdir, rm } from 'node:fs/promises'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { queryTestRunDetails, updateAllParquet } from './analytics.js'
-import { queryScilRunDetails, queryAcilRunDetails } from './run-status.js'
 import {
+  makeAcilIterationRecord,
+  makeScilIterationRecord,
   makeTmpDir,
+  writeAcilRunFixture,
   writeRunFixture,
   writeScilRunFixture,
-  makeScilIterationRecord,
-  writeAcilRunFixture,
-  makeAcilIterationRecord,
 } from './analytics-test-helpers.js'
+import { queryAcilRunDetails, queryScilRunDetails } from './run-status.js'
+import { InvalidRunIdError } from './types.js'
 
 // ─── validateRunId (tested via exported functions) ────────────────────────────
 //
@@ -20,7 +20,7 @@ import {
 describe('validateRunId', () => {
   describe('via queryTestRunDetails', () => {
     it('passes validation for a correctly-formatted run ID', async () => {
-      const err = await queryTestRunDetails('/nonexistent', '20260327T120000').catch(e => e)
+      const err = await queryTestRunDetails('/nonexistent', '20260327T120000').catch((e) => e)
       expect(err).not.toBeInstanceOf(InvalidRunIdError)
     })
 
@@ -45,7 +45,7 @@ describe('validateRunId', () => {
 
   describe('via queryScilRunDetails', () => {
     it('passes validation for a correctly-formatted run ID', async () => {
-      const err = await queryScilRunDetails('/nonexistent', '20260327T120000').catch(e => e)
+      const err = await queryScilRunDetails('/nonexistent', '20260327T120000').catch((e) => e)
       expect(err).not.toBeInstanceOf(InvalidRunIdError)
     })
 
@@ -61,7 +61,7 @@ describe('validateRunId', () => {
 
   describe('via queryAcilRunDetails', () => {
     it('passes validation for a correctly-formatted run ID', async () => {
-      const err = await queryAcilRunDetails('/nonexistent', '20260327T120000').catch(e => e)
+      const err = await queryAcilRunDetails('/nonexistent', '20260327T120000').catch((e) => e)
       expect(err).not.toBeInstanceOf(InvalidRunIdError)
     })
 
@@ -85,8 +85,8 @@ describe('SQL injection rejection (integration)', () => {
 
   beforeEach(async () => {
     tmpDir = await makeTmpDir()
-    outputDir = tmpDir + '/output'
-    dataDir = tmpDir + '/data'
+    outputDir = `${tmpDir}/output`
+    dataDir = `${tmpDir}/data`
     await mkdir(dataDir, { recursive: true })
 
     await writeRunFixture({

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@testdouble/harness-data', () => ({
   resolvePromptPath: vi.fn().mockReturnValue('/resolved/prompt.md'),
@@ -12,12 +12,12 @@ vi.mock('@testdouble/claude-integration', () => ({
   runClaude: vi.fn().mockResolvedValue({ exitCode: 0, stdout: '{}', stderr: '' }),
 }))
 
-import { resolvePromptPath, readPromptFile, parseStreamJsonLines } from '@testdouble/harness-data'
-import { evaluateSkillCall } from '@testdouble/harness-evals'
 import { runClaude } from '@testdouble/claude-integration'
+import { parseStreamJsonLines, readPromptFile, resolvePromptPath } from '@testdouble/harness-data'
+import { evaluateSkillCall } from '@testdouble/harness-evals'
+import type { RunEvalOptions } from './step-5-run-eval.js'
 import { runEval } from './step-5-run-eval.js'
 import type { ScilTestCase } from './types.js'
-import type { RunEvalOptions } from './step-5-run-eval.js'
 
 function makeTestCase(overrides: Partial<ScilTestCase> = {}): ScilTestCase {
   return {
@@ -154,7 +154,7 @@ describe('runEval', () => {
     const results = await runEval(makeOpts({ testCases }))
 
     expect(results).toHaveLength(3)
-    const names = results.map(r => r.testName).sort()
+    const names = results.map((r) => r.testName).sort()
     expect(names).toEqual(['test-a', 'test-b', 'test-c'])
   })
 
@@ -196,10 +196,11 @@ describe('runEval', () => {
 
   it('returns results in work-item order regardless of promise resolution order', async () => {
     const resolvers: Array<() => void> = []
-    vi.mocked(runClaude).mockImplementation(() =>
-      new Promise<{ exitCode: number, stdout: string, stderr: string }>(resolve => {
-        resolvers.push(() => resolve({ exitCode: 0, stdout: '{}', stderr: '' }))
-      })
+    vi.mocked(runClaude).mockImplementation(
+      () =>
+        new Promise<{ exitCode: number; stdout: string; stderr: string }>((resolve) => {
+          resolvers.push(() => resolve({ exitCode: 0, stdout: '{}', stderr: '' }))
+        }),
     )
 
     const testCases = [
@@ -221,7 +222,7 @@ describe('runEval', () => {
     const results = await resultPromise
 
     expect(results).toHaveLength(3)
-    expect(results.map(r => r.testName)).toEqual(['test-a', 'test-b', 'test-c'])
+    expect(results.map((r) => r.testName)).toEqual(['test-a', 'test-b', 'test-c'])
   })
 
   it('returns results for remaining tasks when one task fails', async () => {
@@ -241,15 +242,12 @@ describe('runEval', () => {
     const results = await runEval(makeOpts({ testCases, concurrency: 10 }))
 
     expect(results).toHaveLength(2)
-    expect(results.map(r => r.testName).sort()).toEqual(['test-a', 'test-c'])
+    expect(results.map((r) => r.testName).sort()).toEqual(['test-a', 'test-c'])
   })
 
   // TP-011 (EC4): duplicate test names merge in majority vote
   it('merges duplicate test names during majority vote aggregation', async () => {
-    const testCases = [
-      makeTestCase({ name: 'same-name' }),
-      makeTestCase({ name: 'same-name' }),
-    ]
+    const testCases = [makeTestCase({ name: 'same-name' }), makeTestCase({ name: 'same-name' })]
     vi.mocked(evaluateSkillCall).mockReturnValue(true)
 
     const results = await runEval(makeOpts({ testCases, runsPerQuery: 2 }))

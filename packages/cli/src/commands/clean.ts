@@ -1,6 +1,6 @@
-import type { Argv } from 'yargs'
-import { removeSandbox, SANDBOX_NAME, DockerError } from '@testdouble/docker-integration'
+import { DockerError, removeSandbox, SANDBOX_NAME } from '@testdouble/docker-integration'
 import { HarnessError } from '@testdouble/harness-execution'
+import type { Argv } from 'yargs'
 
 export const command = 'clean'
 export const describe = 'Remove the Docker sandbox'

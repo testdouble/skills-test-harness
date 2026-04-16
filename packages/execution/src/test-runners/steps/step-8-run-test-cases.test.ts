@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { mockParsedMetrics, mockTestSuiteConfig } from './fixtures.js'
 import { runTestCases } from './step-8-run-test-cases.js'
-import { mockTestSuiteConfig, mockParsedMetrics } from './fixtures.js'
 
 vi.mock('../prompt/index.js', () => ({
   runPromptTests: vi.fn(),
@@ -15,13 +15,18 @@ vi.mock('../agent-prompt/index.js', () => ({
   runAgentPromptTests: vi.fn(),
 }))
 
-import { runPromptTests } from '../prompt/index.js'
-import { runSkillCallTests } from '../skill-call/index.js'
 import { runAgentCallTests } from '../agent-call/index.js'
 import { runAgentPromptTests } from '../agent-prompt/index.js'
+import { runPromptTests } from '../prompt/index.js'
+import { runSkillCallTests } from '../skill-call/index.js'
 
 const defaultTotals = { totalDurationMs: 0, totalInputTokens: 0, totalOutputTokens: 0, failures: 0 }
-const promptResult = { totalDurationMs: mockParsedMetrics.durationMs, totalInputTokens: mockParsedMetrics.inputTokens, totalOutputTokens: mockParsedMetrics.outputTokens, failures: 0 }
+const promptResult = {
+  totalDurationMs: mockParsedMetrics.durationMs,
+  totalInputTokens: mockParsedMetrics.inputTokens,
+  totalOutputTokens: mockParsedMetrics.outputTokens,
+  failures: 0,
+}
 const skillCallResult = { totalDurationMs: 0, totalInputTokens: 0, totalOutputTokens: 0, failures: 0 }
 const agentCallResult = { totalDurationMs: 0, totalInputTokens: 0, totalOutputTokens: 0, failures: 0 }
 const agentPromptResult = { totalDurationMs: 0, totalInputTokens: 0, totalOutputTokens: 0, failures: 0 }
@@ -39,14 +44,24 @@ afterEach(() => {
 })
 
 function callRunTestCases(config = mockTestSuiteConfig, totals = { ...defaultTotals }) {
-  return runTestCases(config, 'code-review', '/mock/test-suites/code-review', [], false, '20260320T094845', totals, '/mock/output', '/mock/repo')
+  return runTestCases(
+    config,
+    'code-review',
+    '/mock/test-suites/code-review',
+    [],
+    false,
+    '20260320T094845',
+    totals,
+    '/mock/output',
+    '/mock/repo',
+  )
 }
 
 describe('runTestCases dispatcher — routing', () => {
   it('routes skill-prompt tests to runPromptTests', async () => {
     await callRunTestCases()
     const [promptTests] = vi.mocked(runPromptTests).mock.calls[0]
-    expect(promptTests.every(t => t.type === 'skill-prompt')).toBe(true)
+    expect(promptTests.every((t) => t.type === 'skill-prompt')).toBe(true)
     expect(promptTests).toHaveLength(2)
   })
 
@@ -55,7 +70,13 @@ describe('runTestCases dispatcher — routing', () => {
       ...mockTestSuiteConfig,
       tests: [
         ...mockTestSuiteConfig.tests,
-        { name: 'Skill: code-review trigger', type: 'skill-call', promptFile: 'trigger.md', skillFile: 'r-and-d:code-review', expect: [] },
+        {
+          name: 'Skill: code-review trigger',
+          type: 'skill-call',
+          promptFile: 'trigger.md',
+          skillFile: 'r-and-d:code-review',
+          expect: [],
+        },
       ],
     }
     await callRunTestCases(configWithSkillCall)
@@ -69,7 +90,13 @@ describe('runTestCases dispatcher — routing', () => {
       ...mockTestSuiteConfig,
       tests: [
         ...mockTestSuiteConfig.tests,
-        { name: 'Agent: gap-analyzer trigger', type: 'agent-call', promptFile: 'trigger.md', agentFile: 'r-and-d:gap-analyzer', expect: [] },
+        {
+          name: 'Agent: gap-analyzer trigger',
+          type: 'agent-call',
+          promptFile: 'trigger.md',
+          agentFile: 'r-and-d:gap-analyzer',
+          expect: [],
+        },
       ],
     }
     await callRunTestCases(configWithAgentCall)
@@ -83,7 +110,13 @@ describe('runTestCases dispatcher — routing', () => {
       ...mockTestSuiteConfig,
       tests: [
         ...mockTestSuiteConfig.tests,
-        { name: 'Agent Prompt: gap analysis', type: 'agent-prompt', promptFile: 'gap-analysis.md', agentFile: 'r-and-d:gap-analyzer', expect: [] },
+        {
+          name: 'Agent Prompt: gap analysis',
+          type: 'agent-prompt',
+          promptFile: 'gap-analysis.md',
+          agentFile: 'r-and-d:gap-analyzer',
+          expect: [],
+        },
       ],
     }
     await callRunTestCases(configWithAgentPrompt)
@@ -110,7 +143,13 @@ describe('runTestCases dispatcher — routing', () => {
         { name: 'Skill prompt test', type: 'skill-prompt', promptFile: 'p.md', model: 'sonnet' as const, expect: [] },
         { name: 'Skill test', type: 'skill-call', promptFile: 's.md', skillFile: 'r-and-d:code-review', expect: [] },
         { name: 'Agent test', type: 'agent-call', promptFile: 'a.md', agentFile: 'r-and-d:gap-analyzer', expect: [] },
-        { name: 'Agent prompt test', type: 'agent-prompt', promptFile: 'ap.md', agentFile: 'r-and-d:gap-analyzer', expect: [] },
+        {
+          name: 'Agent prompt test',
+          type: 'agent-prompt',
+          promptFile: 'ap.md',
+          agentFile: 'r-and-d:gap-analyzer',
+          expect: [],
+        },
       ],
     }
     await callRunTestCases(mixedConfig)
@@ -165,40 +204,40 @@ describe('runTestCases dispatcher — args forwarding', () => {
   it('forwards suite, testSuiteDir, pluginDirs, debug, testRunId to runPromptTests', async () => {
     await callRunTestCases()
     const args = vi.mocked(runPromptTests).mock.calls[0]
-    expect(args[2]).toBe('code-review')       // suite
+    expect(args[2]).toBe('code-review') // suite
     expect(args[3]).toBe('/mock/test-suites/code-review') // testSuiteDir
     // args[4] = pluginDirs
-    expect(args[5]).toBe(false)               // debug
-    expect(args[6]).toBe('20260320T094845')   // testRunId
+    expect(args[5]).toBe(false) // debug
+    expect(args[6]).toBe('20260320T094845') // testRunId
   })
 
   it('forwards suite, testSuiteDir, debug, testRunId to runSkillCallTests', async () => {
     await callRunTestCases()
     const args = vi.mocked(runSkillCallTests).mock.calls[0]
-    expect(args[2]).toBe('code-review')       // suite
+    expect(args[2]).toBe('code-review') // suite
     expect(args[3]).toBe('/mock/test-suites/code-review') // testSuiteDir
-    expect(args[4]).toBe(false)               // debug
-    expect(args[5]).toBe('20260320T094845')   // testRunId
+    expect(args[4]).toBe(false) // debug
+    expect(args[5]).toBe('20260320T094845') // testRunId
   })
 
   it('forwards suite, testSuiteDir, debug, testRunId, outputDir, repoRoot to runAgentCallTests', async () => {
     await callRunTestCases()
     const args = vi.mocked(runAgentCallTests).mock.calls[0]
-    expect(args[2]).toBe('code-review')       // suite
+    expect(args[2]).toBe('code-review') // suite
     expect(args[3]).toBe('/mock/test-suites/code-review') // testSuiteDir
-    expect(args[4]).toBe(false)               // debug
-    expect(args[5]).toBe('20260320T094845')   // testRunId
-    expect(args[7]).toBe('/mock/output')      // outputDir
-    expect(args[8]).toBe('/mock/repo')        // repoRoot
+    expect(args[4]).toBe(false) // debug
+    expect(args[5]).toBe('20260320T094845') // testRunId
+    expect(args[7]).toBe('/mock/output') // outputDir
+    expect(args[8]).toBe('/mock/repo') // repoRoot
   })
 
   it('forwards suite, testSuiteDir, pluginDirs, debug, testRunId to runAgentPromptTests', async () => {
     await callRunTestCases()
     const args = vi.mocked(runAgentPromptTests).mock.calls[0]
-    expect(args[2]).toBe('code-review')       // suite
+    expect(args[2]).toBe('code-review') // suite
     expect(args[3]).toBe('/mock/test-suites/code-review') // testSuiteDir
     // args[4] = pluginDirs
-    expect(args[5]).toBe(false)               // debug
-    expect(args[6]).toBe('20260320T094845')   // testRunId
+    expect(args[5]).toBe(false) // debug
+    expect(args[6]).toBe('20260320T094845') // testRunId
   })
 })

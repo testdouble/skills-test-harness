@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import type { RunTotals, TestCase, TestSuiteConfig } from '@testdouble/harness-data'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { runAgentPromptTests, wrapWithDelegation } from './index.js'
-import type { TestCase, TestSuiteConfig, RunTotals } from '@testdouble/harness-data'
 
 vi.mock('@testdouble/harness-data', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@testdouble/harness-data')>()
@@ -37,8 +37,8 @@ vi.mock('../../lib/output.js', () => ({
   writeTestOutput: vi.fn().mockResolvedValue(undefined),
 }))
 
-import { readPromptFile } from '@testdouble/harness-data'
 import { runClaude } from '@testdouble/claude-integration'
+import { readPromptFile } from '@testdouble/harness-data'
 import { writeTestOutput } from '../../lib/output.js'
 
 const defaultTotals: RunTotals = { totalDurationMs: 0, totalInputTokens: 0, totalOutputTokens: 0, failures: 0 }
@@ -80,16 +80,38 @@ describe('wrapWithDelegation', () => {
 describe('runAgentPromptTests', () => {
   it('wraps prompt with delegation using agent name from agentFile', async () => {
     const test = makeAgentPromptTest()
-    await runAgentPromptTests([test], mockConfig, 'gap-analyzer', '/mock/suite', ['/mock/plugins/r-and-d'], false, 'run-001', { ...defaultTotals }, '/mock/output')
+    await runAgentPromptTests(
+      [test],
+      mockConfig,
+      'gap-analyzer',
+      '/mock/suite',
+      ['/mock/plugins/r-and-d'],
+      false,
+      'run-001',
+      { ...defaultTotals },
+      '/mock/output',
+    )
 
     const claudeCall = vi.mocked(runClaude).mock.calls[0][0]
-    expect(claudeCall.prompt).toBe('Use the gap-analyzer agent to accomplish the following task:\n\nanalyze the project')
+    expect(claudeCall.prompt).toBe(
+      'Use the gap-analyzer agent to accomplish the following task:\n\nanalyze the project',
+    )
   })
 
   it('passes all pluginDirs to runClaude (no temp plugin)', async () => {
     const test = makeAgentPromptTest()
     const pluginDirs = ['/mock/plugins/r-and-d', '/mock/plugins/writing-style']
-    await runAgentPromptTests([test], mockConfig, 'gap-analyzer', '/mock/suite', pluginDirs, false, 'run-001', { ...defaultTotals }, '/mock/output')
+    await runAgentPromptTests(
+      [test],
+      mockConfig,
+      'gap-analyzer',
+      '/mock/suite',
+      pluginDirs,
+      false,
+      'run-001',
+      { ...defaultTotals },
+      '/mock/output',
+    )
 
     const claudeCall = vi.mocked(runClaude).mock.calls[0][0]
     expect(claudeCall.pluginDirs).toEqual(['/mock/plugins/r-and-d', '/mock/plugins/writing-style'])
@@ -97,7 +119,17 @@ describe('runAgentPromptTests', () => {
 
   it('uses custom model when specified on the test', async () => {
     const test = makeAgentPromptTest({ model: 'opus' })
-    await runAgentPromptTests([test], mockConfig, 'gap-analyzer', '/mock/suite', ['/mock/plugins/r-and-d'], false, 'run-001', { ...defaultTotals }, '/mock/output')
+    await runAgentPromptTests(
+      [test],
+      mockConfig,
+      'gap-analyzer',
+      '/mock/suite',
+      ['/mock/plugins/r-and-d'],
+      false,
+      'run-001',
+      { ...defaultTotals },
+      '/mock/output',
+    )
 
     const claudeCall = vi.mocked(runClaude).mock.calls[0][0]
     expect(claudeCall.model).toBe('opus')
@@ -105,7 +137,17 @@ describe('runAgentPromptTests', () => {
 
   it('resolves scaffold path when test has a scaffold', async () => {
     const test = makeAgentPromptTest({ scaffold: 'go-project' })
-    await runAgentPromptTests([test], mockConfig, 'gap-analyzer', '/mock/suite', ['/mock/plugins/r-and-d'], false, 'run-001', { ...defaultTotals }, '/mock/output')
+    await runAgentPromptTests(
+      [test],
+      mockConfig,
+      'gap-analyzer',
+      '/mock/suite',
+      ['/mock/plugins/r-and-d'],
+      false,
+      'run-001',
+      { ...defaultTotals },
+      '/mock/output',
+    )
 
     const claudeCall = vi.mocked(runClaude).mock.calls[0][0]
     expect(claudeCall.scaffold).toBe('/mock/suite/scaffolds/go-project')
@@ -113,7 +155,17 @@ describe('runAgentPromptTests', () => {
 
   it('prints agentFile in test config output', async () => {
     const test = makeAgentPromptTest()
-    await runAgentPromptTests([test], mockConfig, 'gap-analyzer', '/mock/suite', ['/mock/plugins/r-and-d'], false, 'run-001', { ...defaultTotals }, '/mock/output')
+    await runAgentPromptTests(
+      [test],
+      mockConfig,
+      'gap-analyzer',
+      '/mock/suite',
+      ['/mock/plugins/r-and-d'],
+      false,
+      'run-001',
+      { ...defaultTotals },
+      '/mock/output',
+    )
 
     const stderrOutput = stderrSpy.mock.calls.map((c: [string]) => c[0]).join('')
     expect(stderrOutput).toContain('agentFile: r-and-d:gap-analyzer')
@@ -121,23 +173,58 @@ describe('runAgentPromptTests', () => {
 
   it('writes test output for each test', async () => {
     const test = makeAgentPromptTest()
-    await runAgentPromptTests([test], mockConfig, 'gap-analyzer', '/mock/suite', ['/mock/plugins/r-and-d'], false, 'run-001', { ...defaultTotals }, '/mock/output')
+    await runAgentPromptTests(
+      [test],
+      mockConfig,
+      'gap-analyzer',
+      '/mock/suite',
+      ['/mock/plugins/r-and-d'],
+      false,
+      'run-001',
+      { ...defaultTotals },
+      '/mock/output',
+    )
 
     expect(writeTestOutput).toHaveBeenCalledWith(
-      '/mock/output/run-001', 'run-001', 'gap-analyzer', ['r-and-d'], test, []
+      '/mock/output/run-001',
+      'run-001',
+      'gap-analyzer',
+      ['r-and-d'],
+      test,
+      [],
     )
   })
 
   it('increments failures when exit code is non-zero', async () => {
     vi.mocked(runClaude).mockResolvedValueOnce({ exitCode: 1, stdout: '', stderr: '' })
     const test = makeAgentPromptTest()
-    const result = await runAgentPromptTests([test], mockConfig, 'gap-analyzer', '/mock/suite', ['/mock/plugins/r-and-d'], false, 'run-001', { ...defaultTotals }, '/mock/output')
+    const result = await runAgentPromptTests(
+      [test],
+      mockConfig,
+      'gap-analyzer',
+      '/mock/suite',
+      ['/mock/plugins/r-and-d'],
+      false,
+      'run-001',
+      { ...defaultTotals },
+      '/mock/output',
+    )
 
     expect(result.failures).toBe(1)
   })
 
   it('returns empty totals for no tests', async () => {
-    const result = await runAgentPromptTests([], mockConfig, 'gap-analyzer', '/mock/suite', ['/mock/plugins/r-and-d'], false, 'run-001', { ...defaultTotals }, '/mock/output')
+    const result = await runAgentPromptTests(
+      [],
+      mockConfig,
+      'gap-analyzer',
+      '/mock/suite',
+      ['/mock/plugins/r-and-d'],
+      false,
+      'run-001',
+      { ...defaultTotals },
+      '/mock/output',
+    )
 
     expect(result).toEqual(defaultTotals)
     expect(runClaude).not.toHaveBeenCalled()
@@ -148,7 +235,17 @@ describe('runAgentPromptTests', () => {
     const test = makeAgentPromptTest()
 
     await expect(
-      runAgentPromptTests([test], mockConfig, 'gap-analyzer', '/mock/suite', ['/mock/plugins/r-and-d'], false, 'run-001', { ...defaultTotals }, '/mock/output')
+      runAgentPromptTests(
+        [test],
+        mockConfig,
+        'gap-analyzer',
+        '/mock/suite',
+        ['/mock/plugins/r-and-d'],
+        false,
+        'run-001',
+        { ...defaultTotals },
+        '/mock/output',
+      ),
     ).rejects.toThrow('Prompt file not found')
   })
 })

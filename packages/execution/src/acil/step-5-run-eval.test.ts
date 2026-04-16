@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@testdouble/harness-data', () => ({
   resolvePromptPath: vi.fn(),
@@ -12,9 +12,9 @@ vi.mock('@testdouble/claude-integration', () => ({
   runClaude: vi.fn(),
 }))
 
-import { resolvePromptPath, readPromptFile, parseStreamJsonLines } from '@testdouble/harness-data'
-import { evaluateAgentCall } from '@testdouble/harness-evals'
 import { runClaude } from '@testdouble/claude-integration'
+import { parseStreamJsonLines, readPromptFile, resolvePromptPath } from '@testdouble/harness-data'
+import { evaluateAgentCall } from '@testdouble/harness-evals'
 import { runEval } from './step-5-run-eval.js'
 import type { AcilTestCase } from './types.js'
 
@@ -122,10 +122,7 @@ describe('runEval (ACIL)', () => {
   })
 
   it('aggregates by majority vote when runsPerQuery > 1', async () => {
-    vi.mocked(evaluateAgentCall)
-      .mockReturnValueOnce(true)
-      .mockReturnValueOnce(false)
-      .mockReturnValueOnce(true)
+    vi.mocked(evaluateAgentCall).mockReturnValueOnce(true).mockReturnValueOnce(false).mockReturnValueOnce(true)
 
     const results = await runEval({
       tempDir: '/tmp/acil-plugin',
@@ -156,9 +153,11 @@ describe('runEval (ACIL)', () => {
       runDir: '/tmp/acil-output',
     })
 
-    expect(runClaude).toHaveBeenCalledWith(expect.objectContaining({
-      pluginDirs: ['/tmp/acil-plugin'],
-    }))
+    expect(runClaude).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pluginDirs: ['/tmp/acil-plugin'],
+      }),
+    )
   })
 
   it('returns empty array for empty testCases', async () => {
@@ -185,10 +184,7 @@ describe('runEval (ACIL)', () => {
 
     const results = await runEval({
       tempDir: '/tmp/acil-plugin',
-      testCases: [
-        makeTestCase({ name: 'will-fail' }),
-        makeTestCase({ name: 'will-succeed' }),
-      ],
+      testCases: [makeTestCase({ name: 'will-fail' }), makeTestCase({ name: 'will-succeed' })],
       suite: 'my-suite',
       testsDir: '/tests',
       concurrency: 1,
@@ -205,9 +201,7 @@ describe('runEval (ACIL)', () => {
 
   // TP-011 (EC10): majority vote tie with even runsPerQuery resolves to fail
   it('resolves majority vote tie as fail when runsPerQuery is even', async () => {
-    vi.mocked(evaluateAgentCall)
-      .mockReturnValueOnce(true)
-      .mockReturnValueOnce(false)
+    vi.mocked(evaluateAgentCall).mockReturnValueOnce(true).mockReturnValueOnce(false)
 
     const results = await runEval({
       tempDir: '/tmp/acil-plugin',
@@ -241,9 +235,11 @@ describe('runEval (ACIL)', () => {
       runDir: '/tmp/acil-output',
     })
 
-    expect(runClaude).toHaveBeenCalledWith(expect.objectContaining({
-      scaffold: '/tests/test-suites/my-suite/scaffolds/my-scaffold',
-    }))
+    expect(runClaude).toHaveBeenCalledWith(
+      expect.objectContaining({
+        scaffold: '/tests/test-suites/my-suite/scaffolds/my-scaffold',
+      }),
+    )
   })
 
   it('passes null scaffold when test has no scaffold', async () => {
@@ -259,9 +255,11 @@ describe('runEval (ACIL)', () => {
       runDir: '/tmp/acil-output',
     })
 
-    expect(runClaude).toHaveBeenCalledWith(expect.objectContaining({
-      scaffold: null,
-    }))
+    expect(runClaude).toHaveBeenCalledWith(
+      expect.objectContaining({
+        scaffold: null,
+      }),
+    )
   })
 
   // TP-014 (T14): model default and override
@@ -278,9 +276,11 @@ describe('runEval (ACIL)', () => {
       runDir: '/tmp/acil-output',
     })
 
-    expect(runClaude).toHaveBeenCalledWith(expect.objectContaining({
-      model: 'sonnet',
-    }))
+    expect(runClaude).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: 'sonnet',
+      }),
+    )
   })
 
   it('uses test-level model when specified', async () => {
@@ -298,9 +298,11 @@ describe('runEval (ACIL)', () => {
       runDir: '/tmp/acil-output',
     })
 
-    expect(runClaude).toHaveBeenCalledWith(expect.objectContaining({
-      model: 'haiku',
-    }))
+    expect(runClaude).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model: 'haiku',
+      }),
+    )
   })
 
   // TP-015/TP-016 (T15/EC11): agentFile fallback chain
@@ -329,11 +331,7 @@ describe('runEval (ACIL)', () => {
   it('returns all results with concurrency < work items', async () => {
     const results = await runEval({
       tempDir: '/tmp/acil-plugin',
-      testCases: [
-        makeTestCase({ name: 'test-a' }),
-        makeTestCase({ name: 'test-b' }),
-        makeTestCase({ name: 'test-c' }),
-      ],
+      testCases: [makeTestCase({ name: 'test-a' }), makeTestCase({ name: 'test-b' }), makeTestCase({ name: 'test-c' })],
       suite: 'my-suite',
       testsDir: '/tests',
       concurrency: 2,
@@ -353,10 +351,7 @@ describe('runEval (ACIL)', () => {
 
     const results = await runEval({
       tempDir: '/tmp/acil-plugin',
-      testCases: [
-        makeTestCase({ name: 'test-a' }),
-        makeTestCase({ name: 'test-b' }),
-      ],
+      testCases: [makeTestCase({ name: 'test-a' }), makeTestCase({ name: 'test-b' })],
       suite: 'my-suite',
       testsDir: '/tests',
       concurrency: 1,

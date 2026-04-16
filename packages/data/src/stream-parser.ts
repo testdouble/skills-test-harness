@@ -1,20 +1,20 @@
-import type { StreamJsonEvent, ParsedRunMetrics, ResultEvent, AssistantEvent, UserEvent } from './types.js'
+import type { AssistantEvent, ParsedRunMetrics, ResultEvent, StreamJsonEvent, UserEvent } from './types.js'
 
 export function parseStreamJsonLines(raw: string): StreamJsonEvent[] {
   return raw
     .split('\n')
-    .filter(line => line.trim().startsWith('{'))
-    .map(line => JSON.parse(line) as StreamJsonEvent)
+    .filter((line) => line.trim().startsWith('{'))
+    .map((line) => JSON.parse(line) as StreamJsonEvent)
 }
 
 export function getResultText(events: StreamJsonEvent[]): string | null {
-  const event = events.find(e => e.type === 'result') as ResultEvent | undefined
+  const event = events.find((e) => e.type === 'result') as ResultEvent | undefined
   return event?.result ?? null
 }
 
 export function getSkillInvocations(events: StreamJsonEvent[]): string[] {
   return events
-    .filter(e => {
+    .filter((e) => {
       const userEvent = e as UserEvent
       return (
         userEvent.type === 'user' &&
@@ -22,12 +22,12 @@ export function getSkillInvocations(events: StreamJsonEvent[]): string[] {
         userEvent.tool_use_result.commandName != null
       )
     })
-    .map(e => (e as UserEvent).tool_use_result!.commandName!)
+    .map((e) => (e as UserEvent).tool_use_result!.commandName!)
 }
 
 export function getAgentInvocations(events: StreamJsonEvent[]): string[] {
   return events
-    .filter(e => {
+    .filter((e) => {
       const userEvent = e as UserEvent
       return (
         userEvent.type === 'user' &&
@@ -35,7 +35,7 @@ export function getAgentInvocations(events: StreamJsonEvent[]): string[] {
         userEvent.tool_use_result.agentType != null
       )
     })
-    .map(e => (e as UserEvent).tool_use_result!.agentType!)
+    .map((e) => (e as UserEvent).tool_use_result!.agentType!)
 }
 
 export function extractMetrics(events: StreamJsonEvent[]): ParsedRunMetrics {
@@ -55,7 +55,7 @@ export function extractMetrics(events: StreamJsonEvent[]): ParsedRunMetrics {
     return sum + (usage?.output_tokens ?? 0)
   }, 0)
 
-  const isError = events.some(e => (e as ResultEvent).is_error === true)
+  const isError = events.some((e) => (e as ResultEvent).is_error === true)
   const result = getResultText(events)
 
   return { durationMs, inputTokens, outputTokens, isError, result }

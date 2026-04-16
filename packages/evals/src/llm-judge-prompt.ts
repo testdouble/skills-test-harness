@@ -1,6 +1,6 @@
 import { readdir, readFile } from 'node:fs/promises'
 import path from 'node:path'
-import type { StreamJsonEvent, AssistantEvent, UserEvent } from '@testdouble/harness-data'
+import type { AssistantEvent, StreamJsonEvent, UserEvent } from '@testdouble/harness-data'
 import type { RubricSection } from './rubric-parser.js'
 
 const MAX_FILE_SIZE = 5 * 1024
@@ -12,7 +12,7 @@ export async function buildJudgePrompt(
   scaffoldDir: string | null,
   events: StreamJsonEvent[],
   outputFiles: Map<string, string>,
-  context?: { testType?: string }
+  context?: { testType?: string },
 ): Promise<{ prompt: string; autoFailCriteria: string[] }> {
   const isAgent = context?.testType === 'agent-prompt'
   const promptSections: string[] = []
@@ -21,7 +21,7 @@ export async function buildJudgePrompt(
   promptSections.push(
     isAgent
       ? 'You are evaluating the output of a Claude Code agent run. The agent was given a task via delegation and produced the transcript and output below.'
-      : 'You are evaluating the output of a Claude Code skill run.'
+      : 'You are evaluating the output of a Claude Code skill run.',
   )
 
   if (scaffoldDir) {
@@ -142,8 +142,7 @@ function formatTranscript(events: StreamJsonEvent[]): string {
         if (candidate.type !== 'user') continue
         const userEvent = candidate as UserEvent
         const candidateAny = candidate as unknown as Record<string, unknown>
-        if (userEvent.tool_use_result?.commandName === toolName ||
-            candidateAny.tool_use_id === block.id) {
+        if (userEvent.tool_use_result?.commandName === toolName || candidateAny.tool_use_id === block.id) {
           const resultContent = candidateAny.content
           if (typeof resultContent === 'string') {
             resultSnippet = resultContent.slice(0, MAX_RESULT_SIZE)

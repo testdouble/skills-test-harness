@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest'
-import type { QueryResult, IterationResult } from './types.js'
+import { describe, expect, it } from 'vitest'
 import { scoreResults, selectBestIteration } from './step-6-score.js'
+import type { IterationResult, QueryResult } from './types.js'
 
 function makeResult(passed: boolean): QueryResult {
   return {
@@ -11,32 +11,26 @@ function makeResult(passed: boolean): QueryResult {
     passed,
     promptContent: 'test prompt',
     runIndex: 0,
-    events: []
+    events: [],
   }
 }
 
-function makeIteration(
-  iteration: number,
-  trainAccuracy: number,
-  testAccuracy: number | null
-): IterationResult {
+function makeIteration(iteration: number, trainAccuracy: number, testAccuracy: number | null): IterationResult {
   return {
     iteration,
+    phase: 'explore',
     description: `iteration ${iteration}`,
     trainResults: [],
     testResults: [],
     trainAccuracy,
-    testAccuracy
+    testAccuracy,
   }
 }
 
 describe('scoreResults', () => {
   // TP-015: all pass → trainAccuracy=1
   it('returns trainAccuracy=1 when all train results pass', () => {
-    const { trainAccuracy, testAccuracy } = scoreResults(
-      [makeResult(true), makeResult(true), makeResult(true)],
-      []
-    )
+    const { trainAccuracy, testAccuracy } = scoreResults([makeResult(true), makeResult(true), makeResult(true)], [])
     expect(trainAccuracy).toBe(1)
     expect(testAccuracy).toBeNull()
   })
@@ -85,105 +79,71 @@ describe('selectBestIteration', () => {
 
   // TP-004: uses testAccuracy when holdout > 0
   it('selects by testAccuracy when holdout > 0', () => {
-    const iterations = [
-      makeIteration(1, 0.9, 0.3),
-      makeIteration(2, 0.5, 0.8),
-      makeIteration(3, 0.7, 0.6)
-    ]
+    const iterations = [makeIteration(1, 0.9, 0.3), makeIteration(2, 0.5, 0.8), makeIteration(3, 0.7, 0.6)]
     const best = selectBestIteration(iterations, 0.3)
-    expect(best!.iteration).toBe(2)
+    expect(best?.iteration).toBe(2)
   })
 
   // TP-005: uses trainAccuracy when holdout = 0
   it('selects by trainAccuracy when holdout is 0', () => {
-    const iterations = [
-      makeIteration(1, 0.3, 0.9),
-      makeIteration(2, 0.8, 0.1),
-      makeIteration(3, 0.6, 0.5)
-    ]
+    const iterations = [makeIteration(1, 0.3, 0.9), makeIteration(2, 0.8, 0.1), makeIteration(3, 0.6, 0.5)]
     const best = selectBestIteration(iterations, 0)
-    expect(best!.iteration).toBe(2)
+    expect(best?.iteration).toBe(2)
   })
 
   // TP-006: tie-breaking favors earlier iteration
   it('favors earlier iteration on tie', () => {
-    const iterations = [
-      makeIteration(1, 0.7, null),
-      makeIteration(2, 0.7, null),
-      makeIteration(3, 0.7, null)
-    ]
+    const iterations = [makeIteration(1, 0.7, null), makeIteration(2, 0.7, null), makeIteration(3, 0.7, null)]
     const best = selectBestIteration(iterations, 0)
-    expect(best!.iteration).toBe(1)
+    expect(best?.iteration).toBe(1)
   })
 
   // TP-021: null testAccuracy treated as 0
   it('treats null testAccuracy as 0', () => {
-    const iterations = [
-      makeIteration(1, 0.9, null),
-      makeIteration(2, 0.5, 0.5)
-    ]
+    const iterations = [makeIteration(1, 0.9, null), makeIteration(2, 0.5, 0.5)]
     const best = selectBestIteration(iterations, 0.3)
-    expect(best!.iteration).toBe(2)
+    expect(best?.iteration).toBe(2)
   })
 
   // TP-014: all null testAccuracy with holdout > 0 → best train wins
   it('returns iteration with best train accuracy when all testAccuracy are null and holdout > 0', () => {
-    const iterations = [
-      makeIteration(1, 0.3, null),
-      makeIteration(2, 0.9, null),
-      makeIteration(3, 0.7, null)
-    ]
+    const iterations = [makeIteration(1, 0.3, null), makeIteration(2, 0.9, null), makeIteration(3, 0.7, null)]
     const best = selectBestIteration(iterations, 0.5)
-    expect(best!.iteration).toBe(2)
+    expect(best?.iteration).toBe(2)
   })
 
   // Tiebreaker: equal test accuracy, different train accuracy → higher train wins
   it('uses train accuracy as tiebreaker when test scores are equal', () => {
-    const iterations = [
-      makeIteration(1, 0.5, 0.5),
-      makeIteration(2, 1.0, 0.5)
-    ]
+    const iterations = [makeIteration(1, 0.5, 0.5), makeIteration(2, 1.0, 0.5)]
     const best = selectBestIteration(iterations, 0.5)
-    expect(best!.iteration).toBe(2)
+    expect(best?.iteration).toBe(2)
   })
 
   // Tiebreaker: equal test AND train accuracy → earlier iteration wins
   it('favors earlier iteration when both test and train accuracy are equal', () => {
-    const iterations = [
-      makeIteration(1, 0.7, 0.5),
-      makeIteration(2, 0.7, 0.5)
-    ]
+    const iterations = [makeIteration(1, 0.7, 0.5), makeIteration(2, 0.7, 0.5)]
     const best = selectBestIteration(iterations, 0.5)
-    expect(best!.iteration).toBe(1)
+    expect(best?.iteration).toBe(1)
   })
 
   // TP-027: holdout exactly 0 uses train score
   it('uses train score when holdout is exactly 0', () => {
-    const iterations = [
-      makeIteration(1, 0.4, 0.9),
-      makeIteration(2, 0.8, 0.1)
-    ]
+    const iterations = [makeIteration(1, 0.4, 0.9), makeIteration(2, 0.8, 0.1)]
     const best = selectBestIteration(iterations, 0)
-    expect(best!.iteration).toBe(2)
+    expect(best?.iteration).toBe(2)
   })
 
   // TP-028: NaN trainAccuracy — first iteration wins since NaN > NaN is false
   it('first iteration wins when trainAccuracy is NaN', () => {
-    const iterations = [
-      makeIteration(1, NaN, null),
-      makeIteration(2, NaN, null)
-    ]
+    const iterations = [makeIteration(1, NaN, null), makeIteration(2, NaN, null)]
     const best = selectBestIteration(iterations, 0)
-    expect(best!.iteration).toBe(1)
+    expect(best?.iteration).toBe(1)
   })
 
   // TP-007 (EC7): negative holdout treated as holdout=0
   it('treats negative holdout like holdout=0 (uses trainAccuracy)', () => {
-    const iterations = [
-      makeIteration(1, 0.3, 0.9),
-      makeIteration(2, 0.8, 0.1)
-    ]
+    const iterations = [makeIteration(1, 0.3, 0.9), makeIteration(2, 0.8, 0.1)]
     const best = selectBestIteration(iterations, -1)
-    expect(best!.iteration).toBe(2)
+    expect(best?.iteration).toBe(2)
   })
 })

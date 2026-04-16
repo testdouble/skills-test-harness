@@ -1,6 +1,6 @@
+import { exitWithResult, runTestSuite } from '@testdouble/harness-execution'
 import type { Argv } from 'yargs'
-import { runTestSuite, exitWithResult } from '@testdouble/harness-execution'
-import { outputDir, testsDir, repoRoot, getAllTestSuites } from '../paths.js'
+import { getAllTestSuites, outputDir, repoRoot, testsDir } from '../paths.js'
 
 export const command = 'test-run'
 export const describe = 'Run test cases and store results'

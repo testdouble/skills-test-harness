@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, afterEach } from 'vitest'
-import { readConfig } from './step-3-read-config.js'
 import { readTestSuiteConfig, validateScaffolds } from '@testdouble/harness-data'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { HarnessError } from '../../lib/errors.js'
+import { readConfig } from './step-3-read-config.js'
 
 vi.mock('@testdouble/harness-data', () => ({
   readTestSuiteConfig: vi.fn(),
@@ -16,7 +16,7 @@ afterEach(() => {
 function makeConfig(names: string[]) {
   return {
     plugins: ['r-and-d'],
-    tests: names.map(name => ({ name, promptFile: 'prompt.md', model: 'sonnet', expect: [] })),
+    tests: names.map((name) => ({ name, promptFile: 'prompt.md', model: 'sonnet', expect: [] })),
   }
 }
 
@@ -45,7 +45,9 @@ describe('readConfig', () => {
     vi.mocked(readTestSuiteConfig).mockRejectedValue(new Error('Invalid JSON in config file'))
 
     await expect(readConfig('/path/config.json', '/path/suite', undefined)).rejects.toThrow(HarnessError)
-    await expect(readConfig('/path/config.json', '/path/suite', undefined)).rejects.toThrow('Invalid JSON in config file')
+    await expect(readConfig('/path/config.json', '/path/suite', undefined)).rejects.toThrow(
+      'Invalid JSON in config file',
+    )
   })
 
   it('calls validateScaffolds with testSuiteDir and config', async () => {
@@ -57,16 +59,20 @@ describe('readConfig', () => {
 
   it('throws HarnessError when validateScaffolds throws', async () => {
     vi.mocked(readTestSuiteConfig).mockResolvedValue(makeConfig(['test-a']))
-    vi.mocked(validateScaffolds).mockImplementation(() => { throw new Error('Scaffold directory not found: /path/scaffolds/missing') })
+    vi.mocked(validateScaffolds).mockImplementation(() => {
+      throw new Error('Scaffold directory not found: /path/scaffolds/missing')
+    })
 
     await expect(readConfig('/path/config.json', '/path/suite', undefined)).rejects.toThrow(HarnessError)
-    await expect(readConfig('/path/config.json', '/path/suite', undefined)).rejects.toThrow('Scaffold directory not found')
+    await expect(readConfig('/path/config.json', '/path/suite', undefined)).rejects.toThrow(
+      'Scaffold directory not found',
+    )
   })
 
   it('returns all tests when multiple tests share the same name as testFilter (TP-030)', async () => {
     vi.mocked(readTestSuiteConfig).mockResolvedValue(makeConfig(['test-a', 'test-a', 'test-b']))
     const result = await readConfig('/path/config.json', '/path/suite', 'test-a')
     expect(result.tests).toHaveLength(2)
-    expect(result.tests.every(t => t.name === 'test-a')).toBe(true)
+    expect(result.tests.every((t) => t.name === 'test-a')).toBe(true)
   })
 })

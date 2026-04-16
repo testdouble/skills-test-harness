@@ -1,13 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('node:fs/promises', () => ({
-  readFile:  vi.fn(),
+  readFile: vi.fn(),
   writeFile: vi.fn().mockResolvedValue(undefined),
-  unlink:    vi.fn().mockResolvedValue(undefined),
+  unlink: vi.fn().mockResolvedValue(undefined),
 }))
 
-import { readFile, writeFile, unlink } from 'node:fs/promises'
-import { getReEvaluatedRuns, markAsReEvaluated, clearReEvaluatedRuns } from './re-eval-marker.js'
+import { readFile, unlink, writeFile } from 'node:fs/promises'
+import { clearReEvaluatedRuns, getReEvaluatedRuns, markAsReEvaluated } from './re-eval-marker.js'
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -34,7 +34,7 @@ describe('markAsReEvaluated', () => {
     expect(vi.mocked(writeFile)).toHaveBeenCalledWith(
       expect.stringContaining('.re-evaluated-runs.json'),
       '["run-1","run-2"]',
-      'utf8'
+      'utf8',
     )
   })
 
@@ -50,7 +50,7 @@ describe('markAsReEvaluated', () => {
     expect(vi.mocked(writeFile)).toHaveBeenCalledWith(
       expect.stringContaining('.re-evaluated-runs.json'),
       '["run-1"]',
-      'utf8'
+      'utf8',
     )
   })
 })
@@ -62,7 +62,7 @@ describe('clearReEvaluatedRuns', () => {
     expect(vi.mocked(writeFile)).toHaveBeenCalledWith(
       expect.stringContaining('.re-evaluated-runs.json'),
       '["run-2"]',
-      'utf8'
+      'utf8',
     )
   })
 

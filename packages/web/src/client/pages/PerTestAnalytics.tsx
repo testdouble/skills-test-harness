@@ -1,25 +1,25 @@
 import { useEffect, useState } from 'react'
 
 interface PerTestRow {
-  test_run_id:             string
-  test_name:               string
-  suite:                   string
+  test_run_id: string
+  test_name: string
+  suite: string
   all_expectations_passed: boolean
-  total_cost_usd:          number
-  num_turns:               number
-  input_tokens:            number
-  output_tokens:           number
+  total_cost_usd: number
+  num_turns: number
+  input_tokens: number
+  output_tokens: number
 }
 
 interface SuiteStats {
-  suite:     string
-  runs:      number
-  tests:     number
-  passed:    number
+  suite: string
+  runs: number
+  tests: number
+  passed: number
 }
 
 interface TestCost {
-  test_name:  string
+  test_name: string
   total_cost: number
 }
 
@@ -72,32 +72,29 @@ export function PerTestAnalytics(): JSX.Element {
 
   useEffect(() => {
     fetch('/api/analytics/per-test')
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         setAllRows(data.rows)
         setLoading(false)
       })
-      .catch(err => {
+      .catch((err) => {
         setError(String(err))
         setLoading(false)
       })
   }, [])
 
-  if (loading) return (
-    <div className="flex items-center justify-center h-64 text-[#4f4f4f]">Loading...</div>
-  )
-  if (error) return (
-    <div className="mx-10 mt-8 p-4 bg-[#1f1000] border border-[#d63c00] rounded-lg text-[#d63c00]">{error}</div>
-  )
+  if (loading) return <div className="flex items-center justify-center h-64 text-[#4f4f4f]">Loading...</div>
+  if (error)
+    return <div className="mx-10 mt-8 p-4 bg-[#1f1000] border border-[#d63c00] rounded-lg text-[#d63c00]">{error}</div>
 
   // Aggregate stats
-  const totalRuns = new Set(allRows.map(r => r.test_run_id)).size
+  const totalRuns = new Set(allRows.map((r) => r.test_run_id)).size
   const totalTests = allRows.length
-  const passedTests = allRows.filter(r => r.all_expectations_passed).length
+  const passedTests = allRows.filter((r) => r.all_expectations_passed).length
   const failedTests = totalTests - passedTests
   const passRate = totalTests > 0 ? Math.round((passedTests / totalTests) * 100) : 0
   const totalCost = allRows.reduce((s, r) => s + r.total_cost_usd, 0)
-  const avgTurns = totalTests > 0 ? (allRows.reduce((s, r) => s + r.num_turns, 0) / totalTests) : 0
+  const avgTurns = totalTests > 0 ? allRows.reduce((s, r) => s + r.num_turns, 0) / totalTests : 0
 
   // Suite breakdown
   const suiteMap = new Map<string, SuiteStats>()
@@ -111,9 +108,9 @@ export function PerTestAnalytics(): JSX.Element {
   const suiteRunMap = new Map<string, Set<string>>()
   for (const row of allRows) {
     if (!suiteRunMap.has(row.suite)) suiteRunMap.set(row.suite, new Set())
-    suiteRunMap.get(row.suite)!.add(row.test_run_id)
+    suiteRunMap.get(row.suite)?.add(row.test_run_id)
   }
-  const suiteStats: SuiteStats[] = Array.from(suiteMap.values()).map(s => ({
+  const suiteStats: SuiteStats[] = Array.from(suiteMap.values()).map((s) => ({
     ...s,
     runs: suiteRunMap.get(s.suite)?.size ?? 0,
   }))
@@ -133,30 +130,22 @@ export function PerTestAnalytics(): JSX.Element {
     <div className="px-10 py-8">
       {/* Page header */}
       <div className="mb-6">
-        <h1
-          className="text-[#f0f0f0] text-[35px] font-bold leading-tight"
-          style={{ letterSpacing: '-0.5px' }}
-        >
+        <h1 className="text-[#f0f0f0] text-[35px] font-bold leading-tight" style={{ letterSpacing: '-0.5px' }}>
           Analytics
         </h1>
-        <p className="text-[#4f4f4f] text-[18px] mt-1">
-          Aggregate insights across all test suites and runs
-        </p>
+        <p className="text-[#4f4f4f] text-[18px] mt-1">Aggregate insights across all test suites and runs</p>
       </div>
 
       {/* Stats row */}
       <div className="flex gap-4 mb-6">
         {[
-          { label: 'TOTAL RUNS',  value: String(totalRuns),               color: '#75fe04' },
-          { label: 'TOTAL TESTS', value: String(totalTests),              color: '#f0f0f0' },
-          { label: 'PASS RATE',   value: `${passRate}%`,                  color: '#a580f9' },
-          { label: 'TOTAL COST',  value: `$${totalCost.toFixed(3)}`,      color: '#f0f0f0' },
-          { label: 'AVG TURNS',   value: avgTurns.toFixed(1),             color: '#f0f0f0' },
-        ].map(stat => (
-          <div
-            key={stat.label}
-            className="flex-1 flex flex-col gap-1 bg-[#1a1b1a] rounded-lg p-5"
-          >
+          { label: 'TOTAL RUNS', value: String(totalRuns), color: '#75fe04' },
+          { label: 'TOTAL TESTS', value: String(totalTests), color: '#f0f0f0' },
+          { label: 'PASS RATE', value: `${passRate}%`, color: '#a580f9' },
+          { label: 'TOTAL COST', value: `$${totalCost.toFixed(3)}`, color: '#f0f0f0' },
+          { label: 'AVG TURNS', value: avgTurns.toFixed(1), color: '#f0f0f0' },
+        ].map((stat) => (
+          <div key={stat.label} className="flex-1 flex flex-col gap-1 bg-[#1a1b1a] rounded-lg p-5">
             <span className="text-[#4f4f4f] text-[13px] font-bold" style={{ letterSpacing: '1.5px' }}>
               {stat.label}
             </span>
@@ -181,10 +170,18 @@ export function PerTestAnalytics(): JSX.Element {
           </span>
           <div className="rounded-md overflow-hidden">
             <div className="bg-[#131413] flex items-center h-9 px-4 rounded-md">
-              <span className="text-[#4f4f4f] text-[13px] font-bold flex-1" style={{ letterSpacing: '1.2px' }}>SUITE</span>
-              <span className="text-[#4f4f4f] text-[13px] font-bold w-20" style={{ letterSpacing: '1.2px' }}>RUNS</span>
-              <span className="text-[#4f4f4f] text-[13px] font-bold w-20" style={{ letterSpacing: '1.2px' }}>TESTS</span>
-              <span className="text-[#4f4f4f] text-[13px] font-bold w-32" style={{ letterSpacing: '1.2px' }}>PASS RATE</span>
+              <span className="text-[#4f4f4f] text-[13px] font-bold flex-1" style={{ letterSpacing: '1.2px' }}>
+                SUITE
+              </span>
+              <span className="text-[#4f4f4f] text-[13px] font-bold w-20" style={{ letterSpacing: '1.2px' }}>
+                RUNS
+              </span>
+              <span className="text-[#4f4f4f] text-[13px] font-bold w-20" style={{ letterSpacing: '1.2px' }}>
+                TESTS
+              </span>
+              <span className="text-[#4f4f4f] text-[13px] font-bold w-32" style={{ letterSpacing: '1.2px' }}>
+                PASS RATE
+              </span>
             </div>
             {suiteStats.map((s, i) => {
               const suitePassRate = s.tests > 0 ? Math.round((s.passed / s.tests) * 100) : 0
@@ -224,14 +221,12 @@ export function PerTestAnalytics(): JSX.Element {
             COST BY TEST
           </span>
           <div className="flex flex-col gap-2.5">
-            {topCosts.map(tc => {
+            {topCosts.map((tc) => {
               const barWidth = maxCost > 0 ? (tc.total_cost / maxCost) * 100 : 0
               const barColor = barWidth > 66 ? '#4d0aed' : barWidth > 33 ? '#a580f9' : '#75fe04'
               return (
                 <div key={tc.test_name} className="flex items-center gap-3 h-7">
-                  <span className="text-[#c5c5c5] text-[15px] w-48 truncate flex-shrink-0">
-                    {tc.test_name}
-                  </span>
+                  <span className="text-[#c5c5c5] text-[15px] w-48 truncate flex-shrink-0">{tc.test_name}</span>
                   <div className="relative flex-1 bg-[#252625] rounded-sm h-1.5 overflow-hidden">
                     <div
                       className="absolute left-0 top-0 h-full rounded-sm"

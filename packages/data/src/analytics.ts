@@ -1,21 +1,33 @@
-import { DuckDBInstance } from '@duckdb/node-api'
-import { readFile, rename, unlink, writeFile } from 'node:fs/promises'
+import crypto from 'node:crypto'
 import { existsSync } from 'node:fs'
+import { readdir, readFile, rename, unlink, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
-import crypto from 'node:crypto'
-import { readdir } from 'node:fs/promises'
-import type { PerTestRow, TestRunSummary, TestRunDetails, TestRunDetailRow, TestRunExpectationRow, LlmJudgeGroup, LlmJudgeCriterion, OutputFileRow, ScilSummaryRecord, AcilSummaryRecord } from './types.js'
-import { InvalidRunIdError } from './types.js'
+import { DuckDBInstance } from '@duckdb/node-api'
 import { withConnection } from './connection.js'
+import type {
+  AcilSummaryRecord,
+  LlmJudgeCriterion,
+  LlmJudgeGroup,
+  OutputFileRow,
+  PerTestRow,
+  ScilSummaryRecord,
+  TestRunDetailRow,
+  TestRunDetails,
+  TestRunExpectationRow,
+  TestRunSummary,
+} from './types.js'
+import { InvalidRunIdError } from './types.js'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function infraErrorCondition(conn: any, dataDir: string): Promise<string> {
   try {
-    const cols = (await conn.runAndReadAll(
-      `SELECT column_name FROM (DESCRIBE SELECT * FROM read_parquet('${dataDir}/test-results.parquet'))
-       WHERE column_name = 'status'`
-    )).getRowObjects()
+    const cols = (
+      await conn.runAndReadAll(
+        `SELECT column_name FROM (DESCRIBE SELECT * FROM read_parquet('${dataDir}/test-results.parquet'))
+       WHERE column_name = 'status'`,
+      )
+    ).getRowObjects()
     if (cols.length > 0) {
       return `(status IS NULL OR status != 'infrastructure-error')`
     }
@@ -76,7 +88,7 @@ export async function importJsonlToParquet({
       }
 
       tmpJsonl = path.join(os.tmpdir(), `analytics-${Date.now()}-${crypto.randomUUID()}.jsonl`)
-      await writeFile(tmpJsonl, filteredLines.join('\n') + '\n', 'utf8')
+      await writeFile(tmpJsonl, `${filteredLines.join('\n')}\n`, 'utf8')
       jsonlSource = tmpJsonl
     } else {
       const countRows = (await conn.runAndReadAll(`SELECT COUNT(*) AS count FROM GLOB('${jsonlGlob}')`)).getRowObjects()
@@ -98,7 +110,7 @@ export async function importJsonlToParquet({
         TO '${parquetPath}' (FORMAT PARQUET)
       `)
     } else if (replaceRunIds && replaceRunIds.length > 0) {
-      const inList = replaceRunIds.map(id => `'${id}'`).join(', ')
+      const inList = replaceRunIds.map((id) => `'${id}'`).join(', ')
       const tmpPath = `${parquetPath}.tmp`
       await conn.run(`
         COPY (
@@ -133,17 +145,25 @@ export async function importJsonlToParquet({
   }
 }
 
-export async function updateAllParquet({ outputDir, dataDir, reEvaluatedRunIds }: { outputDir: string; dataDir: string; reEvaluatedRunIds?: string[] }): Promise<{ updated: string[] }> {
+export async function updateAllParquet({
+  outputDir,
+  dataDir,
+  reEvaluatedRunIds,
+}: {
+  outputDir: string
+  dataDir: string
+  reEvaluatedRunIds?: string[]
+}): Promise<{ updated: string[] }> {
   const tables = [
-    { name: 'test-config',  glob: `${outputDir}/*/test-config.jsonl`,  parquet: `${dataDir}/test-config.parquet` },
+    { name: 'test-config', glob: `${outputDir}/*/test-config.jsonl`, parquet: `${dataDir}/test-config.parquet` },
     {
       name: 'test-run',
       glob: `${outputDir}/*/test-run.jsonl`,
       parquet: `${dataDir}/test-run.parquet`,
       filter: (obj: unknown) => (obj as Record<string, unknown>).type === 'result',
     },
-    { name: 'test-results', glob: `${outputDir}/*/test-results.jsonl`,  parquet: `${dataDir}/test-results.parquet` },
-    { name: 'output-files', glob: `${outputDir}/*/output-files.jsonl`,  parquet: `${dataDir}/output-files.parquet` },
+    { name: 'test-results', glob: `${outputDir}/*/test-results.jsonl`, parquet: `${dataDir}/test-results.parquet` },
+    { name: 'output-files', glob: `${outputDir}/*/output-files.jsonl`, parquet: `${dataDir}/output-files.parquet` },
   ]
 
   const updated: string[] = []
@@ -154,10 +174,12 @@ export async function updateAllParquet({ outputDir, dataDir, reEvaluatedRunIds }
       const instance = await DuckDBInstance.create(':memory:')
       const conn = await instance.connect()
       try {
-        const cols = (await conn.runAndReadAll(
-          `SELECT column_name FROM (DESCRIBE SELECT * FROM read_parquet('${table.parquet}'))
-           WHERE column_name = 'message'`
-        )).getRowObjects()
+        const cols = (
+          await conn.runAndReadAll(
+            `SELECT column_name FROM (DESCRIBE SELECT * FROM read_parquet('${table.parquet}'))
+           WHERE column_name = 'message'`,
+          )
+        ).getRowObjects()
         if (cols.length > 0) {
           await unlink(table.parquet)
           const tmp = `${table.parquet}.tmp`
@@ -258,7 +280,7 @@ async function convertScilSummariesToTempJsonl(outputDir: string): Promise<strin
   if (records.length === 0) return null
 
   const tmpPath = path.join(os.tmpdir(), `scil-summary-${Date.now()}.jsonl`)
-  await writeFile(tmpPath, records.join('\n') + '\n', 'utf8')
+  await writeFile(tmpPath, `${records.join('\n')}\n`, 'utf8')
   return tmpPath
 }
 
@@ -284,7 +306,7 @@ async function convertAcilSummariesToTempJsonl(outputDir: string): Promise<strin
   if (records.length === 0) return null
 
   const tmpPath = path.join(os.tmpdir(), `acil-summary-${Date.now()}.jsonl`)
-  await writeFile(tmpPath, records.join('\n') + '\n', 'utf8')
+  await writeFile(tmpPath, `${records.join('\n')}\n`, 'utf8')
   return tmpPath
 }
 
@@ -325,8 +347,12 @@ export async function queryPerTest(dataDir: string): Promise<PerTestRow[]> {
 }
 
 function parseRunIdDate(runId: string): string {
-  const y = runId.slice(0, 4), mo = runId.slice(4, 6), d = runId.slice(6, 8)
-  const h = runId.slice(9, 11), mi = runId.slice(11, 13), s = runId.slice(13, 15)
+  const y = runId.slice(0, 4),
+    mo = runId.slice(4, 6),
+    d = runId.slice(6, 8)
+  const h = runId.slice(9, 11),
+    mi = runId.slice(11, 13),
+    s = runId.slice(13, 15)
   return new Date(`${y}-${mo}-${d}T${h}:${mi}:${s}`).toISOString()
 }
 
@@ -367,7 +393,7 @@ export async function queryTestRunSummaries(dataDir: string): Promise<TestRunSum
       ORDER BY test_run_id DESC
     `
     const rows = (await conn.runAndReadAll(sql)).getRowObjects() as unknown as Omit<TestRunSummary, 'date'>[]
-    return rows.map(row => ({
+    return rows.map((row) => ({
       ...row,
       date: parseRunIdDate(row.test_run_id),
     }))
@@ -377,12 +403,14 @@ export async function queryTestRunSummaries(dataDir: string): Promise<TestRunSum
 export async function queryTestRunDetails(dataDir: string, testRunId: string): Promise<TestRunDetails> {
   validateRunId(testRunId)
   return withConnection(dataDir, async (conn) => {
-    const existsRows = (await conn.runAndReadAll(
-      `SELECT 1 FROM read_parquet('${dataDir}/test-run.parquet')
+    const existsRows = (
+      await conn.runAndReadAll(
+        `SELECT 1 FROM read_parquet('${dataDir}/test-run.parquet')
       WHERE type = 'result' AND test_run_id = $1
       LIMIT 1`,
-      [testRunId]
-    )).getRowObjects()
+        [testRunId],
+      )
+    ).getRowObjects()
     if (existsRows.length === 0) {
       throw new Error(`Test run not found: ${testRunId}`)
     }
@@ -419,7 +447,9 @@ export async function queryTestRunDetails(dataDir: string, testRunId: string): P
         AND r.test_run_id = $1
       ORDER BY c.test.name
     `
-    const summaryRaw = (await conn.runAndReadAll(summarySql, [testRunId])).getRowObjects() as unknown as (TestRunDetailRow & { result?: string })[]
+    const summaryRaw = (
+      await conn.runAndReadAll(summarySql, [testRunId])
+    ).getRowObjects() as unknown as (TestRunDetailRow & { result?: string })[]
 
     const expectationsSql = `
       SELECT *
@@ -427,7 +457,9 @@ export async function queryTestRunDetails(dataDir: string, testRunId: string): P
       WHERE test_run_id = $1
       ORDER BY test_name, expect_type, expect_value
     `
-    const allExpectations = (await conn.runAndReadAll(expectationsSql, [testRunId])).getRowObjects() as unknown as (TestRunExpectationRow & {
+    const allExpectations = (
+      await conn.runAndReadAll(expectationsSql, [testRunId])
+    ).getRowObjects() as unknown as (TestRunExpectationRow & {
       confidence?: string
       reasoning?: string
       judge_model?: string
@@ -465,7 +497,7 @@ export async function queryTestRunDetails(dataDir: string, testRunId: string): P
 
     // Group judge rows by (test_name, rubric_file)
     const groupKey = (testName: string, rubricFile: string) => `${testName}::${rubricFile}`
-    const judgeGroupMap = new Map<string, { aggregateRow?: typeof judgeRows[0]; criteria: LlmJudgeCriterion[] }>()
+    const judgeGroupMap = new Map<string, { aggregateRow?: (typeof judgeRows)[0]; criteria: LlmJudgeCriterion[] }>()
 
     for (const row of judgeRows) {
       if (!row.rubric_file) continue // skip old data without rubric_file
@@ -477,10 +509,10 @@ export async function queryTestRunDetails(dataDir: string, testRunId: string): P
         group.aggregateRow = row
       } else {
         group.criteria.push({
-          criterion:   row.expect_value,
-          passed:      row.passed,
-          confidence:  row.confidence as "partial" | "full" | undefined,
-          reasoning:   row.reasoning,
+          criterion: row.expect_value,
+          passed: row.passed,
+          confidence: row.confidence as 'partial' | 'full' | undefined,
+          reasoning: row.reasoning,
         })
       }
     }
@@ -512,8 +544,12 @@ export async function queryTestRunDetails(dataDir: string, testRunId: string): P
           WHERE test_run_id = $1
           ORDER BY test_name, file_path
         `
-        const outputFileRows = (await conn.runAndReadAll(outputFilesSql, [testRunId])).getRowObjects() as unknown as { test_name: string; file_path: string; file_content: string }[]
-        outputFiles = outputFileRows.map(row => ({
+        const outputFileRows = (await conn.runAndReadAll(outputFilesSql, [testRunId])).getRowObjects() as unknown as {
+          test_name: string
+          file_path: string
+          file_content: string
+        }[]
+        outputFiles = outputFileRows.map((row) => ({
           testName: row.test_name,
           filePath: row.file_path,
           fileContent: row.file_content,
@@ -526,4 +562,3 @@ export async function queryTestRunDetails(dataDir: string, testRunId: string): P
     return { summary, expectations, llmJudgeGroups, outputFiles }
   })
 }
-

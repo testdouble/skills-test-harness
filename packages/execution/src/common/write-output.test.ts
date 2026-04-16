@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('node:fs/promises', () => ({
   appendFile: vi.fn().mockResolvedValue(undefined),
-  writeFile:  vi.fn().mockResolvedValue(undefined),
+  writeFile: vi.fn().mockResolvedValue(undefined),
 }))
 
 vi.mock('@testdouble/harness-data', () => ({
@@ -10,8 +10,8 @@ vi.mock('@testdouble/harness-data', () => ({
 }))
 
 import { appendFile, writeFile } from 'node:fs/promises'
-import { ensureOutputDir } from '@testdouble/harness-data'
 import type { IterationResult, QueryResult } from '@testdouble/harness-data'
+import { ensureOutputDir } from '@testdouble/harness-data'
 import { writeIterationOutput, writeSummaryOutput } from './write-output.js'
 
 beforeEach(() => {
@@ -20,27 +20,27 @@ beforeEach(() => {
 
 function makeQueryResult(overrides: Partial<QueryResult> = {}): QueryResult {
   return {
-    testName:  'Test A',
+    testName: 'Test A',
     skillFile: 'plugin:skill',
     promptContent: 'test prompt',
-    expected:  true,
-    actual:    true,
-    passed:    true,
-    runIndex:  0,
-    events:    [{ type: 'system' } as any],
+    expected: true,
+    actual: true,
+    passed: true,
+    runIndex: 0,
+    events: [{ type: 'system' } as any],
     ...overrides,
   }
 }
 
 function makeIteration(overrides: Partial<IterationResult> = {}): IterationResult {
   return {
-    iteration:     1,
-    phase:         'explore',
-    description:   'A description',
-    trainResults:  [makeQueryResult()],
-    testResults:   [],
+    iteration: 1,
+    phase: 'explore',
+    description: 'A description',
+    trainResults: [makeQueryResult()],
+    testResults: [],
     trainAccuracy: 1.0,
-    testAccuracy:  null,
+    testAccuracy: null,
     ...overrides,
   }
 }
@@ -63,7 +63,12 @@ describe('writeIterationOutput', () => {
 
   it('strips events from trainResults and testResults', async () => {
     const result = makeQueryResult({ events: [{ type: 'system' } as any, { type: 'assistant' } as any] })
-    await writeIterationOutput('/out/run-abc', 'run-abc', makeIteration({ trainResults: [result], testResults: [result] }), 'custom')
+    await writeIterationOutput(
+      '/out/run-abc',
+      'run-abc',
+      makeIteration({ trainResults: [result], testResults: [result] }),
+      'custom',
+    )
 
     const written = vi.mocked(appendFile).mock.calls[0][1] as string
     const parsed = JSON.parse(written.trim())
@@ -122,7 +127,12 @@ describe('writeSummaryOutput', () => {
     const written = vi.mocked(writeFile).mock.calls[0][1] as string
     const parsed = JSON.parse(written)
     expect(parsed.iterations).toHaveLength(2)
-    expect(parsed.iterations[0]).toEqual({ iteration: 1, trainAccuracy: 0.5, testAccuracy: null, description: 'desc 1' })
+    expect(parsed.iterations[0]).toEqual({
+      iteration: 1,
+      trainAccuracy: 0.5,
+      testAccuracy: null,
+      description: 'desc 1',
+    })
     expect(parsed.iterations[0]).not.toHaveProperty('trainResults')
   })
 

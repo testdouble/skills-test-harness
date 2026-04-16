@@ -1,11 +1,11 @@
-import type { ClaudeRunResult, ClaudeRunOptions } from './types.js'
-import { execInSandbox } from '@testdouble/docker-integration'
 import { resolveRelativePath } from '@testdouble/bun-helpers'
+import { execInSandbox } from '@testdouble/docker-integration'
+import type { ClaudeRunOptions, ClaudeRunResult } from './types.js'
 
 const sandboxRunScript = resolveRelativePath(
   import.meta,
   '../sandbox-run.sh',
-  'packages/claude-integration/sandbox-run.sh'
+  'packages/claude-integration/sandbox-run.sh',
 )
 
 export async function runClaude(options: ClaudeRunOptions): Promise<ClaudeRunResult> {
@@ -18,11 +18,14 @@ export async function runClaude(options: ClaudeRunOptions): Promise<ClaudeRunRes
 
   const claudeArgs = [
     '--no-session-persistence',
-    '--output-format', 'stream-json',
+    '--output-format',
+    'stream-json',
     '--verbose',
-    '--model', model,
+    '--model',
+    model,
     '--dangerously-skip-permissions',
-    '--print', prompt,
+    '--print',
+    prompt,
   ]
 
   return execInSandbox(sandboxRunScript, [...pluginDirArgs, ...claudeArgs], scaffold, debug)

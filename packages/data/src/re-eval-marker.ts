@@ -1,5 +1,5 @@
+import { readFile, unlink, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { readFile, writeFile, unlink } from 'node:fs/promises'
 
 const MARKER_FILE = '.re-evaluated-runs.json'
 
@@ -27,7 +27,7 @@ export async function markAsReEvaluated(outputDir: string, runId: string): Promi
 export async function clearReEvaluatedRuns(outputDir: string, runIds: string[]): Promise<void> {
   if (runIds.length === 0) return
   const existing = await getReEvaluatedRuns(outputDir)
-  const remaining = existing.filter(id => !runIds.includes(id))
+  const remaining = existing.filter((id) => !runIds.includes(id))
   if (remaining.length === 0) {
     try {
       await unlink(markerPath(outputDir))

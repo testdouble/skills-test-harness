@@ -43,5 +43,5 @@ export function parseRubricSections(markdown: string): RubricSection[] {
 
 /** Backward-compatible wrapper: flattens all sections into a single criteria list. */
 export function parseRubricCriteria(markdown: string): string[] {
-  return parseRubricSections(markdown).flatMap(s => s.criteria)
+  return parseRubricSections(markdown).flatMap((s) => s.criteria)
 }

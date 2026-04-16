@@ -1,5 +1,5 @@
-import type { Argv } from 'yargs'
 import { createSandbox } from '@testdouble/docker-integration'
+import type { Argv } from 'yargs'
 import { repoRoot } from '../paths.js'
 
 export const command = 'sandbox-setup'

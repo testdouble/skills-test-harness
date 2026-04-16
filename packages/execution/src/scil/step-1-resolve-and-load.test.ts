@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@testdouble/harness-data', () => ({
   readTestSuiteConfig: vi.fn(),
@@ -8,10 +8,10 @@ vi.mock('node:fs', () => ({
   existsSync: vi.fn(),
 }))
 
-import { readTestSuiteConfig } from '@testdouble/harness-data'
 import { existsSync } from 'node:fs'
-import { resolveAndLoad } from './step-1-resolve-and-load.js'
+import { readTestSuiteConfig } from '@testdouble/harness-data'
 import { HarnessError } from '../lib/errors.js'
+import { resolveAndLoad } from './step-1-resolve-and-load.js'
 
 function makeSkillCallTest(name: string, skillFile: string, value: boolean) {
   return {
@@ -81,8 +81,9 @@ describe('resolveAndLoad', () => {
       tests: [makeSkillCallTest('t1', 'r-and-d:code-review', true)],
     })
 
-    await expect(resolveAndLoad('my-suite', 'r-and-d:code-review', '/mock/tests', '/repo'))
-      .rejects.toThrow(HarnessError)
+    await expect(resolveAndLoad('my-suite', 'r-and-d:code-review', '/mock/tests', '/repo')).rejects.toThrow(
+      HarnessError,
+    )
   })
 
   // TP-005: Throws when no matching tests found for explicit skill
@@ -93,8 +94,9 @@ describe('resolveAndLoad', () => {
       tests: [makeSkillCallTest('t1', 'r-and-d:investigate', true)],
     })
 
-    await expect(resolveAndLoad('my-suite', 'r-and-d:code-review', '/mock/tests', '/repo'))
-      .rejects.toThrow(HarnessError)
+    await expect(resolveAndLoad('my-suite', 'r-and-d:code-review', '/mock/tests', '/repo')).rejects.toThrow(
+      HarnessError,
+    )
   })
 
   // TP-010: Inferred skill — single skill detected
@@ -127,8 +129,7 @@ describe('resolveAndLoad', () => {
       ],
     })
 
-    await expect(resolveAndLoad('my-suite', undefined, '/mock/tests', '/repo'))
-      .rejects.toThrow(HarnessError)
+    await expect(resolveAndLoad('my-suite', undefined, '/mock/tests', '/repo')).rejects.toThrow(HarnessError)
   })
 
   // TP-007: Throws when multiple skills found during inference
@@ -141,8 +142,7 @@ describe('resolveAndLoad', () => {
       ],
     })
 
-    await expect(resolveAndLoad('my-suite', undefined, '/mock/tests', '/repo'))
-      .rejects.toThrow(HarnessError)
+    await expect(resolveAndLoad('my-suite', undefined, '/mock/tests', '/repo')).rejects.toThrow(HarnessError)
   })
 
   // TP-018: Inferred skill — throws when inferred SKILL.md does not exist
@@ -153,8 +153,7 @@ describe('resolveAndLoad', () => {
       tests: [makeSkillCallTest('t1', 'r-and-d:code-review', true)],
     })
 
-    await expect(resolveAndLoad('my-suite', undefined, '/mock/tests', '/repo'))
-      .rejects.toThrow(HarnessError)
+    await expect(resolveAndLoad('my-suite', undefined, '/mock/tests', '/repo')).rejects.toThrow(HarnessError)
   })
 
   // TP-019: Filters to skill-call type tests only
@@ -186,8 +185,7 @@ describe('resolveAndLoad', () => {
       tests: [],
     })
 
-    await expect(resolveAndLoad('my-suite', 'no-colon', '/mock/tests', '/repo'))
-      .rejects.toThrow()
+    await expect(resolveAndLoad('my-suite', 'no-colon', '/mock/tests', '/repo')).rejects.toThrow()
   })
 
   // TP-002: Inferred skillFile without colon from tests.json
@@ -198,7 +196,6 @@ describe('resolveAndLoad', () => {
       tests: [makeSkillCallTest('t1', 'malformed-no-colon', true)],
     })
 
-    await expect(resolveAndLoad('my-suite', undefined, '/mock/tests', '/repo'))
-      .rejects.toThrow()
+    await expect(resolveAndLoad('my-suite', undefined, '/mock/tests', '/repo')).rejects.toThrow()
   })
 })

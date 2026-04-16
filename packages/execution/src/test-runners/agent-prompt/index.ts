@@ -1,10 +1,17 @@
 import path from 'node:path'
-import { resolvePromptPath, readPromptFile, parseStreamJsonLines, extractMetrics, appendOutputFiles, buildTestCaseId } from '@testdouble/harness-data'
-import type { TestSuiteConfig, TestCase, ParsedRunMetrics, RunTotals } from '@testdouble/harness-data'
-import { runClaude, extractOutputFiles } from '@testdouble/claude-integration'
+import { extractOutputFiles, runClaude } from '@testdouble/claude-integration'
+import type { ParsedRunMetrics, RunTotals, TestCase, TestSuiteConfig } from '@testdouble/harness-data'
+import {
+  appendOutputFiles,
+  buildTestCaseId,
+  extractMetrics,
+  parseStreamJsonLines,
+  readPromptFile,
+  resolvePromptPath,
+} from '@testdouble/harness-data'
+import { HarnessError } from '../../lib/errors.js'
 import { accumulateTotals } from '../../lib/metrics.js'
 import { writeTestOutput } from '../../lib/output.js'
-import { HarnessError } from '../../lib/errors.js'
 
 function printRunningTest(testName: string): void {
   process.stderr.write(`\nRunning test: "${testName}"\n`)
@@ -66,7 +73,7 @@ export async function runAgentPromptTests(
   debug: boolean,
   testRunId: string,
   totals: RunTotals,
-  outputDir: string
+  outputDir: string,
 ): Promise<RunTotals> {
   let { failures } = totals
   let current = totals
@@ -79,9 +86,7 @@ export async function runAgentPromptTests(
     const agentName = parseAgentName(test.agentFile!)
     const wrappedPrompt = wrapWithDelegation(agentName, promptContent)
 
-    const scaffoldPath = test.scaffold
-      ? path.join(testSuiteDir, 'scaffolds', test.scaffold)
-      : null
+    const scaffoldPath = test.scaffold ? path.join(testSuiteDir, 'scaffolds', test.scaffold) : null
 
     const { exitCode, stdout } = await runClaude({
       model: test.model ?? 'sonnet',

@@ -1,7 +1,7 @@
-import path from 'node:path'
 import { unlink } from 'node:fs/promises'
-import { appendTestResults } from '@testdouble/harness-data'
+import path from 'node:path'
 import type { TestResultRecord } from '@testdouble/harness-data'
+import { appendTestResults } from '@testdouble/harness-data'
 
 export async function writeResults(runDir: string, results: TestResultRecord[]): Promise<void> {
   try {

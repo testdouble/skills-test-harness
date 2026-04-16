@@ -1,34 +1,28 @@
-import path from 'node:path'
 import { mkdir, writeFile } from 'node:fs/promises'
-import { resolvePromptPath, readPromptFile, parseStreamJsonLines } from '@testdouble/harness-data'
-import { evaluateSkillCall } from '@testdouble/harness-evals'
-import type { ScilTestCase, QueryResult } from './types.js'
+import path from 'node:path'
 import { runClaude } from '@testdouble/claude-integration'
+import { parseStreamJsonLines, readPromptFile, resolvePromptPath } from '@testdouble/harness-data'
+import { evaluateSkillCall } from '@testdouble/harness-evals'
+import type { QueryResult, ScilTestCase } from './types.js'
 
 export interface RunEvalOptions {
-  tempDir:        string
-  testCases:      ScilTestCase[]
-  suite:          string
-  testsDir:       string
-  concurrency:    number
-  runsPerQuery:   number
-  debug:          boolean
-  testRunId:      string
-  runDir:         string
+  tempDir: string
+  testCases: ScilTestCase[]
+  suite: string
+  testsDir: string
+  concurrency: number
+  runsPerQuery: number
+  debug: boolean
+  testRunId: string
+  runDir: string
 }
 
-async function runSingleQuery(
-  test: ScilTestCase,
-  runIndex: number,
-  opts: RunEvalOptions
-): Promise<QueryResult> {
+async function runSingleQuery(test: ScilTestCase, runIndex: number, opts: RunEvalOptions): Promise<QueryResult> {
   const testSuiteDir = path.join(opts.testsDir, 'test-suites', opts.suite)
   const promptPath = resolvePromptPath(testSuiteDir, test.promptFile)
   const promptContent = await readPromptFile(promptPath)
 
-  const scaffoldPath = test.scaffold
-    ? path.join(testSuiteDir, 'scaffolds', test.scaffold)
-    : null
+  const scaffoldPath = test.scaffold ? path.join(testSuiteDir, 'scaffolds', test.scaffold) : null
 
   const { stdout } = await runClaude({
     model: test.model ?? 'sonnet',
@@ -47,7 +41,7 @@ async function runSingleQuery(
 
   const events = parseStreamJsonLines(stdout)
 
-  const skillCallExpect = test.expect.find(e => e.type === 'skill-call')
+  const skillCallExpect = test.expect.find((e) => e.type === 'skill-call')
   const expected = skillCallExpect ? (skillCallExpect as { value: boolean }).value : true
   const skillFile = test.skillFile ?? (skillCallExpect as { skillFile: string })?.skillFile ?? ''
 
@@ -55,20 +49,20 @@ async function runSingleQuery(
   const passed = expected === actual
 
   return {
-    testName:      test.name,
+    testName: test.name,
     skillFile,
     promptContent,
     expected,
     actual,
     passed,
     runIndex,
-    events
+    events,
   }
 }
 
 function aggregateByMajorityVote(results: QueryResult[]): QueryResult {
   const sorted = [...results].sort((a, b) => a.runIndex - b.runIndex)
-  const passCount = sorted.filter(r => r.passed).length
+  const passCount = sorted.filter((r) => r.passed).length
   const passed = passCount > sorted.length / 2
   // Return the first result (by runIndex) with the aggregated pass/fail
   return { ...sorted[0], passed, runIndex: 0 }
@@ -76,7 +70,7 @@ function aggregateByMajorityVote(results: QueryResult[]): QueryResult {
 
 export async function runEval(opts: RunEvalOptions): Promise<QueryResult[]> {
   // Build work items: each test case × each run
-  const workItems: { test: ScilTestCase, runIndex: number }[] = []
+  const workItems: { test: ScilTestCase; runIndex: number }[] = []
   for (const test of opts.testCases) {
     for (let r = 0; r < opts.runsPerQuery; r++) {
       workItems.push({ test, runIndex: r })
@@ -95,14 +89,16 @@ export async function runEval(opts: RunEvalOptions): Promise<QueryResult[]> {
     started++
     process.stderr.write(`  [${started}/${workItems.length}] "${item.test.name}"...\n`)
     const task = runSingleQuery(item.test, item.runIndex, opts)
-      .then(result => {
+      .then((result) => {
         results[workItemIndex] = result
       })
-      .catch(err => {
+      .catch((err) => {
         process.stderr.write(`  [error] "${item.test.name}" run ${item.runIndex} failed: ${err}\n`)
       })
 
-    const tracked = task.then(() => { pending.delete(tracked) })
+    const tracked = task.then(() => {
+      pending.delete(tracked)
+    })
     pending.add(tracked)
 
     if (pending.size >= opts.concurrency) {
@@ -121,7 +117,7 @@ export async function runEval(opts: RunEvalOptions): Promise<QueryResult[]> {
     for (const r of completed) {
       const key = r.testName
       if (!grouped.has(key)) grouped.set(key, [])
-      grouped.get(key)!.push(r)
+      grouped.get(key)?.push(r)
     }
     return Array.from(grouped.values()).map(aggregateByMajorityVote)
   }

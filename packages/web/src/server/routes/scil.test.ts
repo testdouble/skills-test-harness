@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@testdouble/harness-data', () => ({
   queryScilHistory: vi.fn(),
@@ -59,7 +59,9 @@ describe('getScilHistory', () => {
   })
 
   it('returns empty runs when parquet file does not exist (TP-003)', async () => {
-    vi.mocked(queryScilHistory).mockRejectedValue(new Error('IO Error: No such file or directory: scil-iteration.parquet'))
+    vi.mocked(queryScilHistory).mockRejectedValue(
+      new Error('IO Error: No such file or directory: scil-iteration.parquet'),
+    )
     const { c, jsonMock } = makeMockContext()
 
     await getScilHistory(c, '/data')
@@ -121,7 +123,9 @@ describe('getScilRunById', () => {
   })
 
   it('returns 404 when parquet file does not exist (EC5)', async () => {
-    vi.mocked(queryScilRunDetails).mockRejectedValue(new Error('IO Error: No such file or directory: scil-summary.parquet'))
+    vi.mocked(queryScilRunDetails).mockRejectedValue(
+      new Error('IO Error: No such file or directory: scil-summary.parquet'),
+    )
     const { c, jsonMock } = makeMockContext({ param: { runId: 'run-abc' } })
 
     await getScilRunById(c, '/data')

@@ -1,12 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@testdouble/harness-data', () => ({
   queryTestRunSummaries: vi.fn(),
   queryTestRunDetails: vi.fn(),
 }))
 
-import { queryTestRunSummaries, queryTestRunDetails } from '@testdouble/harness-data'
-import { getTestRuns, getTestRunById } from './test-runs.js'
+import { queryTestRunDetails, queryTestRunSummaries } from '@testdouble/harness-data'
+import { getTestRunById, getTestRuns } from './test-runs.js'
 
 function makeMockContext(overrides?: { param?: Record<string, string> }) {
   const jsonMock = vi.fn((data: unknown) => ({ data }))
@@ -28,8 +28,22 @@ beforeEach(() => {
 describe('getTestRuns', () => {
   it('returns run summaries from queryTestRunSummaries', async () => {
     const mockRuns = [
-      { test_run_id: '20240103T120000', suite: 'suite-a', date: '2024-01-03T12:00:00.000Z', total_tests: 2, passed: 1, failed: 1 },
-      { test_run_id: '20240101T080000', suite: 'suite-b', date: '2024-01-01T08:00:00.000Z', total_tests: 1, passed: 1, failed: 0 },
+      {
+        test_run_id: '20240103T120000',
+        suite: 'suite-a',
+        date: '2024-01-03T12:00:00.000Z',
+        total_tests: 2,
+        passed: 1,
+        failed: 1,
+      },
+      {
+        test_run_id: '20240101T080000',
+        suite: 'suite-b',
+        date: '2024-01-01T08:00:00.000Z',
+        total_tests: 1,
+        passed: 1,
+        failed: 0,
+      },
     ]
     vi.mocked(queryTestRunSummaries).mockResolvedValue(mockRuns)
     const { c, jsonMock } = makeMockContext()
@@ -65,7 +79,14 @@ describe('getTestRuns', () => {
 
   it('passes through runs without re-aggregating', async () => {
     const mockRuns = [
-      { test_run_id: '20240103T120000', suite: 'suite-a', date: '2024-01-03T12:00:00.000Z', total_tests: 5, passed: 3, failed: 2 },
+      {
+        test_run_id: '20240103T120000',
+        suite: 'suite-a',
+        date: '2024-01-03T12:00:00.000Z',
+        total_tests: 5,
+        passed: 3,
+        failed: 2,
+      },
     ]
     vi.mocked(queryTestRunSummaries).mockResolvedValue(mockRuns)
     const { c, jsonMock } = makeMockContext()

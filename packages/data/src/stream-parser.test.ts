@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import {
-  parseStreamJsonLines,
+  extractMetrics,
+  getAgentInvocations,
   getResultText,
   getSkillInvocations,
-  getAgentInvocations,
-  extractMetrics,
+  parseStreamJsonLines,
 } from './stream-parser.js'
 import type { StreamJsonEvent } from './types.js'
 
@@ -38,7 +38,8 @@ describe('parseStreamJsonLines', () => {
   })
 
   it('skips initialization messages before JSON stream begins', () => {
-    const raw = 'Initialized session abc123\n{"type":"system","subtype":"init","session_id":"abc"}\n{"type":"result","result":"ok"}\n'
+    const raw =
+      'Initialized session abc123\n{"type":"system","subtype":"init","session_id":"abc"}\n{"type":"result","result":"ok"}\n'
     const events = parseStreamJsonLines(raw)
     expect(events).toHaveLength(2)
     expect(events[0]).toMatchObject({ type: 'system', subtype: 'init' })
@@ -51,7 +52,8 @@ describe('parseStreamJsonLines', () => {
   })
 
   it('skips multiple non-JSON lines interspersed with JSON', () => {
-    const raw = 'Starting up...\n{"type":"system","subtype":"init","session_id":"x"}\nsome warning\n{"type":"result","result":"done"}\ncleanup complete\n'
+    const raw =
+      'Starting up...\n{"type":"system","subtype":"init","session_id":"x"}\nsome warning\n{"type":"result","result":"done"}\ncleanup complete\n'
     const events = parseStreamJsonLines(raw)
     expect(events).toHaveLength(2)
   })
@@ -67,16 +69,12 @@ describe('getResultText', () => {
   })
 
   it('returns null when there is no result event', () => {
-    const events: StreamJsonEvent[] = [
-      { type: 'system', subtype: 'init', session_id: 'x' },
-    ]
+    const events: StreamJsonEvent[] = [{ type: 'system', subtype: 'init', session_id: 'x' }]
     expect(getResultText(events)).toBeNull()
   })
 
   it('returns null when result event has no result field', () => {
-    const events: StreamJsonEvent[] = [
-      { type: 'result' },
-    ]
+    const events: StreamJsonEvent[] = [{ type: 'result' }]
     expect(getResultText(events)).toBeNull()
   })
 
@@ -229,23 +227,17 @@ describe('extractMetrics', () => {
   })
 
   it('sets isError true when any result event has is_error=true', () => {
-    const events: StreamJsonEvent[] = [
-      { type: 'result', is_error: true },
-    ]
+    const events: StreamJsonEvent[] = [{ type: 'result', is_error: true }]
     expect(extractMetrics(events).isError).toBe(true)
   })
 
   it('sets isError false when no result event has is_error', () => {
-    const events: StreamJsonEvent[] = [
-      { type: 'result', result: 'ok' },
-    ]
+    const events: StreamJsonEvent[] = [{ type: 'result', result: 'ok' }]
     expect(extractMetrics(events).isError).toBe(false)
   })
 
   it('captures result text', () => {
-    const events: StreamJsonEvent[] = [
-      { type: 'result', result: 'final answer' },
-    ]
+    const events: StreamJsonEvent[] = [{ type: 'result', result: 'final answer' }]
     expect(extractMetrics(events).result).toBe('final answer')
   })
 
@@ -265,9 +257,7 @@ describe('extractMetrics', () => {
   })
 
   it('handles events with no usage gracefully', () => {
-    const events: StreamJsonEvent[] = [
-      { type: 'system', subtype: 'init', session_id: 'x' },
-    ]
+    const events: StreamJsonEvent[] = [{ type: 'system', subtype: 'init', session_id: 'x' }]
     const metrics = extractMetrics(events)
     expect(metrics.inputTokens).toBe(0)
     expect(metrics.outputTokens).toBe(0)

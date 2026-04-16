@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest'
-import type { QueryResult, IterationResult } from '@testdouble/harness-data'
+import type { IterationResult, QueryResult } from '@testdouble/harness-data'
+import { describe, expect, it } from 'vitest'
 import { scoreResults, selectBestIteration } from './score.js'
 
 function makeResult(passed: boolean): QueryResult {
@@ -11,28 +11,26 @@ function makeResult(passed: boolean): QueryResult {
     passed,
     promptContent: 'test prompt',
     runIndex: 0,
-    events: []
+    events: [],
   }
 }
 
 function makeIteration(overrides: Partial<IterationResult> = {}): IterationResult {
   return {
-    iteration:     1,
-    description:   'iteration 1',
-    trainResults:  [],
-    testResults:   [],
+    iteration: 1,
+    phase: 'explore',
+    description: 'iteration 1',
+    trainResults: [],
+    testResults: [],
     trainAccuracy: 0,
-    testAccuracy:  null,
+    testAccuracy: null,
     ...overrides,
   }
 }
 
 describe('scoreResults', () => {
   it('returns trainAccuracy=1 when all train results pass', () => {
-    const { trainAccuracy, testAccuracy } = scoreResults(
-      [makeResult(true), makeResult(true)],
-      []
-    )
+    const { trainAccuracy, testAccuracy } = scoreResults([makeResult(true), makeResult(true)], [])
     expect(trainAccuracy).toBe(1)
     expect(testAccuracy).toBeNull()
   })
@@ -79,7 +77,7 @@ describe('selectBestIteration', () => {
       makeIteration({ iteration: 2, trainAccuracy: 0.5, testAccuracy: 0.8 }),
       makeIteration({ iteration: 3, trainAccuracy: 0.7, testAccuracy: 0.6 }),
     ]
-    expect(selectBestIteration(iterations, 0.3)!.iteration).toBe(2)
+    expect(selectBestIteration(iterations, 0.3)?.iteration).toBe(2)
   })
 
   it('selects by trainAccuracy when holdout is 0', () => {
@@ -87,7 +85,7 @@ describe('selectBestIteration', () => {
       makeIteration({ iteration: 1, trainAccuracy: 0.3, testAccuracy: 0.9 }),
       makeIteration({ iteration: 2, trainAccuracy: 0.8, testAccuracy: 0.1 }),
     ]
-    expect(selectBestIteration(iterations, 0)!.iteration).toBe(2)
+    expect(selectBestIteration(iterations, 0)?.iteration).toBe(2)
   })
 
   it('favors earlier iteration on tie', () => {
@@ -95,7 +93,7 @@ describe('selectBestIteration', () => {
       makeIteration({ iteration: 1, trainAccuracy: 0.7 }),
       makeIteration({ iteration: 2, trainAccuracy: 0.7 }),
     ]
-    expect(selectBestIteration(iterations, 0)!.iteration).toBe(1)
+    expect(selectBestIteration(iterations, 0)?.iteration).toBe(1)
   })
 
   it('treats null testAccuracy as 0', () => {
@@ -103,7 +101,7 @@ describe('selectBestIteration', () => {
       makeIteration({ iteration: 1, trainAccuracy: 0.9 }),
       makeIteration({ iteration: 2, trainAccuracy: 0.5, testAccuracy: 0.5 }),
     ]
-    expect(selectBestIteration(iterations, 0.3)!.iteration).toBe(2)
+    expect(selectBestIteration(iterations, 0.3)?.iteration).toBe(2)
   })
 
   it('uses train accuracy as tiebreaker when test scores are equal', () => {
@@ -111,7 +109,7 @@ describe('selectBestIteration', () => {
       makeIteration({ iteration: 1, trainAccuracy: 0.5, testAccuracy: 0.5 }),
       makeIteration({ iteration: 2, trainAccuracy: 1.0, testAccuracy: 0.5 }),
     ]
-    expect(selectBestIteration(iterations, 0.5)!.iteration).toBe(2)
+    expect(selectBestIteration(iterations, 0.5)?.iteration).toBe(2)
   })
 
   it('favors earlier iteration when both test and train accuracy are equal', () => {
@@ -119,7 +117,7 @@ describe('selectBestIteration', () => {
       makeIteration({ iteration: 1, trainAccuracy: 0.7, testAccuracy: 0.5 }),
       makeIteration({ iteration: 2, trainAccuracy: 0.7, testAccuracy: 0.5 }),
     ]
-    expect(selectBestIteration(iterations, 0.5)!.iteration).toBe(1)
+    expect(selectBestIteration(iterations, 0.5)?.iteration).toBe(1)
   })
 
   // TP-004: NaN testAccuracy coerced to 0 in primary score
@@ -128,7 +126,7 @@ describe('selectBestIteration', () => {
       makeIteration({ iteration: 1, trainAccuracy: 0.5, testAccuracy: NaN }),
       makeIteration({ iteration: 2, trainAccuracy: 0.5, testAccuracy: 0.5 }),
     ]
-    expect(selectBestIteration(iterations, 0.3)!.iteration).toBe(2)
+    expect(selectBestIteration(iterations, 0.3)?.iteration).toBe(2)
   })
 
   // TP-004: All-NaN testAccuracies with tiebreaker on trainAccuracy
@@ -138,7 +136,7 @@ describe('selectBestIteration', () => {
       makeIteration({ iteration: 2, trainAccuracy: 0.8, testAccuracy: NaN }),
     ]
     // Both NaN → coerced to 0, tied on primary score, tiebreaker on trainAccuracy
-    expect(selectBestIteration(iterations, 0.3)!.iteration).toBe(2)
+    expect(selectBestIteration(iterations, 0.3)?.iteration).toBe(2)
   })
 
   // EC5: NaN trainAccuracy in tiebreaker — coerced to 0, so real value wins
@@ -149,6 +147,6 @@ describe('selectBestIteration', () => {
     ]
     // NaN coerced to 0 in tiebreaker, 0.8 > 0 — later iteration wins
     const best = selectBestIteration(iterations, 0.5)
-    expect(best!.iteration).toBe(2)
+    expect(best?.iteration).toBe(2)
   })
 })

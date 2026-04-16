@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('node:fs/promises', () => ({
   appendFile: vi.fn().mockResolvedValue(undefined),
-  writeFile:  vi.fn().mockResolvedValue(undefined),
+  writeFile: vi.fn().mockResolvedValue(undefined),
 }))
 
 vi.mock('@testdouble/harness-data', () => ({
@@ -11,8 +11,8 @@ vi.mock('@testdouble/harness-data', () => ({
 
 import { appendFile, writeFile } from 'node:fs/promises'
 import { ensureOutputDir } from '@testdouble/harness-data'
-import type { AcilIterationResult, AcilQueryResult } from './types.js'
 import { writeIterationOutput, writeSummaryOutput } from './step-9-write-output.js'
+import type { AcilIterationResult, AcilQueryResult } from './types.js'
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -20,27 +20,27 @@ beforeEach(() => {
 
 function makeQueryResult(overrides: Partial<AcilQueryResult> = {}): AcilQueryResult {
   return {
-    testName:      'test-1',
-    agentFile:     'r-and-d:gap-analyzer',
+    testName: 'test-1',
+    agentFile: 'r-and-d:gap-analyzer',
     promptContent: 'test prompt',
-    expected:      true,
-    actual:        true,
-    passed:        true,
-    runIndex:      0,
-    events:        [{ type: 'system' } as any],
+    expected: true,
+    actual: true,
+    passed: true,
+    runIndex: 0,
+    events: [{ type: 'system' } as any],
     ...overrides,
   }
 }
 
 function makeIteration(overrides: Partial<AcilIterationResult> = {}): AcilIterationResult {
   return {
-    iteration:     1,
-    phase:         'explore',
-    description:   'A description',
-    trainResults:  [makeQueryResult()],
-    testResults:   [],
+    iteration: 1,
+    phase: 'explore',
+    description: 'A description',
+    trainResults: [makeQueryResult()],
+    testResults: [],
     trainAccuracy: 1.0,
-    testAccuracy:  null,
+    testAccuracy: null,
     ...overrides,
   }
 }

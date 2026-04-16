@@ -1,14 +1,14 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { NavBar } from './components/NavBar'
-import { TestRunHistory } from './pages/TestRunHistory'
-import { TestRunDetail } from './pages/TestRunDetail'
-import { PerTestAnalytics } from './pages/PerTestAnalytics'
-import { ScilHistory } from './pages/ScilHistory'
-import { ScilDetail } from './pages/ScilDetail'
-import { AcilHistory } from './pages/AcilHistory'
 import { AcilDetail } from './pages/AcilDetail'
+import { AcilHistory } from './pages/AcilHistory'
+import { PerTestAnalytics } from './pages/PerTestAnalytics'
+import { ScilDetail } from './pages/ScilDetail'
+import { ScilHistory } from './pages/ScilHistory'
+import { TestRunDetail } from './pages/TestRunDetail'
+import { TestRunHistory } from './pages/TestRunHistory'
 import './index.css'
 
 const rootEl = document.getElementById('root')
@@ -30,5 +30,5 @@ createRoot(rootEl).render(
         </Routes>
       </div>
     </BrowserRouter>
-  </React.StrictMode>
+  </React.StrictMode>,
 )

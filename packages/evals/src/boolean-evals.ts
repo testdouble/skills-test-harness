@@ -1,5 +1,5 @@
-import type { TestExpectation, StreamJsonEvent, ExpectationResult } from '@testdouble/harness-data'
-import { getResultText, getSkillInvocations, getAgentInvocations } from '@testdouble/harness-data'
+import type { ExpectationResult, StreamJsonEvent, TestExpectation } from '@testdouble/harness-data'
+import { getAgentInvocations, getResultText, getSkillInvocations } from '@testdouble/harness-data'
 
 export function evaluateResultContains(value: string, events: StreamJsonEvent[]): boolean {
   const r = getResultText(events)
@@ -48,8 +48,11 @@ export function evaluateExpectation(expectation: EvaluableExpectation, events: S
   return { expect_type: expectation.type, expect_value: String(expectation.value), passed }
 }
 
-export function evaluateAllExpectations(expectations: TestExpectation[], events: StreamJsonEvent[]): ExpectationResult[] {
+export function evaluateAllExpectations(
+  expectations: TestExpectation[],
+  events: StreamJsonEvent[],
+): ExpectationResult[] {
   return expectations
     .filter((e): e is EvaluableExpectation => e.type !== 'llm-judge')
-    .map(e => evaluateExpectation(e, events))
+    .map((e) => evaluateExpectation(e, events))
 }

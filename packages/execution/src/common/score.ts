@@ -3,30 +3,24 @@ export interface Scoreable {
 }
 
 export interface ScoredIteration {
-  iteration:     number
+  iteration: number
   trainAccuracy: number
-  testAccuracy:  number | null
+  testAccuracy: number | null
 }
 
 export function scoreResults(
   trainResults: Scoreable[],
-  testResults: Scoreable[]
-): { trainAccuracy: number, testAccuracy: number | null } {
-  const trainAccuracy = trainResults.length === 0
-    ? 0
-    : trainResults.filter(r => r.passed).length / trainResults.length
+  testResults: Scoreable[],
+): { trainAccuracy: number; testAccuracy: number | null } {
+  const trainAccuracy =
+    trainResults.length === 0 ? 0 : trainResults.filter((r) => r.passed).length / trainResults.length
 
-  const testAccuracy = testResults.length === 0
-    ? null
-    : testResults.filter(r => r.passed).length / testResults.length
+  const testAccuracy = testResults.length === 0 ? null : testResults.filter((r) => r.passed).length / testResults.length
 
   return { trainAccuracy, testAccuracy }
 }
 
-export function selectBestIteration<T extends ScoredIteration>(
-  iterations: T[],
-  holdout: number
-): T | null {
+export function selectBestIteration<T extends ScoredIteration>(iterations: T[], holdout: number): T | null {
   if (iterations.length === 0) return null
 
   const useTestScore = holdout > 0

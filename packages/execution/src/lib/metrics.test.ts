@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest'
-import { accumulateTotals } from './metrics.js'
 import type { RunTotals } from '@testdouble/harness-data'
+import { describe, expect, it } from 'vitest'
+import { accumulateTotals } from './metrics.js'
 
 describe('accumulateTotals', () => {
   it('returns a new object with accumulated metrics', () => {
@@ -30,8 +30,20 @@ describe('accumulateTotals', () => {
 
   it('accumulates correctly across multiple calls', () => {
     const initial: RunTotals = { totalDurationMs: 0, totalInputTokens: 0, totalOutputTokens: 0, failures: 0 }
-    const first = accumulateTotals(initial, { durationMs: 100, inputTokens: 10, outputTokens: 5, isError: false, result: null })
-    const second = accumulateTotals(first, { durationMs: 200, inputTokens: 20, outputTokens: 10, isError: false, result: null })
+    const first = accumulateTotals(initial, {
+      durationMs: 100,
+      inputTokens: 10,
+      outputTokens: 5,
+      isError: false,
+      result: null,
+    })
+    const second = accumulateTotals(first, {
+      durationMs: 200,
+      inputTokens: 20,
+      outputTokens: 10,
+      isError: false,
+      result: null,
+    })
     expect(second.totalDurationMs).toBe(300)
     expect(second.totalInputTokens).toBe(30)
     expect(second.totalOutputTokens).toBe(15)

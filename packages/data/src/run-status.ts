@@ -1,6 +1,15 @@
-import type { ScilHistoryRow, ScilRunDetails, ScilSummaryRow, ScilIterationRow, AcilHistoryRow, AcilRunDetails, AcilSummaryRow, AcilIterationRow } from './types.js'
-import { InvalidRunIdError } from './types.js'
 import { withConnection } from './connection.js'
+import type {
+  AcilHistoryRow,
+  AcilIterationRow,
+  AcilRunDetails,
+  AcilSummaryRow,
+  ScilHistoryRow,
+  ScilIterationRow,
+  ScilRunDetails,
+  ScilSummaryRow,
+} from './types.js'
+import { InvalidRunIdError } from './types.js'
 
 function validateRunId(runId: string): void {
   if (!/^\d{8}T\d{6}$/.test(runId)) {
@@ -13,17 +22,15 @@ function convertBigInts(val: unknown): unknown {
   if (val !== null && typeof val === 'object') {
     const name = (val as { constructor?: { name?: string } }).constructor?.name
     if (name === 'DuckDBListValue') {
-      return ((val as { items: unknown[] }).items).map(convertBigInts)
+      return (val as { items: unknown[] }).items.map(convertBigInts)
     }
     if (name === 'DuckDBStructValue') {
       return Object.fromEntries(
-        Object.entries((val as { entries: Record<string, unknown> }).entries).map(([k, v]) => [k, convertBigInts(v)])
+        Object.entries((val as { entries: Record<string, unknown> }).entries).map(([k, v]) => [k, convertBigInts(v)]),
       )
     }
     if (Array.isArray(val)) return val.map(convertBigInts)
-    return Object.fromEntries(
-      Object.entries(val as Record<string, unknown>).map(([k, v]) => [k, convertBigInts(v)])
-    )
+    return Object.fromEntries(Object.entries(val as Record<string, unknown>).map(([k, v]) => [k, convertBigInts(v)]))
   }
   return val
 }
@@ -48,12 +55,14 @@ export async function queryScilHistory(dataDir: string): Promise<ScilHistoryRow[
 export async function queryScilRunDetails(dataDir: string, runId: string): Promise<ScilRunDetails> {
   validateRunId(runId)
   return withConnection(dataDir, async (conn) => {
-    const existsRows = (await conn.runAndReadAll(
-      `SELECT 1 FROM read_parquet('${dataDir}/scil-summary.parquet')
+    const existsRows = (
+      await conn.runAndReadAll(
+        `SELECT 1 FROM read_parquet('${dataDir}/scil-summary.parquet')
       WHERE test_run_id = $1
       LIMIT 1`,
-      [runId]
-    )).getRowObjects()
+        [runId],
+      )
+    ).getRowObjects()
     if (existsRows.length === 0) {
       throw new Error(`SCIL run not found: ${runId}`)
     }
@@ -100,12 +109,14 @@ export async function queryAcilHistory(dataDir: string): Promise<AcilHistoryRow[
 export async function queryAcilRunDetails(dataDir: string, runId: string): Promise<AcilRunDetails> {
   validateRunId(runId)
   return withConnection(dataDir, async (conn) => {
-    const existsRows = (await conn.runAndReadAll(
-      `SELECT 1 FROM read_parquet('${dataDir}/acil-summary.parquet')
+    const existsRows = (
+      await conn.runAndReadAll(
+        `SELECT 1 FROM read_parquet('${dataDir}/acil-summary.parquet')
       WHERE test_run_id = $1
       LIMIT 1`,
-      [runId]
-    )).getRowObjects()
+        [runId],
+      )
+    ).getRowObjects()
     if (existsRows.length === 0) {
       throw new Error(`ACIL run not found: ${runId}`)
     }

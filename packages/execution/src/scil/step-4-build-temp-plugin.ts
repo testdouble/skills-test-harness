@@ -5,7 +5,7 @@ export async function buildIterationPlugin(
   runDir: string,
   description: string,
   repoRoot: string,
-  iteration: number
+  iteration: number,
 ): Promise<{ tempDir: string }> {
   return buildTempPluginWithDescription(skillFile, runDir, description, repoRoot, iteration)
 }

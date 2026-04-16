@@ -1,34 +1,29 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { rm, mkdir, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
+import { mkdir, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { DuckDBInstance } from '@duckdb/node-api'
+import { loadFixtures } from '@testdouble/test-fixtures'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import {
   importJsonlToParquet,
-  updateAllParquet,
   queryPerTest,
-  queryTestRunSummaries,
   queryTestRunDetails,
+  queryTestRunSummaries,
+  updateAllParquet,
 } from './analytics.js'
 import {
-  queryScilHistory,
-  queryScilRunDetails,
-  queryAcilHistory,
-  queryAcilRunDetails,
-} from './run-status.js'
-import {
+  makeAcilIterationRecord,
+  makeConfigRecord,
+  makeResultRecord,
+  makeRunResultRecord,
+  makeScilIterationRecord,
   makeTmpDir,
+  writeAcilRunFixture,
   writeJsonl,
   writeRunFixture,
-  makeConfigRecord,
-  makeRunResultRecord,
-  makeResultRecord,
-  makeScilIterationRecord,
   writeScilRunFixture,
-  makeAcilIterationRecord,
-  writeAcilRunFixture,
 } from './analytics-test-helpers.js'
-import { loadFixtures } from '@testdouble/test-fixtures'
+import { queryAcilHistory, queryAcilRunDetails, queryScilHistory, queryScilRunDetails } from './run-status.js'
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -104,7 +99,7 @@ describe('importJsonlToParquet', () => {
 
     const rows = await readParquet<{ test_run_id: string }>(parquetPath)
     expect(rows).toHaveLength(2)
-    expect(rows.map(r => r.test_run_id).sort()).toEqual(['20260101T100001', '20260101T100002'])
+    expect(rows.map((r) => r.test_run_id).sort()).toEqual(['20260101T100001', '20260101T100002'])
   })
 
   it('does not duplicate records when the same test_run_id is imported twice', async () => {
@@ -207,7 +202,7 @@ describe('updateAllParquet', () => {
     await updateAllParquet({ outputDir, dataDir })
 
     const rows = await readParquet<{ type: string }>(path.join(dataDir, 'test-run.parquet'))
-    expect(rows.every(r => r.type === 'result')).toBe(true)
+    expect(rows.every((r) => r.type === 'result')).toBe(true)
   })
 
   it('returns empty updated list when no JSONL files exist', async () => {
@@ -231,8 +226,10 @@ describe('updateAllParquet', () => {
     const instance = await DuckDBInstance.create(':memory:')
     const conn = await instance.connect()
     const tmpJsonl = path.join(tmpDir, 'old.jsonl')
-    await writeFile(tmpJsonl, JSON.stringify(oldRecord) + '\n', 'utf8')
-    await conn.run(`COPY (SELECT * FROM read_json('${tmpJsonl}', format='newline_delimited')) TO '${oldSchemaParquet}' (FORMAT PARQUET)`)
+    await writeFile(tmpJsonl, `${JSON.stringify(oldRecord)}\n`, 'utf8')
+    await conn.run(
+      `COPY (SELECT * FROM read_json('${tmpJsonl}', format='newline_delimited')) TO '${oldSchemaParquet}' (FORMAT PARQUET)`,
+    )
     conn.closeSync()
 
     // Now create fresh run data
@@ -251,9 +248,9 @@ describe('updateAllParquet', () => {
 
     // Old-schema run should be gone; new data should be in
     const rows = await readParquet<{ test_run_id: string; type: string }>(oldSchemaParquet)
-    expect(rows.every(r => r.type === 'result')).toBe(true)
-    expect(rows.map(r => r.test_run_id)).toContain('20260101T100001')
-    expect(rows.map(r => r.test_run_id)).not.toContain('20260101T100099')
+    expect(rows.every((r) => r.type === 'result')).toBe(true)
+    expect(rows.map((r) => r.test_run_id)).toContain('20260101T100001')
+    expect(rows.map((r) => r.test_run_id)).not.toContain('20260101T100099')
   })
 })
 
@@ -265,11 +262,11 @@ describe('importJsonlToParquet (edge cases)', () => {
     const jsonlPath = path.join(runDir, 'test-run.jsonl')
     await mkdir(runDir, { recursive: true })
     // Mix of valid result event, malformed line, valid non-result event
-    const content = [
+    const content = `${[
       JSON.stringify(makeRunResultRecord({ testRunId: '20260101T100001', suite: 's', testName: 't' })),
       'not valid json {{{',
       JSON.stringify({ type: 'assistant', test_run_id: '20260101T100001', message: {} }),
-    ].join('\n') + '\n'
+    ].join('\n')}\n`
     await writeFile(jsonlPath, content, 'utf8')
 
     const parquetPath = path.join(tmpDir, 'out.parquet')
@@ -436,7 +433,7 @@ describe('queryTestRunDetails', () => {
       all_expectations_passed: false,
     })
     expect(details.expectations).toHaveLength(2)
-    expect(details.expectations.map(e => e.expect_type).sort()).toEqual(['result-contains', 'skill-call'])
+    expect(details.expectations.map((e) => e.expect_type).sort()).toEqual(['result-contains', 'skill-call'])
   })
 
   it('throws when testRunId does not exist in parquet', async () => {
@@ -459,8 +456,8 @@ describe('queryTestRunDetails', () => {
     await updateAllParquet({ outputDir, dataDir })
 
     const details = await queryTestRunDetails(dataDir, '20260101T000006')
-    expect(details.summary.every(r => r.test_run_id === '20260101T000006')).toBe(true)
-    expect(details.expectations.every(r => r.test_run_id === '20260101T000006')).toBe(true)
+    expect(details.summary.every((r) => r.test_run_id === '20260101T000006')).toBe(true)
+    expect(details.expectations.every((r) => r.test_run_id === '20260101T000006')).toBe(true)
   })
 
   it('rounds total_cost_usd to 4 decimal places in details', async () => {
@@ -512,7 +509,7 @@ describe('queryPerTest (JOIN edge cases)', () => {
 
     // run has no matching test-config — should be excluded from JOIN results
     const rows = await queryPerTest(dataDir)
-    expect(rows.map(r => r.test_run_id)).not.toContain('20260101T100001')
+    expect(rows.map((r) => r.test_run_id)).not.toContain('20260101T100001')
   })
 
   it('LEFT JOIN returns null all_expectations_passed when no test-results rows exist for run', async () => {
@@ -564,7 +561,10 @@ describe('queryTestRunDetails (missing parquet)', () => {
       makeRunResultRecord({ testRunId: '20260101T100001', suite: 's', testName: 't' }),
     ])
     // Manually import only test-run and test-config
-    await importJsonlToParquet({ jsonlGlob: `${outputDir}/*/test-config.jsonl`, parquetPath: path.join(dataDir, 'test-config.parquet') })
+    await importJsonlToParquet({
+      jsonlGlob: `${outputDir}/*/test-config.jsonl`,
+      parquetPath: path.join(dataDir, 'test-config.parquet'),
+    })
     await importJsonlToParquet({
       jsonlGlob: `${outputDir}/*/test-run.jsonl`,
       parquetPath: path.join(dataDir, 'test-run.parquet'),
@@ -600,7 +600,7 @@ describe('SCIL updateAllParquet', () => {
     await updateAllParquet({ outputDir, dataDir })
 
     const rows = await readParquet<{ test_run_id: string; iteration: number; skill_file: string }>(
-      path.join(dataDir, 'scil-iteration.parquet')
+      path.join(dataDir, 'scil-iteration.parquet'),
     )
     expect(rows).toHaveLength(2)
     expect(rows[0].skill_file).toBe('plugin:skill')
@@ -621,9 +621,7 @@ describe('SCIL updateAllParquet', () => {
 
     await updateAllParquet({ outputDir, dataDir })
 
-    const rows = await readParquet<Record<string, unknown>>(
-      path.join(dataDir, 'scil-summary.parquet')
-    )
+    const rows = await readParquet<Record<string, unknown>>(path.join(dataDir, 'scil-summary.parquet'))
     expect(rows).toHaveLength(1)
     expect(rows[0].test_run_id).toBe('20260101T200001')
     expect(rows[0].originalDescription).toBeDefined()
@@ -648,14 +646,10 @@ describe('SCIL updateAllParquet', () => {
     await updateAllParquet({ outputDir, dataDir })
     await updateAllParquet({ outputDir, dataDir })
 
-    const iterRows = await readParquet<{ test_run_id: string }>(
-      path.join(dataDir, 'scil-iteration.parquet')
-    )
+    const iterRows = await readParquet<{ test_run_id: string }>(path.join(dataDir, 'scil-iteration.parquet'))
     expect(iterRows).toHaveLength(1)
 
-    const sumRows = await readParquet<{ test_run_id: string }>(
-      path.join(dataDir, 'scil-summary.parquet')
-    )
+    const sumRows = await readParquet<{ test_run_id: string }>(path.join(dataDir, 'scil-summary.parquet'))
     expect(sumRows).toHaveLength(1)
   })
 })
@@ -722,7 +716,7 @@ describe('queryScilRunDetails', () => {
     await updateAllParquet({ outputDir, dataDir })
 
     const details = await queryScilRunDetails(dataDir, '20260101T000013')
-    expect(details.iterations.map(i => i.iteration)).toEqual([1, 2, 3])
+    expect(details.iterations.map((i) => i.iteration)).toEqual([1, 2, 3])
   })
 
   it('casts bestIteration as a number (not BigInt)', async () => {
@@ -800,7 +794,7 @@ describe('importJsonlToParquet (selectExpression)', () => {
 
     const rows = await readParquet<{ test_run_id: string; skill_file: string }>(parquetPath)
     expect(rows).toHaveLength(2)
-    expect(rows.every(r => r.skill_file === 'plugin:skill')).toBe(true)
+    expect(rows.every((r) => r.skill_file === 'plugin:skill')).toBe(true)
   })
 
   it('produces null skill_file when trainResults is empty', async () => {
@@ -881,7 +875,15 @@ describe('SCIL updateAllParquet (partial data)', () => {
     })
 
     const { updated } = await updateAllParquet({ outputDir, dataDir })
-    expect(updated.sort()).toEqual(['acil-iteration', 'acil-summary', 'scil-iteration', 'scil-summary', 'test-config', 'test-results', 'test-run'])
+    expect(updated.sort()).toEqual([
+      'acil-iteration',
+      'acil-summary',
+      'scil-iteration',
+      'scil-summary',
+      'test-config',
+      'test-results',
+      'test-run',
+    ])
   })
 
   it('aggregates multiple scil-summary.json files', async () => {
@@ -903,11 +905,9 @@ describe('SCIL updateAllParquet (partial data)', () => {
 
     await updateAllParquet({ outputDir, dataDir })
 
-    const rows = await readParquet<{ test_run_id: string }>(
-      path.join(dataDir, 'scil-summary.parquet')
-    )
+    const rows = await readParquet<{ test_run_id: string }>(path.join(dataDir, 'scil-summary.parquet'))
     expect(rows).toHaveLength(2)
-    expect(rows.map(r => r.test_run_id).sort()).toEqual(['20260101T200001', '20260101T200002'])
+    expect(rows.map((r) => r.test_run_id).sort()).toEqual(['20260101T200001', '20260101T200002'])
   })
 })
 
@@ -938,7 +938,7 @@ describe('queryScilHistory (additional cases)', () => {
 
     const rows = await queryScilHistory(dataDir)
     expect(rows.length).toBeGreaterThanOrEqual(2)
-    const skillFiles = rows.map(r => r.skill_file).sort()
+    const skillFiles = rows.map((r) => r.skill_file).sort()
     expect(skillFiles).toContain('plugin:skill-a')
     expect(skillFiles).toContain('plugin:skill-b')
   })
@@ -1089,7 +1089,7 @@ describe('updateAllParquet (ACIL tables)', () => {
 
     expect(updated).toContain('acil-iteration')
     const rows = await readParquet<{ test_run_id: string; agent_file: string }>(
-      path.join(dataDir, 'acil-iteration.parquet')
+      path.join(dataDir, 'acil-iteration.parquet'),
     )
     expect(rows).toHaveLength(1)
     expect(rows[0].agent_file).toBe('plugin:agent')
@@ -1110,9 +1110,7 @@ describe('updateAllParquet (ACIL tables)', () => {
 
     await updateAllParquet({ outputDir, dataDir })
 
-    const rows = await readParquet<Record<string, unknown>>(
-      path.join(dataDir, 'acil-summary.parquet')
-    )
+    const rows = await readParquet<Record<string, unknown>>(path.join(dataDir, 'acil-summary.parquet'))
     expect(rows).toHaveLength(1)
     expect(rows[0].test_run_id).toBe('20260101T300001')
     expect(rows[0].originalDescription).toBeDefined()
@@ -1136,14 +1134,10 @@ describe('updateAllParquet (ACIL tables)', () => {
     await updateAllParquet({ outputDir, dataDir })
     await updateAllParquet({ outputDir, dataDir })
 
-    const iterRows = await readParquet<{ test_run_id: string }>(
-      path.join(dataDir, 'acil-iteration.parquet')
-    )
+    const iterRows = await readParquet<{ test_run_id: string }>(path.join(dataDir, 'acil-iteration.parquet'))
     expect(iterRows).toHaveLength(1)
 
-    const sumRows = await readParquet<{ test_run_id: string }>(
-      path.join(dataDir, 'acil-summary.parquet')
-    )
+    const sumRows = await readParquet<{ test_run_id: string }>(path.join(dataDir, 'acil-summary.parquet'))
     expect(sumRows).toHaveLength(1)
   })
 })
@@ -1208,11 +1202,9 @@ describe('ACIL updateAllParquet (partial data)', () => {
 
     await updateAllParquet({ outputDir, dataDir })
 
-    const rows = await readParquet<{ test_run_id: string }>(
-      path.join(dataDir, 'acil-summary.parquet')
-    )
+    const rows = await readParquet<{ test_run_id: string }>(path.join(dataDir, 'acil-summary.parquet'))
     expect(rows).toHaveLength(2)
-    expect(rows.map(r => r.test_run_id).sort()).toEqual(['20260101T300001', '20260101T300002'])
+    expect(rows.map((r) => r.test_run_id).sort()).toEqual(['20260101T300001', '20260101T300002'])
   })
 })
 
@@ -1299,7 +1291,7 @@ describe('importJsonlToParquet (replaceRunIds)', () => {
 
     const rows = await readParquet<{ test_run_id: string }>(parquetPath)
     expect(rows).toHaveLength(2)
-    expect(rows.map(r => r.test_run_id).sort()).toEqual(['20260101T100001', '20260101T100002'])
+    expect(rows.map((r) => r.test_run_id).sort()).toEqual(['20260101T100001', '20260101T100002'])
   })
 })
 
@@ -1348,7 +1340,7 @@ describe('queryAcilHistory', () => {
 
     const rows = await queryAcilHistory(dataDir)
     expect(rows.length).toBeGreaterThanOrEqual(2)
-    const agentFiles = rows.map(r => r.agent_file).sort()
+    const agentFiles = rows.map((r) => r.agent_file).sort()
     expect(agentFiles).toContain('plugin:agent-a')
     expect(agentFiles).toContain('plugin:agent-b')
   })
@@ -1394,7 +1386,7 @@ describe('queryAcilRunDetails', () => {
     await updateAllParquet({ outputDir, dataDir })
 
     const details = await queryAcilRunDetails(dataDir, '20260101T000023')
-    expect(details.iterations.map(i => i.iteration)).toEqual([1, 2, 3])
+    expect(details.iterations.map((i) => i.iteration)).toEqual([1, 2, 3])
   })
 
   it('casts bestIteration as a number (not BigInt)', async () => {

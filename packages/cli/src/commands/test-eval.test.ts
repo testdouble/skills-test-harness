@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@testdouble/harness-execution', () => ({
   runTestEval: vi.fn(),
@@ -9,8 +9,8 @@ vi.mock('../paths.js', () => ({
   testsDir: '/mock-tests',
 }))
 
-import { handler, builder, command, describe as commandDescribe } from './test-eval.js'
-import { runTestEval, exitWithResult } from '@testdouble/harness-execution'
+import { exitWithResult, runTestEval } from '@testdouble/harness-execution'
+import { builder, command, describe as commandDescribe, handler } from './test-eval.js'
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -44,7 +44,7 @@ describe('test-eval builder', () => {
       },
     } as any
     builder(fakeYargs)
-    expect(positionals['test_run_id']).toMatchObject({ type: 'string' })
+    expect(positionals.test_run_id).toMatchObject({ type: 'string' })
   })
 })
 
@@ -63,9 +63,7 @@ describe('test-eval handler', () => {
   it('passes undefined testRunId when not provided', async () => {
     await handler({ test_run_id: undefined, debug: false })
 
-    expect(vi.mocked(runTestEval)).toHaveBeenCalledWith(
-      expect.objectContaining({ testRunId: undefined })
-    )
+    expect(vi.mocked(runTestEval)).toHaveBeenCalledWith(expect.objectContaining({ testRunId: undefined }))
   })
 
   it('always exits with 0', async () => {

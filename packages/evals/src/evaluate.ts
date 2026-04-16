@@ -1,11 +1,9 @@
 import path from 'node:path'
-import {
-  readJsonlFile, buildTestCaseId
-} from '@testdouble/harness-data'
-import type { TestConfigRecord, StreamJsonEvent, TestExpectation } from '@testdouble/harness-data'
+import type { StreamJsonEvent, TestConfigRecord, TestExpectation } from '@testdouble/harness-data'
+import { buildTestCaseId, readJsonlFile } from '@testdouble/harness-data'
 import { evaluateAllExpectations } from './boolean-evals.js'
 import { evaluateLlmJudge } from './llm-judge-eval.js'
-import type { EvalResult, BooleanEvalResult, OnProgress } from './types.js'
+import type { BooleanEvalResult, EvalResult, OnProgress } from './types.js'
 
 type StoredEvent = StreamJsonEvent & { test_run_id: string; test_case: string }
 
@@ -19,9 +17,7 @@ async function readRunData(runDir: string): Promise<{
   const nonResultEvents = storedEvents.filter((e: StoredEvent) => e.type !== 'result')
   const incompatible = nonResultEvents.some((e: StoredEvent) => e.test_case == null)
   if (incompatible) {
-    throw new Error(
-      'This run was created before test-eval support. Re-run with test-run to generate compatible data.'
-    )
+    throw new Error('This run was created before test-eval support. Re-run with test-run to generate compatible data.')
   }
 
   const eventsByTestCase = new Map<string, StreamJsonEvent[]>()
@@ -55,9 +51,7 @@ export async function evaluateTestRun(options: {
     const events = eventsByTestCase.get(testCaseId) ?? []
 
     // Boolean expectations
-    const booleanExpectations = test.expect.filter(
-      (e: TestExpectation) => e.type !== 'llm-judge'
-    )
+    const booleanExpectations = test.expect.filter((e: TestExpectation) => e.type !== 'llm-judge')
 
     for (const expectation of booleanExpectations) {
       onProgress?.({ type: 'eval-start', testName: test.name, expectType: expectation.type })

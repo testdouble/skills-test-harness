@@ -1,16 +1,15 @@
 import path from 'node:path'
+import { Hono } from 'hono'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { Hono } from 'hono'
-import { getTestRuns, getTestRunById } from './routes/test-runs'
-import { getPerTestAnalytics } from './routes/analytics'
-import { getScilHistory, getScilRunById } from './routes/scil'
-import { getAcilHistory, getAcilRunById } from './routes/acil'
-
+import indexCss from '../../dist/client/index.css' with { type: 'file' }
 // Embedded client files — resolved to $bunfs paths when compiled as a standalone executable
 import _indexHtml from '../../dist/client/index.html' with { type: 'file' }
 import indexJs from '../../dist/client/index.js' with { type: 'file' }
-import indexCss from '../../dist/client/index.css' with { type: 'file' }
+import { getAcilHistory, getAcilRunById } from './routes/acil'
+import { getPerTestAnalytics } from './routes/analytics'
+import { getScilHistory, getScilRunById } from './routes/scil'
+import { getTestRunById, getTestRuns } from './routes/test-runs'
 
 // default port
 const DEFAULT_PORT = 3099

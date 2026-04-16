@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { withConnection, _resetCache, _cacheSize } from './connection.js'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { _cacheSize, _resetCache, withConnection } from './connection.js'
 
 beforeEach(() => {
   _resetCache()
@@ -38,7 +38,7 @@ describe('withConnection', () => {
     await expect(
       withConnection(':memory:', async () => {
         throw new Error('callback error')
-      })
+      }),
     ).rejects.toThrow('callback error')
   })
 })

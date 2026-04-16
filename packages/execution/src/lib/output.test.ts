@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@testdouble/harness-data', () => ({
   ensureOutputDir: vi.fn(),
@@ -7,7 +7,7 @@ vi.mock('@testdouble/harness-data', () => ({
   buildTestCaseId: vi.fn(),
 }))
 
-import { ensureOutputDir, appendTestConfig, appendTestRun, buildTestCaseId } from '@testdouble/harness-data'
+import { appendTestConfig, appendTestRun, buildTestCaseId, ensureOutputDir } from '@testdouble/harness-data'
 import { writeTestOutput } from './output.js'
 
 const mockTest = {
@@ -16,9 +16,7 @@ const mockTest = {
   expect: [],
 }
 
-const mockEvents = [
-  { type: 'system' as const, subtype: 'init' as const, session_id: 'abc' },
-]
+const mockEvents = [{ type: 'system' as const, subtype: 'init' as const, session_id: 'abc' }]
 
 beforeEach(() => {
   vi.clearAllMocks()

@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest'
-import type { AcilQueryResult, AcilIterationResult } from './types.js'
-import type { Phase } from './phase.js'
+import { describe, expect, it } from 'vitest'
 import { buildAcilImprovementPrompt } from './acil-prompt.js'
+import type { Phase } from './phase.js'
+import type { AcilIterationResult, AcilQueryResult } from './types.js'
 
 function makeAcilQueryResult(overrides: Partial<AcilQueryResult> = {}): AcilQueryResult {
   return {
