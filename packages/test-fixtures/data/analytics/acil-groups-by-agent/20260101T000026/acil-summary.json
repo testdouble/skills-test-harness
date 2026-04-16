@@ -3,7 +3,5 @@
   "originalDescription": "agent-a desc",
   "bestIteration": 1,
   "bestDescription": "agent-a desc",
-  "iterations": [
-    { "iteration": 1, "trainAccuracy": 0.9, "testAccuracy": null, "description": "agent-a desc" }
-  ]
+  "iterations": [{ "iteration": 1, "trainAccuracy": 0.9, "testAccuracy": null, "description": "agent-a desc" }]
 }
