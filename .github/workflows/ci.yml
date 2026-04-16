@@ -59,7 +59,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
-      - run: npm audit --audit-level=moderate
+      - run: bun audit --audit-level=moderate
 
   lockfile-integrity:
     name: Lockfile Integrity
