@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs'
 import { readdir, readFile, rename, unlink, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
-import { DuckDBInstance } from '@duckdb/node-api'
+import { type DuckDBConnection, DuckDBInstance } from '@duckdb/node-api'
 import { withConnection } from './connection.js'
 import type {
   AcilSummaryRecord,
@@ -19,8 +19,7 @@ import type {
 } from './types.js'
 import { InvalidRunIdError } from './types.js'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function infraErrorCondition(conn: any, dataDir: string): Promise<string> {
+async function infraErrorCondition(conn: DuckDBConnection, dataDir: string): Promise<string> {
   try {
     const cols = (
       await conn.runAndReadAll(

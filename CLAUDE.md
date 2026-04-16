@@ -22,6 +22,7 @@
 - [Exhaustive Switch Statements](docs/coding-standards/exhaustive-switch-statements.md) — Default case with never type assertion for discriminated union switches, block scope, include discriminant in error message
 - [Vacuous Truth Guards](docs/coding-standards/vacuous-truth-guards.md) — Check array length before .every() to prevent empty arrays from triggering success-path logic
 - [Consistent Derived Key Usage](docs/coding-standards/consistent-derived-key-usage.md) — All write and read paths for JSONL records must use the same key derivation function (e.g., buildTestCaseId) to prevent silent empty-result mismatches
+- [No Lint Disabling](docs/coding-standards/no-lint-disabling.md) — No lint-disable comments or per-file rule overrides; fix the code, import the right type, or change the rule globally
 
 ### testdouble-harness
 

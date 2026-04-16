@@ -1,4 +1,4 @@
-import { DuckDBInstance } from '@duckdb/node-api'
+import { type DuckDBConnection, DuckDBInstance } from '@duckdb/node-api'
 
 const instanceCache = new Map<string, DuckDBInstance>()
 
@@ -11,8 +11,7 @@ async function getInstance(dataDir: string): Promise<DuckDBInstance> {
   return instance
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function withConnection<T>(dataDir: string, fn: (conn: any) => Promise<T>): Promise<T> {
+export async function withConnection<T>(dataDir: string, fn: (conn: DuckDBConnection) => Promise<T>): Promise<T> {
   const instance = await getInstance(dataDir)
   const conn = await instance.connect()
   try {
