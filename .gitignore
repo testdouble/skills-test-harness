@@ -2,8 +2,8 @@
 .claude/settings.local.json
 *.zip
 .env
-output/
-analytics/
+/output/
+/analytics/
 node_modules/
 logs/
 harness-web

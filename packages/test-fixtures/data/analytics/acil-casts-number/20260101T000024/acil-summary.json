@@ -1,0 +1,9 @@
+{
+  "test_run_id": "20260101T000024",
+  "originalDescription": "agent desc",
+  "bestIteration": 1,
+  "bestDescription": "agent desc",
+  "iterations": [
+    { "iteration": 1, "trainAccuracy": 1, "testAccuracy": null, "description": "agent desc" }
+  ]
+}

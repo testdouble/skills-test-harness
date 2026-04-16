@@ -1,0 +1,2 @@
+{"test_run_id":"20260101T000004","suite":"s","test_name":"my test","expect_type":"result-contains","expect_value":"hello","passed":true}
+{"test_run_id":"20260101T000004","suite":"s","test_name":"my test","expect_type":"skill-call","expect_value":"my-skill","passed":false}

@@ -1,0 +1,2 @@
+{"test_run_id":"20260101T000026","iteration":1,"description":"agent-a desc","trainResults":[{"testName":"Agent Call: a","agentFile":"plugin:agent-a","expected":true,"actual":true,"passed":true,"runIndex":0}],"testResults":[],"trainAccuracy":0.9,"testAccuracy":null}
+{"test_run_id":"20260101T000026","iteration":1,"description":"agent-b desc","trainResults":[{"testName":"Agent Call: b","agentFile":"plugin:agent-b","expected":true,"actual":true,"passed":true,"runIndex":0}],"testResults":[],"trainAccuracy":0.7,"testAccuracy":null}

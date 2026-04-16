@@ -1,0 +1,2 @@
+{"test_run_id":"20260101T000016","iteration":1,"description":"test description","trainResults":[{"testName":"test","skillFile":"plugin:skill-a","expected":true,"actual":true,"passed":true,"runIndex":0}],"testResults":[],"trainAccuracy":1,"testAccuracy":null}
+{"test_run_id":"20260101T000016","iteration":2,"description":"test description","trainResults":[{"testName":"test","skillFile":"plugin:skill-b","expected":true,"actual":true,"passed":true,"runIndex":0}],"testResults":[],"trainAccuracy":1,"testAccuracy":null}
