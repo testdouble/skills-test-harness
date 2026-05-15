@@ -104,7 +104,7 @@ Add an `llm-judge` expectation to a skill-prompt test in `tests.json`:
 
 A threshold of `0.8` with 10 criteria means at least 8 must pass. The harness validates that the rubric file exists at load time.
 
-For the full field reference, see [Test Suite Configuration](test-suite-reference.md).
+For the full field reference, see [Test Suite Reference](test-suite-reference.md).
 
 ## Step 2: Run the Tests
 

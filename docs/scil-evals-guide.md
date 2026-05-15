@@ -88,7 +88,7 @@ Configure the test suite with `"type": "skill-call"` tests. Each test points to 
 - Aim for 3-5 positive triggers and 3+ negative triggers
 - Include sibling triggers when the plugin has multiple skills
 
-For the full field reference, see [Test Suite Configuration](test-suite-reference.md).
+For the full field reference, see [Test Suite Reference](test-suite-reference.md).
 
 ## Step 2: Run and Evaluate
 

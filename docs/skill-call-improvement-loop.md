@@ -220,7 +220,7 @@ Apply this description to SKILL.md? [y/N]
 ## Related References
 
 - [Building SCIL Evals](scil-evals-guide.md) — step-by-step guide covering the full workflow from writing tests to running SCIL
-- [Test Suite Configuration](test-suite-reference.md) — full tests.json field reference for `skill-call` type tests
+- [Test Suite Reference](test-suite-reference.md) — full tests.json field reference for `skill-call` type tests
 - [Writing Skill-Call Evals](write-scil-evals.md) — using the `/write-scil-evals` skill to generate test suites
 - [Test Harness README](../README.md) — prerequisites, setup, and running tests
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Docker sandbox

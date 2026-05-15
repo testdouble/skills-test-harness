@@ -255,7 +255,7 @@ JOIN read_parquet('analytics/data/scil-iteration.parquet') i
 ## Related References
 
 - [Test Harness README](../README.md) — analytics commands and web app
-- [Test Suite Configuration](test-suite-reference.md) — tests.json field reference (source of config and results data)
+- [Test Suite Reference](test-suite-reference.md) — tests.json field reference (source of config and results data)
 - [LLM Judge Evaluation](llm-judge.md) — explains the `llm-judge` and `llm-judge-aggregate` result types and their fields
 - [Skill Call Improvement Loop](skill-call-improvement-loop.md) — SCIL mechanics and output files
 - [Data Package](data.md) — DuckDB queries and JSONL-to-Parquet import logic that populates these tables

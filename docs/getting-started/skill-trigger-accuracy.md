@@ -40,7 +40,7 @@ It generates two things in `tests/test-suites/{skill-name}/`:
 - `tests.json` — the test configuration with one entry per prompt
 - `prompts/skill-call-*.md` — individual prompt files
 
-For details on the skill's full workflow and prompt category conventions, see [Writing Skill-Call Evals](../write-scil-evals.md). For the complete `tests.json` field reference, see [Test Suite Configuration](../test-suite-reference.md).
+For details on the skill's full workflow and prompt category conventions, see [Writing Skill-Call Evals](../write-scil-evals.md). For the complete `tests.json` field reference, see [Test Suite Reference](../test-suite-reference.md).
 
 ## Step 2: Run the test suite
 
