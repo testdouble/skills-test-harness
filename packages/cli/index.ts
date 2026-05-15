@@ -4,6 +4,7 @@ import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
 try {
+
   await yargs(hideBin(process.argv))
     .scriptName('harness')
     .command(await import('./src/commands/test-run.js'))
@@ -18,6 +19,7 @@ try {
     .strict()
     .showHelpOnFail(true)
     .parseAsync()
+
 } catch (err) {
   if (err instanceof HarnessError) {
     process.stderr.write(`Error: ${err.message}\n`)
