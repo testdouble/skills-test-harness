@@ -1,8 +1,12 @@
 # Improving Agent Trigger Accuracy
 
-This guide assumes you've completed the setup steps in the [Test Harness README](../../README.md).
+> **Tier 1 · Agent authors.** Assumes you've completed [setup](../../README.md#setup). This page gets you a first agent-call test suite run end-to-end, with results you can review.
 
-Agent trigger accuracy measures whether Claude correctly delegates tasks to your custom agent. When trigger accuracy is low, your agent either gets invoked on unrelated prompts (false positives) or fails to activate when it should (false negatives). This guide walks you through creating agent-call tests, running them, and reviewing the results.
+Create agent-call tests, run them, and review whether Claude delegates to your agent correctly.
+
+## What you'll learn
+
+Agent trigger accuracy measures whether Claude correctly delegates tasks to your custom agent. When it's low, your agent either gets invoked on unrelated prompts (false positives) or fails to activate when it should (false negatives). You improve trigger accuracy by tuning your agent's description so Claude has a sharper sense of when to delegate to it.
 
 ## What you'll do
 
@@ -82,7 +86,7 @@ Launch the harness-web dashboard to inspect your test run:
 
 Open `http://localhost:3099` in your browser. You'll see your test run in the Test Run History page, and can click through to see per-test pass/fail results. For a full walkthrough of the dashboard, see [Viewing Results](viewing-results.md).
 
-## Next Steps
+---
 
-- **Improve your trigger description** — Use the ACIL (Agent Call Improvement Loop) to iteratively refine your agent's description based on test failures. See [Agent Call Improvement Loop](../agent-call-improvement-loop.md) for mechanics and CLI flags.
-- **Measure agent output quality** — Once your agent triggers reliably, you can measure how well it performs its job using rubric evals. See [Improving Agent Effectiveness](agent-effectiveness.md).
+**Next:** [Agent Call Improvement Loop](../agent-call-improvement-loop.md) — run the ACIL loop to iteratively refine your agent's description from test failures.
+**Related:** [Improving Agent Effectiveness](agent-effectiveness.md) — once delegation is reliable, measure how well the agent does its job.

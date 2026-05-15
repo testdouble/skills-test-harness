@@ -1,8 +1,12 @@
 # Improving Skill Trigger Accuracy
 
-This guide assumes you've completed the setup steps in the [Test Harness README](../../README.md).
+> **Tier 1 · Skill authors.** Assumes you've completed [setup](../../README.md#setup). This page gets you a first skill-call test suite run end-to-end, with results you can review.
 
-Skill trigger accuracy measures whether Claude correctly routes user prompts to your custom skill. When trigger accuracy is low, your skill either fires on unrelated prompts (false positives) or fails to fire when it should (false negatives). This guide walks you through creating skill-call tests, running them, and reviewing the results.
+Create skill-call tests, run them, and review whether Claude routes prompts to your skill correctly.
+
+## What you'll learn
+
+Skill trigger accuracy measures whether Claude correctly routes user prompts to your custom skill. When it's low, your skill either fires on unrelated prompts (false positives) or fails to fire when it should (false negatives). You improve trigger accuracy by tuning your skill's description so Claude has a sharper sense of when to call it.
 
 ## What you'll do
 
@@ -82,7 +86,7 @@ Launch the harness-web dashboard to inspect your test run:
 
 Open `http://localhost:3099` in your browser. You'll see your test run in the Test Run History page, and can click through to see per-test pass/fail results. For a full walkthrough of the dashboard, see [Viewing Results](viewing-results.md).
 
-## Next Steps
+---
 
-- **Improve your trigger description** — Use the SCIL (Skill Call Improvement Loop) to iteratively refine your skill's description based on test failures. See [Skill Call Improvement Loop](../skill-call-improvement-loop.md) for mechanics and CLI flags, and [Building SCIL Evals](../scil-evals-guide.md) for the full guide including manual test authoring and iteration strategies.
-- **Measure skill output quality** — Once your skill triggers reliably, you can measure how well it performs its job using rubric evals. See [Improving Skill Effectiveness](skill-effectiveness.md).
+**Next:** [Building SCIL Evals](../scil-evals-guide.md) — manual test authoring and iteration strategies for the Skill Call Improvement Loop, which refines your skill's description from test failures. For the loop's mechanics and CLI flags, see [Skill Call Improvement Loop](../skill-call-improvement-loop.md).
+**Related:** [Improving Skill Effectiveness](skill-effectiveness.md) — once triggering is reliable, measure how well the skill does its job.

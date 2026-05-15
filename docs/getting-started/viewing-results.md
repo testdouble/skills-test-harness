@@ -1,8 +1,8 @@
 # Viewing Results in the Dashboard
 
-This guide assumes you've completed the setup steps in the [Test Harness README](../../README.md) and have run at least one test suite.
+> **Tier 1 · Anyone reviewing results.** Assumes you've completed [setup](../../README.md#setup), run at least one test suite, and imported data with `./harness update-analytics-data` (see [Analytics](analytics.md) for the import command). This page gets you a browser dashboard for inspecting every test run, improvement loop, and cross-run trend.
 
-The harness-web dashboard lets you inspect test run results, SCIL and ACIL improvement loop history, and cross-run analytics — all from your browser. This guide walks through launching the dashboard and using each page.
+Launch the harness-web dashboard and use each page to inspect test run results, SCIL and ACIL improvement loop history, and cross-run analytics — all from your browser.
 
 ## Launching the dashboard
 
@@ -126,3 +126,8 @@ This is useful for spotting patterns over time — which suites are improving, w
 - [Web Dashboard (architecture)](../web.md) — API endpoints, component hierarchy, and technical details
 - [LLM Judge Evaluation](../llm-judge.md) — how the judge scores criteria
 - [Parquet Schema](../parquet-schema.md) — field reference for the underlying analytics data
+
+---
+
+**Next:** [Analytics](analytics.md) — query the same data from the CLI and understand the import that feeds this dashboard.
+**Related:** [LLM Judge Evaluation](../llm-judge.md) — how the per-criterion scores in the dashboard's LLM judge section are produced.

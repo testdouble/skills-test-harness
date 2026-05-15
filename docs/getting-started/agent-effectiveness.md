@@ -1,8 +1,12 @@
 # Improving Agent Effectiveness
 
-This guide assumes you've completed the setup steps in the [Test Harness README](../../README.md).
+> **Tier 1 · Agent authors.** Assumes you've completed [setup](../../README.md#setup). This page gets you a first rubric-scored agent run end-to-end, with LLM-judge results you can review.
 
-Agent effectiveness measures how well your agent performs its job — not whether it triggers, but whether its output meets quality criteria. You define those criteria in a rubric, and an LLM judge scores the agent's output against them. This guide walks you through creating a project scaffold, writing rubric evals, running them, and reviewing the results.
+Build a scaffold, write rubric evals, run them, and have an LLM judge score your agent's output against your quality criteria.
+
+## What you'll learn
+
+Agent effectiveness measures how well your agent performs its job — not whether it triggers, but whether its output meets quality criteria. You define those criteria in a rubric, and an LLM judge scores the agent's output against them. Effectiveness is independent of trigger accuracy: an agent can be delegated to reliably and still produce weak output.
 
 ## What you'll do
 
@@ -121,7 +125,7 @@ Launch the harness-web dashboard to inspect your test run and judge results:
 
 Open `http://localhost:3099` in your browser. Navigate to your test run to see per-criterion pass/fail results from the LLM judge, including the reasoning behind each score. For a full walkthrough of the dashboard, see [Viewing Results](viewing-results.md).
 
-## Next Steps
+---
 
-- **Iterate on your rubric** — Refine criteria based on judge results. The judge re-evaluates from stored output, so you can adjust criteria without re-running the agent. See [Building Rubric Evals](../rubric-evals-guide.md) for iteration strategies and tips on writing effective criteria.
-- **Measure trigger accuracy** — If your agent isn't triggering reliably, you can measure and improve when Claude delegates to it using agent-call tests. See [Improving Agent Trigger Accuracy](agent-trigger-accuracy.md).
+**Next:** [Building Rubric Evals](../rubric-evals-guide.md) — iterate on rubric criteria and re-score stored output without re-running the agent.
+**Related:** [Improving Agent Trigger Accuracy](agent-trigger-accuracy.md) — if the agent isn't being delegated to reliably, measure and improve when Claude calls it.
