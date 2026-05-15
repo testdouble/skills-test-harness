@@ -1,19 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@testdouble/docker-integration', () => ({
+vi.mock('@testdouble/sandbox-integration', () => ({
   removeSandbox: vi.fn(),
   SANDBOX_NAME: 'claude-skills-harness',
-  DockerError: class DockerError extends Error {
+  SandboxError: class SandboxError extends Error {
     exitCode: number | null
     constructor(message: string, exitCode: number | null) {
       super(message)
-      this.name = 'DockerError'
+      this.name = 'SandboxError'
       this.exitCode = exitCode
     }
   },
 }))
 
-import { DockerError, removeSandbox } from '@testdouble/docker-integration'
+import { SandboxError, removeSandbox } from '@testdouble/sandbox-integration'
 import { HarnessError } from '@testdouble/harness-execution'
 import { command, describe as commandDescribe, handler } from './clean.js'
 
@@ -52,9 +52,9 @@ describe('clean handler', () => {
     logSpy.mockRestore()
   })
 
-  it('throws HarnessError when removeSandbox throws DockerError', async () => {
+  it('throws HarnessError when removeSandbox throws SandboxError', async () => {
     vi.mocked(removeSandbox).mockRejectedValue(
-      new DockerError('Docker sandbox rm failed (exit code 1): error output', 1),
+      new SandboxError('Test Sandbox rm failed (exit code 1): error output', 1),
     )
 
     await expect(handler()).rejects.toThrow(HarnessError)

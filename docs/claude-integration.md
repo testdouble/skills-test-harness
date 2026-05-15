@@ -2,7 +2,7 @@
 
 > **Tier 5 · Contributor reference.** Internal documentation for the `packages/claude-integration` package; there is no user-facing equivalent. If you arrived here as a user, start at the [Test Harness README](../README.md).
 
-Change this package when you need to touch how the harness invokes Claude inside the Docker sandbox — the CLI flag construction, plugin-directory resolution, output-file extraction, or the sandbox shell scripts. It wraps the Claude CLI behind a programmatic TypeScript API so test runners and eval pipelines never construct CLI arguments directly.
+Change this package when you need to touch how the harness invokes Claude inside the Test Sandbox — the CLI flag construction, plugin-directory resolution, output-file extraction, or the sandbox shell scripts. It wraps the Claude CLI behind a programmatic TypeScript API so test runners and eval pipelines never construct CLI arguments directly.
 
 - **Last Updated:** 2026-05-15
 - **Authors:**
@@ -10,7 +10,7 @@ Change this package when you need to touch how the harness invokes Claude inside
 
 ## Overview
 
-- The `@testdouble/claude-integration` package provides the `runClaude` function, which builds the full set of Claude CLI flags and delegates execution to the `@testdouble/docker-integration` sandbox.
+- The `@testdouble/claude-integration` package provides the `runClaude` function, which builds the full set of Claude CLI flags and delegates execution to the `@testdouble/sandbox-integration` sandbox.
 - Consumers never construct Claude CLI arguments themselves -- they pass a typed `ClaudeRunOptions` object and get back a `ClaudeRunResult` with exit code, stdout, and stderr.
 - `resolvePluginDirs` converts relative plugin directory names to absolute paths anchored at a repository root, used by the CLI package when building test runner flags.
 - `ClaudeError` is a custom error class carrying the process exit code for structured error handling in callers.
@@ -47,9 +47,9 @@ Key files:
              │  execInSandbox(script, args, scaffold, debug)
              ▼
   ┌──────────────────────────────────────────────────────────────────┐
-  │              @testdouble/docker-integration                      │
+  │              @testdouble/sandbox-integration                      │
   │                                                                  │
-  │  sandbox-run.sh ──▶ Docker sandbox ──▶ claude CLI                │
+  │  sandbox-run.sh ──▶ Test Sandbox ──▶ claude CLI                │
   └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -63,7 +63,7 @@ Key files:
 | `packages/claude-integration/src/plugin-flags.ts` | Resolves relative plugin directory names to absolute paths using `path.join` |
 | `packages/claude-integration/src/extract-output-files.ts` | Extracts output files written by skills/agents from the sandbox via `sandbox-extract.sh` |
 | `packages/claude-integration/src/errors.ts` | Custom `ClaudeError` class extending `Error` with an `exitCode` property |
-| `packages/claude-integration/sandbox-run.sh` | Shell script executed inside the Docker sandbox to set up a scaffold git repo and invoke `claude` |
+| `packages/claude-integration/sandbox-run.sh` | Shell script executed inside the Test Sandbox to set up a scaffold git repo and invoke `claude` |
 | `packages/claude-integration/sandbox-extract.sh` | Shell script that finds and extracts files written by skills/agents inside the sandbox, outputting JSON lines |
 
 ## Core Types
@@ -99,7 +99,7 @@ export interface OutputFile {
 export async function extractOutputFiles(debug: boolean): Promise<OutputFile[]>
 ```
 
-`extractOutputFiles` runs `sandbox-extract.sh` inside the Docker sandbox to find and capture files that were written by the skill or agent during execution. The script outputs JSON lines (`{ path, content }`) to stdout, which are parsed into `OutputFile` objects. Returns an empty array when no files were written or the script produces no output.
+`extractOutputFiles` runs `sandbox-extract.sh` inside the Test Sandbox to find and capture files that were written by the skill or agent during execution. The script outputs JSON lines (`{ path, content }`) to stdout, which are parsed into `OutputFile` objects. Returns an empty array when no files were written or the script produces no output.
 
 ## Implementation Details
 
@@ -140,7 +140,7 @@ const sandboxRunScript = resolveRelativePath(
 
 ### Sandbox Script Behavior
 
-The `sandbox-run.sh` script runs inside the Docker sandbox and performs two tasks:
+The `sandbox-run.sh` script runs inside the Test Sandbox and performs two tasks:
 
 1. **Scaffold setup** (optional) -- If a scaffold path is provided and exists as a directory, the script copies its contents into a temporary directory, initializes a git repository with an initial commit, and changes into that directory. This gives Claude a realistic working tree.
 2. **Claude execution** -- Runs `claude` with all remaining arguments via `exec`, replacing the shell process.
@@ -188,11 +188,11 @@ export class ClaudeError extends Error {
 
 ### Test Patterns
 
-All tests mock `@testdouble/docker-integration` and `@testdouble/bun-helpers` at the module level using `vi.mock()`. The `run-claude.test.ts` suite verifies argument construction by inspecting `vi.mocked(execInSandbox).mock.calls` rather than testing actual sandbox execution. Mocks are cleared in `beforeEach` to prevent cross-test contamination.
+All tests mock `@testdouble/sandbox-integration` and `@testdouble/bun-helpers` at the module level using `vi.mock()`. The `run-claude.test.ts` suite verifies argument construction by inspecting `vi.mocked(execInSandbox).mock.calls` rather than testing actual sandbox execution. Mocks are cleared in `beforeEach` to prevent cross-test contamination.
 
 ## Related References
 
-- [Docker Integration](./docker-integration.md) - The underlying sandbox execution layer that `runClaude` delegates to
+- [Sandbox Integration](./sandbox-integration.md) - The underlying sandbox execution layer that `runClaude` delegates to
 - [Test Harness Architecture](./test-harness-architecture.md) — System architecture showing how claude-integration fits into the package dependency graph
 - [CLI Package](./cli.md) — CLI commands that invoke `runClaude()` for test execution and SCIL
 - [Evals Package](./evals.md) — Evaluation engine that invokes `runClaude()` for LLM judge assessments
@@ -200,5 +200,5 @@ All tests mock `@testdouble/docker-integration` and `@testdouble/bun-helpers` at
 
 ---
 
-**Next:** [Docker Integration](./docker-integration.md) — the underlying sandbox execution layer that `runClaude()` delegates to via `execInSandbox`.
+**Next:** [Sandbox Integration](./sandbox-integration.md) — the underlying sandbox execution layer that `runClaude()` delegates to via `execInSandbox`.
 **Related:** [Bun Helpers](./bun-helpers.md) — the cross-runtime path resolution used to locate `sandbox-run.sh`.

@@ -30,8 +30,8 @@
 - Test: `make test` (Vitest, unit + integration)
 - Build: `make build` (Bun compile + Vite 8)
 - Dev server: `make dev`
-- Packages: `packages/cli` (Yargs CLI), `packages/execution` (test-run, test-eval, SCIL/ACIL orchestration), `packages/data` (DuckDB), `packages/web` (Hono + React 18 + Tailwind v4), `packages/test-fixtures`, `packages/docker-integration` (Docker sandbox API)
-- See [`docs/docker-integration.md`](docs/docker-integration.md) for Docker sandbox architecture, API reference, and consumer patterns
+- Packages: `packages/cli` (Yargs CLI), `packages/execution` (test-run, test-eval, SCIL/ACIL orchestration), `packages/data` (DuckDB), `packages/web` (Hono + React 18 + Tailwind v4), `packages/test-fixtures`, `packages/sandbox-integration` (Test Sandbox API)
+- See [`docs/sandbox-integration.md`](docs/sandbox-integration.md) for Test Sandbox architecture, API reference, and consumer patterns
 - See [`docs/test-harness-architecture.md`](docs/test-harness-architecture.md) for system architecture, package boundaries, data flow, and dependency graph
 - See [`docs/execution.md`](docs/execution.md) for the execution package: test-run pipeline, test-eval, SCIL/ACIL loops, error hierarchy, and path config
 - See [`docs/cli.md`](docs/cli.md) for the CLI package: thin Yargs wrapper, command definitions, path resolution
@@ -41,14 +41,14 @@
 - See [`docs/data.md`](docs/data.md) for the shared data layer: types, config parsing, JSONL I/O, DuckDB analytics, stream parsing, and SCIL/ACIL utilities
 - See [`docs/web.md`](docs/web.md) for the web dashboard: Hono API server, React SPA, test run and SCIL views, per-test analytics
 - See [`docs/evals.md`](docs/evals.md) for the evaluation engine: boolean evals, LLM judge scoring, rubric parsing, and the `evaluateTestRun` orchestrator
-- See [`docs/docker-integration-package.md`](docs/docker-integration-package.md) for the Docker integration package deep-dive: full public API, error handling matrix, and testing patterns
+- See [`docs/sandbox-integration-package.md`](docs/sandbox-integration-package.md) for the sandbox integration package deep-dive: full public API, error handling matrix, and testing patterns
 
 ### Guides and Configuration
 
 - See [`docs/scil-evals-guide.md`](docs/scil-evals-guide.md) for building and running SCIL trigger accuracy evals
 - See [`docs/rubric-evals-guide.md`](docs/rubric-evals-guide.md) for building and running LLM-judge quality evals
 - See [`docs/test-suite-reference.md`](docs/test-suite-reference.md) for the full tests.json field reference
-- See [`docs/test-scaffolding.md`](docs/test-scaffolding.md) for how scaffolds provide project context in the Docker sandbox
+- See [`docs/test-scaffolding.md`](docs/test-scaffolding.md) for how scaffolds provide project context in the Test Sandbox
 - See [`docs/skill-call-improvement-loop.md`](docs/skill-call-improvement-loop.md) for SCIL mechanics: holdout splits, scoring, improvement prompt
 - See [`docs/agent-call-improvement-loop.md`](docs/agent-call-improvement-loop.md) for ACIL mechanics: agent detection, temp plugin isolation, holdout splits, scoring
 - See [`docs/llm-judge.md`](docs/llm-judge.md) for judge mechanics: prompt construction, scoring, output format

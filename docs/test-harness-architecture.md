@@ -4,7 +4,7 @@
 
 This page maps the whole harness so you can locate the package and module that owns a change. It covers the nine workspace packages and their layering, the package dependency rules you must not violate, the four-stage data flow (execution → evaluation → analytics → dashboard), and the steps to add a new package.
 
-The test harness is a monorepo workspace that executes AI skill evaluations inside Docker sandboxes, stores results as JSONL/Parquet, and serves a web dashboard for analysis.
+The test harness is a monorepo workspace that executes AI skill evaluations inside Test Sandboxes, stores results as JSONL/Parquet, and serves a web dashboard for analysis.
 
 - **Last Updated:** 2026-05-15
 - **Authors:**
@@ -12,10 +12,10 @@ The test harness is a monorepo workspace that executes AI skill evaluations insi
 
 ## System Summary
 
-- Nine workspace packages under `packages/` form a layered architecture: CLI (thin Yargs wrapper), execution orchestration, shared data layer, evaluation logic, Claude CLI integration, Docker sandbox integration, web dashboard, cross-runtime utilities, and test fixtures
+- Nine workspace packages under `packages/` form a layered architecture: CLI (thin Yargs wrapper), execution orchestration, shared data layer, evaluation logic, Claude CLI integration, Test Sandbox integration, web dashboard, cross-runtime utilities, and test fixtures
 - Test suites defined in `test-suites/` drive the system — each suite contains a `tests.json` config, prompt files, optional rubrics, and optional scaffolds
 - Data flows through three stages: **execution** (execution package runs Claude in Docker via CLI commands, writes JSONL to `output/`), **evaluation** (execution package scores results via harness-evals, appends to JSONL), and **analysis** (DuckDB imports JSONL to Parquet in `analytics/`, web serves queries over it)
-- All Claude invocations happen inside a named Docker sandbox (`claude-skills-harness`), providing filesystem isolation and reproducibility
+- All Claude invocations happen inside a named Test Sandbox (`claude-skills-harness`), providing filesystem isolation and reproducibility
 
 Key files:
 - `packages/cli/index.ts` — CLI entry point (compiled to `./harness` binary)
@@ -23,7 +23,7 @@ Key files:
 - `packages/data/index.ts` — Shared data layer (types, config parsing, JSONL I/O, DuckDB analytics)
 - `packages/evals/index.ts` — Evaluation logic (boolean evals + LLM judge)
 - `packages/claude-integration/index.ts` — Claude CLI execution API (options, plugin dirs, error handling)
-- `packages/docker-integration/index.ts` — Docker sandbox execution API
+- `packages/sandbox-integration/index.ts` — Test Sandbox execution API
 - `packages/web/src/server/index.ts` — Web dashboard server (compiled to `./harness-web` binary)
 
 ## Architecture
@@ -79,7 +79,7 @@ Key files:
                                |                           |
                                v                           |
                       +------------------+                 |
-                      | Docker Sandbox   |                 |
+                      | Test Sandbox   |                 |
                       | (Claude)         |                 |
                       +------------------+                 |
                                                            |
@@ -118,20 +118,20 @@ Key files:
 ```
 harness-cli ────────▶ harness-execution
             ────────▶ harness-data        (update-analytics command)
-            ────────▶ docker-integration  (shell, clean, sandbox-setup commands)
+            ────────▶ sandbox-integration  (shell, clean, sandbox-setup commands)
 
 harness-execution ──▶ harness-data
                   ──▶ harness-evals
                   ──▶ claude-integration
-                  ──▶ docker-integration
+                  ──▶ sandbox-integration
 
 harness-evals ──────▶ harness-data
               ──────▶ claude-integration
 
-claude-integration ─▶ docker-integration
+claude-integration ─▶ sandbox-integration
                    ─▶ bun-helpers
 
-docker-integration ─▶ bun-helpers
+sandbox-integration ─▶ bun-helpers
 
 harness-web ────────▶ harness-data
 
@@ -144,20 +144,20 @@ test-fixtures ──────▶ bun-helpers    (devDependency of cli, execut
 
 The command-line entry point. A thin Yargs wrapper that parses arguments, resolves paths from `process.cwd()`, and delegates all real work to `harness-execution`. Compiled to a `./harness` binary via `bun build --compile`.
 
-**Boundary:** Command parsing, path resolution from `process.cwd()`, and Yargs configuration live here. The CLI owns no pipeline logic, no test runners, no SCIL/ACIL steps — it calls `runTestSuite()`, `runTestEval()`, `runScilLoop()`, and `runAcilLoop()` from `harness-execution` and passes path values as parameters. Direct package dependencies beyond `harness-execution` exist only for commands that don't go through the execution layer: `docker-integration` (shell, clean, sandbox-setup) and `harness-data` (update-analytics).
+**Boundary:** Command parsing, path resolution from `process.cwd()`, and Yargs configuration live here. The CLI owns no pipeline logic, no test runners, no SCIL/ACIL steps — it calls `runTestSuite()`, `runTestEval()`, `runScilLoop()`, and `runAcilLoop()` from `harness-execution` and passes path values as parameters. Direct package dependencies beyond `harness-execution` exist only for commands that don't go through the execution layer: `sandbox-integration` (shell, clean, sandbox-setup) and `harness-data` (update-analytics).
 
 **Commands:**
 
 | Command | Purpose | Delegates to |
 |---------|---------|-------------|
-| `test-run` | Execute test suites against Claude in Docker sandbox | `runTestSuite()` |
+| `test-run` | Execute test suites against Claude in Test Sandbox | `runTestSuite()` |
 | `test-eval` | Evaluate stored run output against expectations | `runTestEval()` |
 | `scil` | Iterative skill-call description improvement loop | `runScilLoop()` |
 | `acil` | Iterative agent-call description improvement loop | `runAcilLoop()` |
 | `update-analytics` | Import JSONL output to Parquet via DuckDB | `harness-data` directly |
-| `shell` | Open an interactive bash session in the Docker sandbox | `docker-integration` directly |
-| `clean` | Remove the Docker sandbox | `docker-integration` directly |
-| `sandbox-setup` | Create the Docker sandbox | `docker-integration` directly |
+| `shell` | Open an interactive bash session in the Test Sandbox | `sandbox-integration` directly |
+| `clean` | Remove the Test Sandbox | `sandbox-integration` directly |
+| `sandbox-setup` | Create the Test Sandbox | `sandbox-integration` directly |
 
 **Internal structure:**
 
@@ -168,7 +168,7 @@ The command-line entry point. A thin Yargs wrapper that parses arguments, resolv
 
 The execution orchestration layer. Owns all test execution pipelines, the SCIL/ACIL improvement loops, evaluation orchestration, error hierarchy, and path config. Extracted from the CLI to enforce a clean separation between argument parsing and execution logic.
 
-**Boundary:** All pipeline orchestration, step sequencing, test runner dispatch, SCIL/ACIL loop iteration, evaluation result processing, and error hierarchy lives here. The execution package never calls `process.cwd()` — all filesystem paths arrive as explicit function parameters. It coordinates the lower-level packages: `harness-data` for types and I/O, `harness-evals` for evaluation logic, `claude-integration` for running Claude, and `docker-integration` for sandbox management.
+**Boundary:** All pipeline orchestration, step sequencing, test runner dispatch, SCIL/ACIL loop iteration, evaluation result processing, and error hierarchy lives here. The execution package never calls `process.cwd()` — all filesystem paths arrive as explicit function parameters. It coordinates the lower-level packages: `harness-data` for types and I/O, `harness-evals` for evaluation logic, `claude-integration` for running Claude, and `sandbox-integration` for sandbox management.
 
 **Key exports:**
 
@@ -239,9 +239,9 @@ The evaluation engine. Applies expectations to stored test output and produces p
 
 ### @testdouble/claude-integration (`packages/claude-integration/`)
 
-The Claude CLI execution layer. Abstracts the complexity of invoking Claude with various configurations, plugin directories, and output options. Sits between the CLI/evals packages and the lower-level Docker sandbox.
+The Claude CLI execution layer. Abstracts the complexity of invoking Claude with various configurations, plugin directories, and output options. Sits between the CLI/evals packages and the lower-level Test Sandbox.
 
-**Boundary:** All Claude-specific invocation logic lives here — constructing CLI argument arrays, resolving plugin directory paths, and wrapping results in typed objects. This package knows how to call Claude (flags like `--output-format stream-json`, `--dangerously-skip-permissions`, `--plugin-dir`) but knows nothing about test suites, evaluations, or data formats. It delegates all container execution to `docker-integration`.
+**Boundary:** All Claude-specific invocation logic lives here — constructing CLI argument arrays, resolving plugin directory paths, and wrapping results in typed objects. This package knows how to call Claude (flags like `--output-format stream-json`, `--dangerously-skip-permissions`, `--plugin-dir`) but knows nothing about test suites, evaluations, or data formats. It delegates all container execution to `sandbox-integration`.
 
 **Key exports:**
 
@@ -255,9 +255,9 @@ The Claude CLI execution layer. Abstracts the complexity of invoking Claude with
 | `ClaudeRunResult` | Result type: `exitCode`, `stdout`, `stderr` |
 | `OutputFile` | Type: `{ path: string; content: string }` |
 
-### @testdouble/docker-integration (`packages/docker-integration/`)
+### @testdouble/sandbox-integration (`packages/sandbox-integration/`)
 
-The sandbox execution layer. Manages Docker sandbox lifecycle and runs commands inside it.
+The sandbox execution layer. Manages Test Sandbox lifecycle and runs commands inside it.
 
 **Boundary:** Everything related to Docker — creating/removing sandboxes, checking sandbox existence, executing commands inside them, and streaming output — lives here. This package knows nothing about test suites, evaluations, or data formats. It accepts command arguments and returns `SandboxResult { exitCode, stdout, stderr }`.
 
@@ -267,11 +267,11 @@ The sandbox execution layer. Manages Docker sandbox lifecycle and runs commands 
 |--------|---------|
 | `execInSandbox(args, scaffoldPath, debug)` | Execute a command in sandbox with optional scaffold directory |
 | `ensureSandboxExists()` | Verify the named sandbox is running |
-| `createSandbox(repoRoot)` | Create a new Docker sandbox with repo mount |
-| `removeSandbox()` | Remove the Docker sandbox |
+| `createSandbox(repoRoot)` | Create a new Test Sandbox with repo mount |
+| `removeSandbox()` | Remove the Test Sandbox |
 | `openShell()` | Open interactive bash in sandbox |
 | `SANDBOX_NAME` | `'claude-skills-harness'` constant |
-| `DockerError` | Error class with `exitCode` field |
+| `SandboxError` | Error class with `exitCode` field |
 
 The `sandbox-run.sh` script runs inside the container: if a scaffold path is provided, it copies the scaffold to a temp directory, initializes a git repo, then `exec`s Claude with the remaining args.
 
@@ -401,12 +401,12 @@ analytics/*.parquet ──▶ DuckDB SQL queries ──▶ Hono API ──▶ Re
 2. **Set the package name** to `@testdouble/{name}` in `package.json` with `"private": true`
 3. **Add workspace dependency** in consuming packages: `"@testdouble/{name}": "workspace:*"`
 4. **Follow the dependency rules** — packages may only depend downward in the layer hierarchy:
-   - CLI depends on execution, data (update-analytics), docker-integration (shell, clean, sandbox-setup)
-   - Execution depends on data, evals, claude-integration, docker-integration
+   - CLI depends on execution, data (update-analytics), sandbox-integration (shell, clean, sandbox-setup)
+   - Execution depends on data, evals, claude-integration, sandbox-integration
    - Evals depends on data, claude-integration
-   - Claude-integration depends on docker-integration, bun-helpers
+   - Claude-integration depends on sandbox-integration, bun-helpers
    - Web depends on data only
-   - Data, docker-integration, and bun-helpers have no workspace dependencies (except docker-integration depends on bun-helpers)
+   - Data, sandbox-integration, and bun-helpers have no workspace dependencies (except sandbox-integration depends on bun-helpers)
 5. **Co-locate tests** with source files as `*.test.ts` and `*.integration.test.ts`
 6. **Run `bun install`** from the workspace root to link the new package
 
@@ -429,7 +429,7 @@ analytics/*.parquet ──▶ DuckDB SQL queries ──▶ Hono API ──▶ Re
 ## Related Documentation
 
 - [Project Discovery](./project-discovery.md) — Full project attributes: languages, frameworks, tooling, commands
-- [Docker Integration](./docker-integration.md) — Docker sandbox API, lifecycle, and consumer patterns
+- [Sandbox Integration](./sandbox-integration.md) — Test Sandbox API, lifecycle, and consumer patterns
 - [Parquet Schema](./parquet-schema.md) — DuckDB/Parquet table schemas
 - [Test Suite Reference](./test-suite-reference.md) — `tests.json` field reference
 - [LLM Judge](./llm-judge.md) — LLM-as-judge evaluation approach
@@ -448,7 +448,7 @@ analytics/*.parquet ──▶ DuckDB SQL queries ──▶ Hono API ──▶ Re
 - [Claude Integration](./claude-integration.md) — Claude CLI wrapper API, argument construction, and sandbox delegation
 - [Evals Package](./evals.md) — Evaluation engine: boolean evals, LLM judge scoring, and the `evaluateTestRun` orchestrator
 - [Bun Helpers](./bun-helpers.md) — Cross-runtime path resolution utilities (currentDir, resolveRelativePath)
-- [Docker Integration Package](./docker-integration-package.md) — Docker integration package deep-dive: full public API, error handling, and testing patterns
+- [Sandbox Integration Package](./sandbox-integration-package.md) — sandbox integration package deep-dive: full public API, error handling, and testing patterns
 
 ---
 

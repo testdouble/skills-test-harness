@@ -10,9 +10,9 @@ Agent descriptions determine when Claude delegates tasks to custom agents — th
 
 ACIL runs a loop over `agent-call` type tests in a test suite:
 
-1. **Evaluate** — run each test case against the current agent description in a Docker container, recording whether the agent was delegated to as expected
+1. **Evaluate** — run each test case against the current agent description in a Test Sandbox, recording whether the agent was delegated to as expected
 2. **Score** — compute trigger accuracy across all test cases
-3. **Improve** — send the failures and history to Claude in a Docker container and ask for an improved description, using phase-specific instructions (see [Divergent-Convergent Phases](#divergent-convergent-phases) below)
+3. **Improve** — send the failures and history to Claude in a Test Sandbox and ask for an improved description, using phase-specific instructions (see [Divergent-Convergent Phases](#divergent-convergent-phases) below)
 4. **Repeat** — loop up to `--max-iterations` times, tracking the best description found
 5. **Apply** — write the best description back to the agent `.md` file, either automatically (`--apply`) or after prompting
 
@@ -20,7 +20,7 @@ At the end of every iteration, ACIL prints a progress summary. When the loop exi
 
 ## Prerequisites
 
-`acil` uses the same Docker sandbox as `test-run`. Build the harness and set up the sandbox before running:
+`acil` uses the same Test Sandbox as `test-run`. Build the harness and set up the sandbox before running:
 
 ```bash
 make build

@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@testdouble/docker-integration', () => ({
+vi.mock('@testdouble/sandbox-integration', () => ({
   openShell: vi.fn(),
 }))
 
-import { openShell } from '@testdouble/docker-integration'
+import { openShell } from '@testdouble/sandbox-integration'
 import { command, describe as commandDescribe, handler } from './shell.js'
 
 beforeEach(() => {

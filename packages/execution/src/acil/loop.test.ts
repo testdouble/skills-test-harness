@@ -33,7 +33,7 @@ vi.mock('./step-10-print-report.js', () => ({
   printIterationProgress: vi.fn(),
   printFinalSummary: vi.fn(),
 }))
-vi.mock('@testdouble/docker-integration', () => ({
+vi.mock('@testdouble/sandbox-integration', () => ({
   ensureSandboxExists: vi.fn(),
 }))
 vi.mock('@testdouble/harness-data', () => ({
@@ -47,7 +47,7 @@ vi.mock('node:readline/promises', () => ({
 }))
 
 import { createInterface } from 'node:readline/promises'
-import { ensureSandboxExists } from '@testdouble/docker-integration'
+import { ensureSandboxExists } from '@testdouble/sandbox-integration'
 import { getPhase } from '@testdouble/harness-data'
 import { generateRunId } from '../test-runners/steps/step-4-generate-run-id.js'
 import { runAcilLoop } from './loop.js'

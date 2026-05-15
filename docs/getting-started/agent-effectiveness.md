@@ -19,7 +19,7 @@ Agent effectiveness measures how well your agent performs its job — not whethe
 
 ## Step 1: Create a project scaffold
 
-Scaffolds are realistic project directories that your agent analyzes inside the Docker sandbox. They contain source files, configs, and intentionally-planted signals (bugs, missing docs, architectural issues, implementation gaps) that your agent should detect.
+Scaffolds are realistic project directories that your agent analyzes inside the Test Sandbox. They contain source files, configs, and intentionally-planted signals (bugs, missing docs, architectural issues, implementation gaps) that your agent should detect.
 
 Use the `/build-agent-eval-scaffold` skill to generate one:
 
@@ -35,7 +35,7 @@ For example:
 
 The skill interviews you about the technology stack, project shape, and specific signals to plant, then generates a scaffold directory at `tests/test-suites/{agent-name}/scaffolds/{scaffold-name}/`.
 
-For details on the scaffold creation workflow, see [Building Agent Eval Scaffolds](../build-agent-eval-scaffold.md). For how scaffolds work inside the Docker sandbox, see [Test Scaffolding](../test-scaffolding.md).
+For details on the scaffold creation workflow, see [Building Agent Eval Scaffolds](../build-agent-eval-scaffold.md). For how scaffolds work inside the Test Sandbox, see [Test Scaffolding](../test-scaffolding.md).
 
 ## Step 2: Write your test configuration
 
@@ -75,7 +75,7 @@ Run all tests in your suite:
 ./harness test-run --suite {agent-name}
 ```
 
-This runs your agent against the prompt and scaffold inside the Docker sandbox. The LLM judge does not run yet — it evaluates stored output in the next step.
+This runs your agent against the prompt and scaffold inside the Test Sandbox. The LLM judge does not run yet — it evaluates stored output in the next step.
 
 **Tip:** To run a single test in isolation (useful for debugging):
 

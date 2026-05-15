@@ -1,8 +1,8 @@
-import { createSandbox } from '@testdouble/docker-integration'
+import { createSandbox } from '@testdouble/sandbox-integration'
 import type { Argv } from 'yargs'
 
 export const command = 'sandbox-setup'
-export const describe = 'Create a Docker sandbox and authenticate via OAuth for test runs'
+export const describe = 'Create a Test Sandbox and authenticate via OAuth for test runs'
 
 export function builder(yargs: Argv): Argv {
   return yargs.option('repo-root', {

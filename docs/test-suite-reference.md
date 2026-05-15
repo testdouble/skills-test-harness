@@ -22,7 +22,7 @@ tests/test-suites/{suite-name}/
 
 - **`tests.json`** — defines which plugins to load, what tests to run, and what to expect
 - **`prompts/`** — contains the prompt files sent to Claude Code for each test
-- **`scaffolds/`** — contains project directories copied into the Docker sandbox as a working codebase. See [Test Scaffolding](test-scaffolding.md) for details.
+- **`scaffolds/`** — contains project directories copied into the Test Sandbox as a working codebase. See [Test Scaffolding](test-scaffolding.md) for details.
 - **`rubrics/`** — contains rubric markdown files used by `llm-judge` expectations. See [LLM Judge Evaluation](llm-judge.md) for details.
 
 ## tests.json Format
@@ -315,5 +315,5 @@ Missing files or invalid configuration cause an immediate exit with a clear erro
 
 ---
 
-**Next:** [Test Scaffolding](test-scaffolding.md) — how the `scaffold` field provides project context inside the Docker sandbox.
+**Next:** [Test Scaffolding](test-scaffolding.md) — how the `scaffold` field provides project context inside the Test Sandbox.
 **Related:** [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md) — the end-to-end first run that produces a `tests.json`.

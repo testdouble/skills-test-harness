@@ -126,7 +126,7 @@ After generating the test suite, you can:
 - [Building SCIL Evals](scil-evals-guide.md) — step-by-step guide covering the full workflow from writing tests to running SCIL
 - [Test Suite Reference](test-suite-reference.md) — full tests.json field reference for `skill-call` type tests
 - [Skill Call Improvement Loop](skill-call-improvement-loop.md) — SCIL mechanics: holdout splits, scoring, improvement prompt, CLI flags
-- [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Docker sandbox
+- [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Test Sandbox
 - [Script Extraction](script-extraction.md) — the `/script-extraction` skill: hardening skills by extracting mechanical steps into scripts
 - [Test Harness README](../README.md) — prerequisites, setup, and running tests
 - [Writing Agent-Call Evals](write-acil-evals.md) — parallel skill for agent-call test suites

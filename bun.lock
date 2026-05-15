@@ -21,7 +21,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@testdouble/bun-helpers": "workspace:*",
-        "@testdouble/docker-integration": "workspace:*",
+        "@testdouble/sandbox-integration": "workspace:*",
       },
       "devDependencies": {
         "bun-types": "latest",
@@ -35,7 +35,7 @@
       },
       "dependencies": {
         "@testdouble/claude-integration": "workspace:*",
-        "@testdouble/docker-integration": "workspace:*",
+        "@testdouble/sandbox-integration": "workspace:*",
         "@testdouble/harness-data": "workspace:*",
         "@testdouble/harness-evals": "workspace:*",
         "@testdouble/harness-execution": "workspace:*",
@@ -59,8 +59,8 @@
         "bun-types": "^1.3.11",
       },
     },
-    "packages/docker-integration": {
-      "name": "@testdouble/docker-integration",
+    "packages/sandbox-integration": {
+      "name": "@testdouble/sandbox-integration",
       "version": "0.1.0",
       "devDependencies": {
         "bun-types": "latest",
@@ -83,7 +83,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@testdouble/claude-integration": "workspace:*",
-        "@testdouble/docker-integration": "workspace:*",
+        "@testdouble/sandbox-integration": "workspace:*",
         "@testdouble/harness-data": "workspace:*",
         "@testdouble/harness-evals": "workspace:*",
       },
@@ -259,7 +259,7 @@
 
     "@testdouble/claude-integration": ["@testdouble/claude-integration@workspace:packages/claude-integration"],
 
-    "@testdouble/docker-integration": ["@testdouble/docker-integration@workspace:packages/docker-integration"],
+    "@testdouble/sandbox-integration": ["@testdouble/sandbox-integration@workspace:packages/sandbox-integration"],
 
     "@testdouble/harness-cli": ["@testdouble/harness-cli@workspace:packages/cli"],
 

@@ -35,7 +35,7 @@ async function resolveAndReadPrompt(testSuiteDir: string, test: TestCase): Promi
 function checkRunFailures(exitCode: number, metrics: ParsedRunMetrics, failures: number): number {
   if (exitCode !== 0) {
     failures++
-    process.stderr.write(`  [FAIL] Docker exited with code ${exitCode}\n`)
+    process.stderr.write(`  [FAIL] Sandbox exited with code ${exitCode}\n`)
   }
   if (metrics.isError) {
     failures++

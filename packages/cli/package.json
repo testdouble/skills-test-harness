@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "@testdouble/claude-integration": "workspace:*",
-    "@testdouble/docker-integration": "workspace:*",
+    "@testdouble/sandbox-integration": "workspace:*",
     "@testdouble/harness-data": "workspace:*",
     "@testdouble/harness-evals": "workspace:*",
     "@testdouble/harness-execution": "workspace:*",

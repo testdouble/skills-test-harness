@@ -7,7 +7,7 @@
   - River Bailey (mxriverlynn, river.bailey@testdouble.com)
 - **Reviewers:**
 - **Applies To:**
-  - All workspace packages (`packages/cli`, `packages/data`, `packages/web`, `packages/test-fixtures`, `packages/docker-integration`)
+  - All workspace packages (`packages/cli`, `packages/data`, `packages/web`, `packages/test-fixtures`, `packages/sandbox-integration`)
 
 ## Introduction
 
@@ -114,7 +114,7 @@ const templates = path.resolve(
 ```
 
 **Project references:**
-- `packages/docker-integration/src/sandbox.ts` — `const currentDir` assigned at module scope, then used to derive `sandboxRunScript`
+- `packages/sandbox-integration/src/sandbox.ts` — `const currentDir` assigned at module scope, then used to derive `sandboxRunScript`
 
 ### Use `@testdouble/bun-helpers` for Path Resolution
 
@@ -136,7 +136,7 @@ import { resolveRelativePath } from '@testdouble/bun-helpers'
 const sandboxRunScript = resolveRelativePath(
   import.meta,
   '../sandbox-run.sh',                          // relative to source file (src/ → parent)
-  'packages/docker-integration/sandbox-run.sh'   // relative to compiled binary directory
+  'packages/sandbox-integration/sandbox-run.sh'   // relative to compiled binary directory
 )
 ```
 
@@ -144,7 +144,7 @@ The caller must pass `import.meta` directly because `import.meta` is scoped to t
 
 **Project references:**
 - `packages/bun-helpers/src/resolve.ts` — implementation of `currentDir` and `resolveRelativePath`
-- `packages/docker-integration/src/sandbox.ts` — uses `resolveRelativePath` to locate `sandbox-run.sh`
+- `packages/sandbox-integration/src/sandbox.ts` — uses `resolveRelativePath` to locate `sandbox-run.sh`
 - `packages/test-fixtures/load-fixtures.ts` — uses `currentDir` to locate the fixtures directory
 
 ### Handle Compiled Binary Path Resolution
@@ -170,7 +170,7 @@ import { resolveRelativePath } from '@testdouble/bun-helpers'
 const script = resolveRelativePath(
   import.meta,
   '../sandbox-run.sh',                          // works in source mode
-  'packages/docker-integration/sandbox-run.sh'   // works in compiled binary
+  'packages/sandbox-integration/sandbox-run.sh'   // works in compiled binary
 )
 ```
 

@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { createInterface } from 'node:readline/promises'
-import { ensureSandboxExists } from '@testdouble/docker-integration'
 import { getPhase } from '@testdouble/harness-data'
+import { ensureSandboxExists } from '@testdouble/sandbox-integration'
 import { generateRunId } from '../test-runners/steps/step-4-generate-run-id.js'
 import { resolveAndLoad } from './step-1-resolve-and-load.js'
 import { splitSets } from './step-2-split-sets.js'

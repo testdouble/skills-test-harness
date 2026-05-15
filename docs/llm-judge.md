@@ -153,7 +153,7 @@ The judge is asked to respond with a JSON object:
 
 ### Execution
 
-The judge runs as a separate Claude invocation inside the Docker sandbox using `--print` mode. No skill plugins are loaded — the judge evaluates output only, it does not run the skill.
+The judge runs as a separate Claude invocation inside the Test Sandbox using `--print` mode. No skill plugins are loaded — the judge evaluates output only, it does not run the skill.
 
 ### Scoring
 
@@ -287,7 +287,7 @@ The judge prompt has built-in truncation to stay within OS argument limits (macO
 - [Test Harness README](../README.md) — prerequisites, setup, and running tests
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context for the judge
 - [Parquet Schema](parquet-schema.md) — analytics fields for judge results (`reasoning`, `judge_model`, `judge_threshold`, `judge_score`)
-- [Docker Integration](docker-integration.md) — `runInSandbox` API used to execute judge invocations
+- [Sandbox Integration](sandbox-integration.md) — `execInSandbox` API used to execute judge invocations
 - [Evals Package](evals.md) — Package containing the LLM judge implementation, boolean evals, and evaluation orchestrator
 - [Claude Integration](claude-integration.md) — `runClaude()` wrapper used to invoke the judge model
 
