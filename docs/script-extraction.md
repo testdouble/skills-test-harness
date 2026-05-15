@@ -1,8 +1,10 @@
 # Script Extraction
 
-The `script-extraction` skill refactors a Claude Code skill by extracting mechanical/deterministic steps into shell scripts, applying the Hardening Principle. It analyzes a target SKILL.md and its existing scripts, classifies every step as fuzzy or mechanical with evidence, presents recommendations for user approval, then writes new scripts and updates the SKILL.md.
+> **Tier 3 · Skill/agent authors building evals.** The `/script-extraction` skill hardens a Claude Code skill by extracting deterministic steps from its SKILL.md into shell scripts; you need a target `plugin:skill` (or a path to a SKILL.md) already defined.
 
-## When to Use
+Run `/script-extraction` to refactor a skill so its mechanical, deterministic steps move out of prose and into shell scripts, applying the Hardening Principle. It analyzes a target SKILL.md and its existing scripts, classifies every step as fuzzy or mechanical with evidence, presents recommendations for your approval, then writes new scripts and updates the SKILL.md. Use it to reduce LLM non-determinism in a skill that already exists.
+
+## When to use this skill
 
 Use this skill when you need to:
 
@@ -11,7 +13,11 @@ Use this skill when you need to:
 - Refactor mechanical steps out of a SKILL.md into reusable scripts
 - Audit which parts of a skill are fuzzy (require LLM reasoning) vs. mechanical (deterministic)
 
-This skill produces **scripts and SKILL.md updates only** — it does not create new skills from scratch. Use `skill-creator` for that.
+## When NOT to use this skill
+
+- You're creating a new skill from scratch — this skill produces **scripts and SKILL.md updates only**. Use `skill-creator` for that.
+- The skill's steps are inherently fuzzy (reading code, judging quality, generating prose) — there is nothing deterministic to extract.
+- You want to test or evaluate a skill rather than restructure it — use the eval-authoring skills (`/write-scil-evals`, `/write-skill-eval-rubric`).
 
 ## Usage
 
@@ -81,6 +87,14 @@ Each classification requires two pieces of evidence:
 
 2. **Extraction correctness evidence** — for mechanical operations: input sources, expected output format, error conditions, and at least one edge case. For fuzzy operations: why LLM reasoning is required.
 
+## Skill-Building Patterns Referenced During Extraction
+
+When classifying and rewriting steps, the skill works with three skill-authoring patterns. These are documented in the separate skills plugin repository that this harness tests, not in this repo — there is no in-repo URL for them:
+
+- **Context injection commands** — bang-backtick syntax for injecting runtime data into a SKILL.md; relevant when classifying context injection operations.
+- **Script execution instructions** — how script invocations should be written in a SKILL.md so the model runs them reliably.
+- **Bash permission patterns** — `allowed-tools` entries that grant Bash commands the permissions extracted scripts need.
+
 ## What to Do Next
 
 After extracting scripts, you can:
@@ -101,10 +115,12 @@ After extracting scripts, you can:
 
 ## References
 
-- [Context Injection Commands](../../docs/skill-building-guidance/context-injection-commands.md) — bang-backtick syntax for runtime data; relevant when classifying context injection operations
-- [Script Execution Instructions](../../docs/skill-building-guidance/script-execution-instructions.md) — how script invocations should be written in SKILL.md
-- [Bash Permission Patterns](../../docs/skill-building-guidance/allowed-tools-bash-permissions.md) — `allowed-tools` entries for Bash commands in skills
 - [Writing Skill-Call Evals](write-scil-evals.md) — the `/write-scil-evals` skill: workflow, prompt categories, output format
 - [Writing Skill Eval Rubrics](write-skill-eval-rubric.md) — the `/write-skill-eval-rubric` skill: workflow, criteria categories, output format
 - [Building Skill Eval Scaffolds](build-skill-eval-scaffold.md) — the `/build-skill-eval-scaffold` skill: analysis, signal planning, scaffold generation
 - [Test Harness README](../README.md) — prerequisites, setup, and running tests
+
+---
+
+**Next:** [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md) — once a skill is hardened, set up its first eval suite end to end.
+**Related:** [Writing Skill-Call Evals](write-scil-evals.md) and [Writing Skill Eval Rubrics](write-skill-eval-rubric.md) — scaffold trigger and effectiveness tests for the hardened skill.

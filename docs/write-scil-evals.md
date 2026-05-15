@@ -1,8 +1,10 @@
 # Writing Skill-Call Evals
 
-The `write-scil-evals` skill generates skill-call test suites for plugin skills. It collects trigger prompts from the user and produces a complete test suite under `tests/test-suites/` with a `tests.json` configuration and prompt files.
+> **Tier 3 · Skill/agent authors building evals.** The `/write-scil-evals` skill generates a complete skill-call test suite (`tests.json` plus prompt files) for a plugin skill; you need a target `plugin:skill` already defined.
 
-## When to Use
+Run `/write-scil-evals` to scaffold a trigger-accuracy test suite for a plugin skill. The skill interviews you for trigger prompts and writes a `tests.json` configuration plus prompt files under `tests/test-suites/`. Use it before running SCIL, when you need to create a skill-call test suite or add skill-call tests to an existing one.
+
+## When to use this skill
 
 Use this skill when you need to:
 
@@ -10,7 +12,11 @@ Use this skill when you need to:
 - Add skill-call tests to an existing test suite
 - Set up trigger accuracy evaluation before running SCIL
 
-This skill produces **skill-call tests only** — it does not generate prompt-type tests or run the test harness.
+## When NOT to use this skill
+
+- You need prompt-type or rubric (effectiveness) tests — this skill produces **skill-call tests only**. Use `/write-skill-eval-rubric` for quality rubrics.
+- You're testing an agent rather than a skill — use `/write-acil-evals` instead.
+- You want to run the harness or improve a description — this skill scaffolds tests but does not run them or invoke SCIL.
 
 ## Usage
 
@@ -118,9 +124,14 @@ After generating the test suite, you can:
 ## References
 
 - [Building SCIL Evals](scil-evals-guide.md) — step-by-step guide covering the full workflow from writing tests to running SCIL
-- [Test Suite Configuration](test-suite-reference.md) — full tests.json field reference for `skill-call` type tests
+- [Test Suite Reference](test-suite-reference.md) — full tests.json field reference for `skill-call` type tests
 - [Skill Call Improvement Loop](skill-call-improvement-loop.md) — SCIL mechanics: holdout splits, scoring, improvement prompt, CLI flags
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Docker sandbox
 - [Script Extraction](script-extraction.md) — the `/script-extraction` skill: hardening skills by extracting mechanical steps into scripts
 - [Test Harness README](../README.md) — prerequisites, setup, and running tests
 - [Writing Agent-Call Evals](write-acil-evals.md) — parallel skill for agent-call test suites
+
+---
+
+**Next:** [Building SCIL Evals](scil-evals-guide.md) — the full manual-authoring and SCIL-loop workflow once your suite exists.
+**Related:** [Writing Agent-Call Evals](write-acil-evals.md) — the parallel skill for agent-call test suites.
