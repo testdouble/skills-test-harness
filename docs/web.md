@@ -1,8 +1,10 @@
 # Web Dashboard
 
-The web package provides a Hono-based API server and React SPA dashboard for viewing test run results, SCIL iteration history, and per-test analytics.
+> **Tier 5 · Contributor reference.** Internal documentation for the `packages/web` package. If you're a user looking to launch and use the dashboard, see [Viewing Results](getting-started/viewing-results.md).
 
-- **Last Updated:** 2026-03-28 15:00
+Change this package when you need to touch the dashboard's Hono API server, the React SPA, the route handlers, or the page components. It provides a Hono-based API server and React SPA for viewing test run results, SCIL iteration history, and per-test analytics.
+
+- **Last Updated:** 2026-05-15
 - **Authors:**
   - River Bailey (river.bailey@testdouble.com)
 
@@ -401,7 +403,7 @@ BrowserRouter
 - Tests verify both the happy path (data returned) and error paths (not found, unexpected errors, non-Error throwables)
 - `beforeEach` clears all mocks between tests via `vi.clearAllMocks()`
 
-## Related Documentation
+## Related References
 
 - [Test Harness Architecture](./test-harness-architecture.md) — System architecture, package boundaries, data flow, and dependency graph for the full harness monorepo
 - [Parquet Schema](./parquet-schema.md) — Schema definitions for the analytics Parquet files queried by the data layer
@@ -409,3 +411,8 @@ BrowserRouter
 - [Data Package](./data.md) — Shared data layer: types, DuckDB queries, and analytics functions consumed by the web server
 - [Docker Integration](./docker-integration.md) — Docker sandbox architecture that produces the test run data this dashboard displays
 - [CLI Package](./cli.md) — CLI commands that produce the test run and analytics data this dashboard displays
+
+---
+
+**Next:** [Data Package](./data.md) — the DuckDB query functions every route handler in this package delegates to.
+**Related:** [Viewing Results](./getting-started/viewing-results.md) — the user-facing guide to launching and navigating this dashboard.

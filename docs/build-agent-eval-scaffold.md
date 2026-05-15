@@ -1,8 +1,10 @@
 # Building Agent Eval Scaffolds
 
-The `build-agent-eval-scaffold` skill generates realistic project scaffolds for rubric evaluation of Claude Code agents. Given a `plugin:agent` identifier and an optional project description, it analyzes the target agent's definition file to understand what inputs it expects and what signals it looks for, then interviews the user in structured phases before generating a scaffold at `tests/test-suites/{agent}/scaffolds/{name}/`.
+> **Tier 3 · Skill/agent authors building evals.** The `/build-agent-eval-scaffold` skill generates a realistic project fixture for rubric (effectiveness) evaluation of a Claude Code agent; you need a target `plugin:agent` already defined.
 
-## When to Use
+Run `/build-agent-eval-scaffold` to generate a realistic project scaffold an agent can be evaluated against. Given a `plugin:agent` identifier and an optional project description, it analyzes the target agent's definition file to understand what inputs it expects and what signals it looks for, then interviews you in structured phases before writing a scaffold at `tests/test-suites/{agent}/scaffolds/{name}/`. Run it before writing rubric criteria with `/write-agent-eval-rubric`.
+
+## When to use this skill
 
 Use this skill when you need to:
 
@@ -10,7 +12,12 @@ Use this skill when you need to:
 - Build a realistic project fixture that contains specific signals for an agent to find
 - Set up a scaffold directory before writing rubric criteria with `/write-agent-eval-rubric`
 
-This skill produces **scaffold files only** — it does not create `tests.json` entries or rubric files. Use `/write-acil-evals` for trigger accuracy testing and `/write-agent-eval-rubric` for rubric criteria and llm-judge configuration.
+## When NOT to use this skill
+
+- You need `tests.json` entries or rubric criteria — this skill produces **scaffold files only**. Use `/write-agent-eval-rubric` for rubric criteria and llm-judge configuration.
+- You're testing trigger accuracy, not effectiveness — use `/write-acil-evals` instead.
+- The agent doesn't operate on project files (e.g., it queries GitHub APIs or generates content from conversation) — a file scaffold won't help, and the skill will detect this and stop.
+- You're building a scaffold for a skill rather than an agent — use `/build-skill-eval-scaffold` instead.
 
 ## Usage
 
@@ -104,8 +111,13 @@ After generating the scaffold, you can:
 
 - [Building Rubric Evals](rubric-evals-guide.md) — step-by-step guide covering the full workflow from scaffolds to rubric evaluation
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context inside the Docker sandbox
-- [Test Suite Configuration](test-suite-configuration.md) — full tests.json field reference
+- [Test Suite Reference](test-suite-reference.md) — full tests.json field reference
 - [Writing Agent Eval Rubrics](write-agent-eval-rubric.md) — the `/write-agent-eval-rubric` skill: workflow, criteria categories, output format
 - [Building Skill Eval Scaffolds](build-skill-eval-scaffold.md) — the equivalent skill for skill-based scaffold generation
 - [Writing Agent-Call Evals](write-acil-evals.md) — the `/write-acil-evals` skill: workflow, prompt categories, output format
 - [Test Harness README](../README.md) — prerequisites, setup, and running tests
+
+---
+
+**Next:** [Writing Agent Eval Rubrics](write-agent-eval-rubric.md) — define the rubric criteria the judge scores your agent's output against.
+**Related:** [Building Skill Eval Scaffolds](build-skill-eval-scaffold.md) — the equivalent skill for skill-based scaffold generation.

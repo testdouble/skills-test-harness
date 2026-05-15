@@ -1,8 +1,10 @@
 # Writing Skill Eval Rubrics
 
-The `write-skill-eval-rubric` skill generates quality rubric files for LLM-judge evaluation of skill test suites. It interviews the user to collect categorized criteria and produces rubric markdown files under `tests/test-suites/{suite}/rubrics/`, then configures `llm-judge` expectations in `tests.json`.
+> **Tier 3 · Skill/agent authors building evals.** The `/write-skill-eval-rubric` skill generates quality rubric files and `llm-judge` `tests.json` expectations for a skill's effectiveness evals; you need a target `plugin:skill` (and usually a scaffold) already in place.
 
-## When to Use
+Run `/write-skill-eval-rubric` to define how an LLM judge scores a skill's output quality. The skill interviews you for categorized criteria, writes a rubric markdown file under `tests/test-suites/{suite}/rubrics/`, and configures `llm-judge` expectations in `tests.json`. Run it after building a scaffold and before running and evaluating tests.
+
+## When to use this skill
 
 Use this skill when you need to:
 
@@ -10,7 +12,12 @@ Use this skill when you need to:
 - Add `llm-judge` expectations to an existing test suite
 - Update criteria in an existing rubric file
 
-This skill produces **rubric files and llm-judge expectations only** — it does not generate skill-call tests. Use `write-scil-evals` for trigger accuracy testing.
+## When NOT to use this skill
+
+- You need skill-call (trigger accuracy) tests — this skill produces **rubric files and llm-judge expectations only**. Use `/write-scil-evals` for trigger accuracy testing.
+- You need a project fixture for the skill to act on — build it first with `/build-skill-eval-scaffold`.
+- You're writing rubrics for an agent rather than a skill — use `/write-agent-eval-rubric` instead.
+- You want to run the harness or judge — this skill configures the rubric but does not run tests or invoke the judge.
 
 ## Usage
 
@@ -156,8 +163,13 @@ For details on how the llm-judge system works, see [LLM Judge Evaluation](llm-ju
 ## References
 
 - [Building Rubric Evals](rubric-evals-guide.md) — step-by-step guide covering the full workflow from writing rubrics to evaluating results
-- [Test Suite Configuration](test-suite-configuration.md) — full tests.json field reference including the `llm-judge` expectation format
+- [Test Suite Reference](test-suite-reference.md) — full tests.json field reference including the `llm-judge` expectation format
 - [LLM Judge Evaluation](llm-judge.md) — judge mechanics: prompt construction, scoring, output format, error handling
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context for the judge
 - [Script Extraction](script-extraction.md) — the `/script-extraction` skill: hardening skills by extracting mechanical steps into scripts
 - [Test Harness README](../README.md) — prerequisites, setup, and running tests
+
+---
+
+**Next:** [Building Rubric Evals](rubric-evals-guide.md) — the full manual rubric-authoring and evaluation workflow.
+**Related:** [Writing Agent Eval Rubrics](write-agent-eval-rubric.md) — the equivalent skill for agent-based rubric evals.

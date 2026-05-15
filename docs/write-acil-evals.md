@@ -1,8 +1,10 @@
 # Writing Agent-Call Evals
 
-The `write-acil-evals` skill generates agent-call test suites for plugin agents. It collects trigger prompts from the user and produces a complete test suite under `tests/test-suites/` with a `tests.json` configuration and prompt files.
+> **Tier 3 · Skill/agent authors building evals.** The `/write-acil-evals` skill generates a complete agent-call test suite (`tests.json` plus prompt files) for a plugin agent; you need a target `plugin:agent` already defined.
 
-## When to Use
+Run `/write-acil-evals` to scaffold a trigger-accuracy test suite for a plugin agent. The skill interviews you for trigger prompts and writes a `tests.json` configuration plus prompt files under `tests/test-suites/`. Use it before running ACIL, when you need to create an agent-call test suite or add agent-call tests to an existing one.
+
+## When to use this skill
 
 Use this skill when you need to:
 
@@ -10,7 +12,11 @@ Use this skill when you need to:
 - Add agent-call tests to an existing test suite
 - Set up trigger accuracy evaluation before running ACIL
 
-This skill produces **agent-call tests only** — it does not generate prompt-type tests or run the test harness. For skill-call tests, use `/write-scil-evals` instead.
+## When NOT to use this skill
+
+- You need prompt-type or rubric (effectiveness) tests — this skill produces **agent-call tests only**. Use `/write-agent-eval-rubric` for quality rubrics.
+- You're testing a skill rather than an agent — use `/write-scil-evals` instead.
+- You want to run the harness or improve a description — this skill scaffolds tests but does not run them or invoke ACIL.
 
 ## Usage
 
@@ -119,7 +125,12 @@ After generating the test suite, you can:
 ## References
 
 - [Agent Call Improvement Loop](agent-call-improvement-loop.md) — ACIL mechanics: agent detection, temp plugin isolation, holdout splits, scoring
-- [Test Suite Configuration](test-suite-configuration.md) — full tests.json field reference for `agent-call` type tests
+- [Test Suite Reference](test-suite-reference.md) — full tests.json field reference for `agent-call` type tests
 - [Writing Skill-Call Evals](write-scil-evals.md) — parallel skill for skill-call test suites
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Docker sandbox
 - [Test Harness README](../README.md) — prerequisites, setup, and running tests
+
+---
+
+**Next:** [Agent Call Improvement Loop](agent-call-improvement-loop.md) — ACIL mechanics for refining the agent's trigger description once your suite exists.
+**Related:** [Writing Skill-Call Evals](write-scil-evals.md) — the parallel skill for skill-call test suites.

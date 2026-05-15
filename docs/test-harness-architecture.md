@@ -1,12 +1,16 @@
 # Test Harness Architecture
 
+> **Tier 5 · Contributor reference.** Internal documentation for the harness monorepo as a whole — package boundaries, the dependency graph, and end-to-end data flow. If you're a user looking to run an evaluation, see [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md).
+
+This page maps the whole harness so you can locate the package and module that owns a change. It covers the nine workspace packages and their layering, the package dependency rules you must not violate, the four-stage data flow (execution → evaluation → analytics → dashboard), and the steps to add a new package.
+
 The test harness is a monorepo workspace that executes AI skill evaluations inside Docker sandboxes, stores results as JSONL/Parquet, and serves a web dashboard for analysis.
 
-- **Last Updated:** 2026-04-06
+- **Last Updated:** 2026-05-15
 - **Authors:**
   - River Bailey (river@testdouble.com)
 
-## Overview
+## System Summary
 
 - Nine workspace packages under `packages/` form a layered architecture: CLI (thin Yargs wrapper), execution orchestration, shared data layer, evaluation logic, Claude CLI integration, Docker sandbox integration, web dashboard, cross-runtime utilities, and test fixtures
 - Test suites defined in `test-suites/` drive the system — each suite contains a `tests.json` config, prompt files, optional rubrics, and optional scaffolds
@@ -427,7 +431,7 @@ analytics/*.parquet ──▶ DuckDB SQL queries ──▶ Hono API ──▶ Re
 - [Project Discovery](./project-discovery.md) — Full project attributes: languages, frameworks, tooling, commands
 - [Docker Integration](./docker-integration.md) — Docker sandbox API, lifecycle, and consumer patterns
 - [Parquet Schema](./parquet-schema.md) — DuckDB/Parquet table schemas
-- [Test Suite Configuration](./test-suite-configuration.md) — `tests.json` field reference
+- [Test Suite Reference](./test-suite-reference.md) — `tests.json` field reference
 - [LLM Judge](./llm-judge.md) — LLM-as-judge evaluation approach
 - [SCIL Evals Guide](./scil-evals-guide.md) — Skill Call Improvement Loop guide
 - [ACIL Evals Guide](./agent-call-improvement-loop.md) — Agent Call Improvement Loop guide
@@ -445,3 +449,8 @@ analytics/*.parquet ──▶ DuckDB SQL queries ──▶ Hono API ──▶ Re
 - [Evals Package](./evals.md) — Evaluation engine: boolean evals, LLM judge scoring, and the `evaluateTestRun` orchestrator
 - [Bun Helpers](./bun-helpers.md) — Cross-runtime path resolution utilities (currentDir, resolveRelativePath)
 - [Docker Integration Package](./docker-integration-package.md) — Docker integration package deep-dive: full public API, error handling, and testing patterns
+
+---
+
+**Next:** [Execution Package](./execution.md) — the orchestration layer where most pipeline changes land.
+**Related:** [CLI Package](./cli.md) — the thin entry point that delegates into execution.

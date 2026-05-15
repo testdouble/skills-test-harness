@@ -1,12 +1,16 @@
 # Execution Package
 
+> **Tier 5 · Contributor reference.** Internal documentation for the `@testdouble/harness-execution` package — the test-run and test-eval pipelines, the SCIL and ACIL improvement loops, the error hierarchy, and path config. If you're a user looking to run or tune an evaluation, see [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md) or the [SCIL Evals Guide](scil-evals-guide.md).
+
+This page is the orchestration reference for the harness. It documents the four entry points (`runTestSuite`, `runTestEval`, `runScilLoop`, `runAcilLoop`), the numbered step files behind each pipeline, the SCIL and ACIL loop algorithms and their shared scoring/output/report modules, the path-parameter design, and the error hierarchy. This is where most pipeline changes land.
+
 The `@testdouble/harness-execution` package owns all test execution orchestration, the SCIL and ACIL improvement loops, and test evaluation pipelines — extracted from the CLI to keep the CLI as a thin Yargs wrapper.
 
-- **Last Updated:** 2026-04-06
+- **Last Updated:** 2026-05-15
 - **Authors:**
   - River Bailey (river@testdouble.com)
 
-## Overview
+## Summary
 
 - Four high-level orchestrators: `runTestSuite()` for test execution, `runTestEval()` for result evaluation, `runScilLoop()` for iterative skill description improvement, and `runAcilLoop()` for iterative agent description improvement
 - All filesystem paths (`outputDir`, `testsDir`, `repoRoot`) are passed as parameters — the package never calls `process.cwd()` or reads environment variables
@@ -310,6 +314,33 @@ Results are stored in a pre-sized array by work-item index for deterministic ord
 // Ties at both levels: earlier iteration wins
 ```
 
+### ACIL Loop
+
+`runAcilLoop` mirrors the SCIL loop for agents: it iteratively improves an agent description by running agent-call evaluations and asking Claude for a better description. The ACIL pipeline consists of 10 numbered steps in `packages/execution/src/acil/`:
+
+| Step | File | Function | Description |
+|------|------|----------|-------------|
+| 1 | `step-1-resolve-and-load.ts` | `resolveAndLoad` | Filter agent-call tests, resolve agent `.md` path, validate identifier format |
+| 2 | `step-2-split-sets.ts` | `splitSets` | Re-export from data package — deterministic stratified train/test split |
+| 3 | `step-3-read-agent.ts` | `readAgent` | Parse agent frontmatter and body, return name/description/body |
+| 4 | `step-4-build-temp-plugin.ts` | `buildTempPlugin` | Delegate to `buildTempAgentPluginWithDescription` |
+| 5 | `step-5-run-eval.ts` | `runEval` | Execute tests using `evaluateAgentCall`, return `AcilQueryResult[]` |
+| 6 | `step-6-score.ts` | `scoreResults` | Re-export from `common/score.ts` |
+| 7 | `step-7-improve-description.ts` | `improveDescription` | Build ACIL improvement prompt, run Claude, validate result |
+| 8 | `step-8-apply-description.ts` | `applyDescription` | Write improved description to agent `.md` file |
+| 9 | `step-9-write-output.ts` | `writeOutput` | Delegate to `common/write-output.ts` with `prefix: 'acil'` |
+| 10 | `step-10-print-report.ts` | `printReport` | Re-export from `common/print-report.ts` |
+
+Steps 6, 9, and 10 are thin re-export wrappers around shared modules in `common/`, which are also used by the SCIL pipeline.
+
+### Shared SCIL/ACIL Modules
+
+ACIL and SCIL share three modules in `packages/execution/src/common/`:
+
+- **`common/score.ts`** — `scoreResults()` and `selectBestIteration()` using generic `Scoreable`/`ScoredIteration` interfaces
+- **`common/write-output.ts`** — `writeIterationOutput()` and `writeSummaryOutput()` using `WritableIteration` interface, parameterized by `prefix`
+- **`common/print-report.ts`** — `printIterationProgress()` and `printFinalSummary()` using `PrintableResult`/`PrintableIteration` interfaces
+
 ## Error Handling
 
 | Error Class | Thrown By | Trigger |
@@ -352,3 +383,8 @@ Tests are co-located with source files. Tests that previously mocked `paths.js` 
 - [Step-Based Pipeline](./coding-standards/step-based-pipeline.md) — Coding standard for the numbered-step architecture
 - [Custom Error Hierarchy](./coding-standards/custom-error-hierarchy.md) — Error class conventions
 - [Agent Call Improvement Loop](agent-call-improvement-loop.md) — ACIL mechanics: agent detection, temp plugin isolation, holdout splits, scoring
+
+---
+
+**Next:** [CLI Package](./cli.md) — the thin Yargs wrapper that resolves paths and calls into these orchestrators.
+**Related:** [Skill Call Improvement Loop](./skill-call-improvement-loop.md) — the SCIL algorithm and design behind `runScilLoop`; [Agent Call Improvement Loop](agent-call-improvement-loop.md) — the same for `runAcilLoop`.

@@ -1,6 +1,8 @@
-# Test Suite Configuration
+# Test Suite Reference
 
-This is the complete reference for configuring test suites in the eval harness. Each test suite lives in its own directory under `tests/test-suites/` and is defined by a `tests.json` file.
+> **Tier 2 · All harness users.** The complete `tests.json` field reference: directory layout, test types, expectation types, and validation rules. Assumes you know what a test suite is — if not, start with [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md).
+
+Look up any `tests.json` field, test type, or expectation type here. Each test suite lives in its own directory under `tests/test-suites/` and is defined by a `tests.json` file; this page documents every key the harness reads and the validation it enforces before a run starts.
 
 ## Directory Layout
 
@@ -294,13 +296,11 @@ The harness validates the test suite configuration before running any tests:
 
 Missing files or invalid configuration cause an immediate exit with a clear error message.
 
-## References
+## Related References
 
-- [Test Harness README](../README.md) — getting started and running tests
-- [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context inside the Docker sandbox
 - [LLM Judge Evaluation](llm-judge.md) — how the judge works: prompt construction, scoring, output format
-- [Building SCIL Evals](scil-evals-guide.md) — step-by-step guide to writing and running skill-call evals
-- [Building Rubric Evals](rubric-evals-guide.md) — step-by-step guide to writing and running LLM-judge evals
+- [Building SCIL Evals](scil-evals-guide.md) — writing and running skill-call evals
+- [Building Rubric Evals](rubric-evals-guide.md) — writing and running LLM-judge evals
 - [Writing Skill Eval Rubrics](write-skill-eval-rubric.md) — the `/write-skill-eval-rubric` skill workflow
 - [Writing Agent Eval Rubrics](write-agent-eval-rubric.md) — the `/write-agent-eval-rubric` skill workflow
 - [Building Skill Eval Scaffolds](build-skill-eval-scaffold.md) — the `/build-skill-eval-scaffold` skill workflow
@@ -312,3 +312,8 @@ Missing files or invalid configuration cause an immediate exit with a clear erro
 - [CLI Package](cli.md) — CLI commands that parse and execute test suite configurations
 - [Data Package](data.md) — Config parsing and normalization logic for `tests.json` files
 - [Evals Package](evals.md) — Evaluation engine that processes expectations defined in test suite configs
+
+---
+
+**Next:** [Test Scaffolding](test-scaffolding.md) — how the `scaffold` field provides project context inside the Docker sandbox.
+**Related:** [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md) — the end-to-end first run that produces a `tests.json`.

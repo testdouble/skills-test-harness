@@ -1,6 +1,8 @@
 # Parquet Schema Reference
 
-The test harness stores analytics data as eight Parquet files in `analytics/data/`. These are written by `./harness update-analytics-data`, which converts JSONL output files to Parquet using DuckDB. The conversion is idempotent — runs already present in the Parquet files are skipped.
+> **Tier 4 · Skill/agent authors querying analytics directly, plus contributors.** This is the column-level reference for the analytics Parquet tables — every field, type, join key, and example query. Run [Analytics](getting-started/analytics.md) first if you haven't imported a run yet.
+
+Use this page to query the analytics tables directly: every Parquet file's columns and types, how to join them, and ready-to-run example queries. The test harness stores analytics data as eight Parquet files in `analytics/data/`. These are written by `./harness update-analytics-data`, which converts JSONL output files to Parquet using DuckDB. The conversion is idempotent — runs already present in the Parquet files are skipped.
 
 ---
 
@@ -250,12 +252,17 @@ JOIN read_parquet('analytics/data/scil-iteration.parquet') i
   AND s.bestIteration = i.iteration;
 ```
 
-## References
+## Related References
 
 - [Test Harness README](../README.md) — analytics commands and web app
-- [Test Suite Configuration](test-suite-configuration.md) — tests.json field reference (source of config and results data)
+- [Test Suite Reference](test-suite-reference.md) — tests.json field reference (source of config and results data)
 - [LLM Judge Evaluation](llm-judge.md) — explains the `llm-judge` and `llm-judge-aggregate` result types and their fields
 - [Skill Call Improvement Loop](skill-call-improvement-loop.md) — SCIL mechanics and output files
 - [Data Package](data.md) — DuckDB queries and JSONL-to-Parquet import logic that populates these tables
 - [Web Dashboard](web.md) — Web dashboard that queries these Parquet tables via the data layer
 - [Agent Call Improvement Loop](agent-call-improvement-loop.md) — ACIL pipeline that produces acil-iteration and acil-summary data
+
+---
+
+**Next:** [Analytics](getting-started/analytics.md) — import test runs and query them from the CLI.
+**Related:** [Data Package](data.md) — the JSONL-to-Parquet import logic that populates these tables.

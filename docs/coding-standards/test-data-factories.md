@@ -291,5 +291,4 @@ it('calls readConfig with resolved path', async () => {
 
 - [Test File Organization and Naming](./test-file-organization.md) — companion standard covering file naming, co-location, describe/it conventions, and traceability annotations
 - [Vitest Mocking Patterns](./vitest-mocking-patterns.md) — conventions for vi.mock, vi.fn, and mock setup
-- [Test Plan](../test-plan.md) — overall test strategy
 - [Project Discovery](../project-discovery.md) — workspace package layout and test commands

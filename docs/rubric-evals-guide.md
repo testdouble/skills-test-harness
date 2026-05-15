@@ -1,50 +1,18 @@
 # Building Rubric Evals
 
-This guide walks through the full process of creating LLM-judge rubric evals — from writing rubric criteria to running tests and interpreting judge results. By the end, you'll have a quality rubric that scores skill output against specific, measurable criteria.
+> **Tier 2 · Skill and agent authors (effectiveness).** This guide covers writing LLM-judge rubrics by hand and iterating on quality criteria against stored output. If you're starting fresh, run [Getting Started: Skill Effectiveness](getting-started/skill-effectiveness.md) first — it walks the `/write-skill-eval-rubric` quick start end to end.
 
-## Overview
+Write rubric criteria by hand, wire them into an `llm-judge` expectation, run the suite, and refine the rubric by re-scoring stored output without re-running the skill.
+
+This guide assumes you've completed setup and run at least one test suite — see [Getting Started: Skill Effectiveness](getting-started/skill-effectiveness.md) if you haven't.
 
 Rubric evals use a second Claude invocation (the "judge") to evaluate whether a skill's output meets quality criteria. Unlike code-based expectations (`result-contains`, `skill-call`), rubric evals can assess semantic qualities like "does the review identify the SQL injection on line 23?"
 
-The process has three phases:
+The fastest way to scaffold a rubric is the `/write-skill-eval-rubric` skill, which interviews you for criteria in four categories, configures the judge model and threshold, and writes the rubric file and `tests.json` updates. For agent rubric evaluation, use `/write-agent-eval-rubric` instead — same workflow, but it targets `agent-prompt` type tests and references agent definition files rather than SKILL.md (see [Writing Agent Eval Rubrics](write-agent-eval-rubric.md)). The skill path is covered in the getting-started guide and in [Writing Skill Eval Rubrics](write-skill-eval-rubric.md). The rest of this guide covers the manual alternative and the iteration loop.
 
-1. **Write the rubric and configure expectations** — define what good output looks like
-2. **Run the test suite** — produce skill output for the judge to evaluate
-3. **Evaluate and iterate** — run the judge, inspect results, refine criteria
+## Step 1: Write the Rubric Manually
 
-## Prerequisites
-
-Before starting, make sure the harness is built and the Docker sandbox is ready:
-
-```bash
-cd tests
-make build
-./harness sandbox-setup
-```
-
-See the [Test Harness README](../README.md) for full setup instructions.
-
-## Step 1: Write the Rubric
-
-You can write the rubric manually or use the `/write-skill-eval-rubric` skill to generate it.
-
-### Option A: Use the /write-skill-eval-rubric Skill
-
-The fastest way to create a rubric eval. Invoke it with the target skill:
-
-```
-/write-skill-eval-rubric r-and-d:code-review
-```
-
-The skill interviews you to collect criteria in four categories (Presence, Specificity, Depth, Absence), configures the judge model and threshold, and writes the rubric file and `tests.json` updates.
-
-For agent rubric evaluation, use `/write-agent-eval-rubric` instead — it follows the same workflow but targets `agent-prompt` type tests and references agent definition files rather than SKILL.md. See [Writing Agent Eval Rubrics](write-agent-eval-rubric.md) for details.
-
-For full details on the skill's workflow and criteria categories, see [Writing Skill Eval Rubrics](write-skill-eval-rubric.md).
-
-### Option B: Write Manually
-
-#### Create the rubric file
+### Create the rubric file
 
 Rubric files are markdown with bullet-point criteria. Create the file at:
 
@@ -76,7 +44,7 @@ Organize criteria into four categories:
 
 The parser extracts all lines starting with `- ` as criteria. Headings are ignored by the parser but useful for organizing the rubric.
 
-#### File output criteria
+### File output criteria
 
 When a skill or agent writes output files to the filesystem (not just transcript text), the rubric can include `## File:` sections to evaluate those files separately:
 
@@ -95,7 +63,7 @@ If the agent does not produce a file referenced by a `## File:` section, all cri
 
 File sections appear after the transcript-scoped sections (the standard Presence/Specificity/Depth/Absence categories). The transcript sections evaluate the agent's conversational output; `## File:` sections evaluate the file content.
 
-#### Writing good criteria
+### Writing good criteria
 
 | Category | What it checks | Example |
 |----------|---------------|---------|
@@ -109,7 +77,7 @@ Tips:
 - Constrain the scaffold, not the skill — tie criteria to specific files and lines
 - "The review identifies the missing `before_action` in `UsersController`" is gradeable; "The review finds all security issues" is not
 
-#### Configure the llm-judge expectation
+### Configure the llm-judge expectation
 
 Add an `llm-judge` expectation to a skill-prompt test in `tests.json`:
 
@@ -136,7 +104,7 @@ Add an `llm-judge` expectation to a skill-prompt test in `tests.json`:
 
 A threshold of `0.8` with 10 criteria means at least 8 must pass. The harness validates that the rubric file exists at load time.
 
-For the full field reference, see [Test Suite Configuration](test-suite-configuration.md).
+For the full field reference, see [Test Suite Reference](test-suite-reference.md).
 
 ## Step 2: Run the Tests
 
@@ -246,14 +214,16 @@ The judge runs as a separate Claude invocation in the Docker sandbox using `--pr
 
 For the complete technical details, see [LLM Judge Evaluation](llm-judge.md).
 
-## References
+## Related References
 
-- [Test Suite Configuration](test-suite-configuration.md) — full tests.json field reference including `llm-judge` expectation format
+- [Test Suite Reference](test-suite-reference.md) — full tests.json field reference including `llm-judge` expectation format
 - [Writing Skill Eval Rubrics](write-skill-eval-rubric.md) — the `/write-skill-eval-rubric` skill workflow and criteria categories
 - [Writing Agent Eval Rubrics](write-agent-eval-rubric.md) — the `/write-agent-eval-rubric` skill workflow for agent rubric evals
-- [LLM Judge Evaluation](llm-judge.md) — judge mechanics: prompt construction, scoring, output format, error handling
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Docker sandbox
-- [Building SCIL Evals](scil-evals-guide.md) — step-by-step guide for trigger accuracy evals
 - [Evals Package](evals.md) — evaluation engine implementing LLM judge and boolean eval logic
 - [CLI Package](cli.md) — `test-eval` command that runs rubric evaluations
-- [Test Harness README](../README.md) — prerequisites, setup, and running tests
+
+---
+
+**Next:** [LLM Judge Evaluation](llm-judge.md) — judge mechanics: prompt construction, scoring, output format, and error handling.
+**Related:** [Building SCIL Evals](scil-evals-guide.md) — measure and improve when Claude calls the skill, not just how well it performs.

@@ -1,14 +1,16 @@
 # CLI Package
 
+> **Tier 5 · Contributor reference.** Internal documentation for the `@testdouble/harness-cli` package — the CLI layer only: Yargs command registration, argument and flag parsing, and path resolution from `process.cwd()`. If you're a user looking for what commands and flags to run, see [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md). For pipeline internals (test-run/test-eval steps, SCIL/ACIL loops, error hierarchy, path config), see [Execution Package](./execution.md).
+
+This page documents the CLI boundary: the eight commands the `harness` binary exposes, how each command builder parses its arguments and flags, how paths are resolved once via `createPathConfig(process.cwd())`, and how `HarnessError` is caught for clean exit. The CLI owns no pipeline logic — every command is a thin wrapper that delegates to `@testdouble/harness-execution` (test-run, test-eval, SCIL, ACIL) or `@testdouble/docker-integration` (sandbox lifecycle). Pipeline implementation, the numbered step files, and all core types live in [Execution Package](./execution.md).
+
 The `@testdouble/harness-cli` package is the command-line entry point for the test harness. It is a thin Yargs wrapper that parses arguments, resolves paths from `process.cwd()`, and delegates all pipeline orchestration to `@testdouble/harness-execution`.
 
-> **Note:** The test-run pipeline, test-eval pipeline, SCIL loop, error hierarchy, and path config were extracted to `@testdouble/harness-execution` on 2026-03-29. Implementation details in this document that reference `packages/cli/src/test-runners/`, `packages/cli/src/scil/`, `packages/cli/src/lib/`, or `packages/cli/src/test-eval-steps/` now live in `packages/execution/`. See [execution.md](./execution.md) for current documentation of those modules.
-
-- **Last Updated:** 2026-03-29 08:30
+- **Last Updated:** 2026-05-15
 - **Authors:**
   - River Bailey (river.bailey@testdouble.com)
 
-## Overview
+## Summary
 
 - Eight CLI commands exposed via the `harness` binary: `test-run`, `test-eval`, `scil`, `acil`, `update-analytics-data`, `shell`, `clean`, and `sandbox-setup`
 - All test execution happens inside a Docker sandbox via `@testdouble/docker-integration`, with Claude invoked through `@testdouble/claude-integration`
@@ -132,7 +134,7 @@ Test files are co-located with their source files. Tests use Vitest with the sta
 
 - [Execution Package](./execution.md) — Execution orchestration layer that the CLI delegates to (test-run, test-eval, SCIL pipelines, error hierarchy, path config)
 - [Test Harness Architecture](./test-harness-architecture.md) — System-wide architecture, package boundaries, and data flow
-- [Test Suite Configuration](./test-suite-configuration.md) — How `tests.json` files are structured
+- [Test Suite Reference](./test-suite-reference.md) — How `tests.json` files are structured
 - [Docker Integration](./docker-integration.md) — Docker sandbox API and consumer patterns
 - [Skill Call Improvement Loop](./skill-call-improvement-loop.md) — Detailed SCIL algorithm and design
 - [Parquet Schema](./parquet-schema.md) — Schema for analytics data produced by `update-analytics-data`
@@ -142,3 +144,8 @@ Test files are co-located with their source files. Tests use Vitest with the sta
 - [Web Dashboard](./web.md) — Web dashboard that displays results produced by CLI commands
 - [Test Fixtures](./test-fixtures.md) — Shared test fixture data used by CLI unit tests
 - [Project Discovery](./project-discovery.md) — Repository-wide project scan including CLI package details
+
+---
+
+**Next:** [Execution Package](./execution.md) — the pipeline orchestration every command delegates to, plus all core type definitions.
+**Related:** [Test Harness Architecture](./test-harness-architecture.md) — where the CLI layer sits in the package dependency graph.

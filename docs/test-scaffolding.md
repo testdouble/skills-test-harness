@@ -1,8 +1,14 @@
 # Test Scaffolding
 
+> **Tier 2 · Skill and agent authors.** Explains what scaffolds are and how to create and wire one into a test suite. Assumes you have a working test suite — see [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md) if you don't.
+
+Add a `scaffold` field to a test to give your skill a realistic project to work against — source files to review, configs to discover, docs to enhance. This page first explains the concept (what scaffolds are and how the harness applies them), then the task (how to configure and create one).
+
+## Concept: What Scaffolds Are
+
 Scaffolds provide a pre-built project structure that Claude Code runs against inside the Docker sandbox. They give skills something to work with — source files to review, configurations to discover, documentation to enhance — so tests can verify skill behavior against realistic project contexts.
 
-## How Scaffolding Works
+### How Scaffolding Works
 
 When a test case includes a `scaffold` field, the harness passes the scaffold path to the sandbox run script. The script copies the scaffold into a temporary working directory and initializes a git repository before Claude Code starts.
 
@@ -18,7 +24,7 @@ tests/test-suites/code-review/
   tests.json                <-- references scaffold by name
 ```
 
-### Lifecycle
+#### Lifecycle
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -64,7 +70,7 @@ tests/test-suites/code-review/
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Step-by-Step
+#### Step-by-Step
 
 1. **Config validation** — The harness reads `tests.json` and verifies that every test's `scaffold` field points to an existing directory under `scaffolds/`. Missing scaffolds cause an immediate exit with a clear error message.
 
@@ -76,9 +82,11 @@ tests/test-suites/code-review/
 
 5. **Claude Code starts** — The script hands off to `claude` with whatever flags the harness passed (model, plugins, prompt, etc.). Claude Code's working directory contains the scaffold files with a clean git history.
 
-## Configuring Scaffolds
+## Task: Create and Use a Scaffold
 
-### tests.json
+### Configuring Scaffolds
+
+#### tests.json
 
 Add the `scaffold` field to any test case that needs a project context:
 
@@ -112,16 +120,16 @@ Add the `scaffold` field to any test case that needs a project context:
 
 The first test uses a scaffold; the second does not. Tests without a `scaffold` field run in an empty `/workspace` directory with no git repository.
 
-### Scaffold Field Rules
+#### Scaffold Field Rules
 
 - The `scaffold` field is **optional** on each test case.
 - The value must match a directory name under `scaffolds/` in the same test suite.
 - Validation runs before sandbox execution — a bad scaffold name fails fast.
 - Different tests in the same suite can use different scaffolds, or no scaffold at all.
 
-## Creating a Scaffold
+### Creating a Scaffold
 
-### Directory Structure
+#### Directory Structure
 
 Create a directory under your test suite's `scaffolds/` folder. The directory name becomes the scaffold name used in `tests.json`:
 
@@ -132,7 +140,7 @@ tests/test-suites/{suite-name}/
       ... project files ...
 ```
 
-### Design Guidelines
+#### Design Guidelines
 
 **Keep scaffolds minimal.** Include only the files the skill needs to do its job. A code review skill needs source files with reviewable code. A project discovery skill needs config files from multiple languages. Don't add files that aren't relevant to what the skill will inspect.
 
@@ -142,7 +150,7 @@ tests/test-suites/{suite-name}/
 
 **Remember that git is initialized automatically.** You don't need to include a `.git` directory. The sandbox run script creates a fresh repository and commits all scaffold files. Skills that check `git log`, `git diff`, or branch information will see a single "Initial commit" on the `main` branch.
 
-### Examples
+#### Examples
 
 **Simple single-language project** (`ruby-project`):
 
@@ -195,7 +203,7 @@ scaffolds/ruby-project/
 
 Used by: iterative-plan-review (needs an existing plan document to iterate on)
 
-## Tests With and Without Scaffolds
+### Tests With and Without Scaffolds
 
 Not every test needs a scaffold. The choice depends on what the test is verifying:
 
@@ -206,16 +214,19 @@ Not every test needs a scaffold. The choice depends on what the test is verifyin
 | Negative test — skill should NOT trigger | Usually no | Empty workspace is sufficient to verify non-invocation |
 | Skill requires external tools (e.g. `gh`) | Usually no | GitHub CLI isn't available in the sandbox |
 
-### Sharing Scaffolds Across Suites
+#### Sharing Scaffolds Across Suites
 
 Each test suite has its own `scaffolds/` directory. If multiple suites need the same project structure, the scaffold files are duplicated into each suite. This keeps suites self-contained — changes to one suite's scaffold don't affect others.
 
-## References
+## Related References
 
-- [Test Harness README](../README.md) — prerequisites, setup, and running tests
-- [Test Suite Configuration](test-suite-configuration.md) — full tests.json field reference including the `scaffold` field
-- [Building SCIL Evals](scil-evals-guide.md) — step-by-step guide for trigger accuracy evals (scaffolds are optional)
-- [Building Rubric Evals](rubric-evals-guide.md) — step-by-step guide for quality evals (scaffolds provide context for the judge)
+- [Building SCIL Evals](scil-evals-guide.md) — trigger accuracy evals (scaffolds are optional)
+- [Building Rubric Evals](rubric-evals-guide.md) — quality evals (scaffolds provide context for the judge)
 - [Docker Integration](docker-integration.md) — how `sandbox-run.sh` copies scaffolds into the sandbox and initializes a git repo
-- [Docker Integration Package](docker-integration-package.md) — Full API reference for the Docker integration package
+- [Docker Integration Package](docker-integration-package.md) — full API reference for the Docker integration package
 - [Claude Integration](claude-integration.md) — Claude CLI wrapper that passes scaffold paths to the sandbox
+
+---
+
+**Next:** [Test Suite Reference](test-suite-reference.md) — the full `tests.json` field reference, including the `scaffold` field.
+**Related:** [Building Skill Eval Scaffolds](build-skill-eval-scaffold.md) — the `/build-skill-eval-scaffold` skill that generates a scaffold for you.

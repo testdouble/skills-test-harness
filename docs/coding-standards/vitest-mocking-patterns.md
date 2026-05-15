@@ -293,7 +293,6 @@ vi.mock('../lib/sandbox.js', () => ({
 ### Project Documentation
 
 - [Test File Organization and Naming](./test-file-organization.md) — companion standard covering file naming, co-location, describe/it conventions, and test plan annotations
-- [Test Plan](../test-plan.md) — overall test strategy
 - [Project Discovery](../project-discovery.md) — workspace package layout and test commands
 
 ### External Resources

@@ -1,8 +1,12 @@
 # Improving Skill Effectiveness
 
-This guide assumes you've completed the setup steps in the [Test Harness README](../../README.md).
+> **Tier 1 · Skill authors.** Assumes you've completed [setup](../../README.md#setup). This page gets you a first rubric-scored skill run end-to-end, with LLM-judge results you can review.
 
-Skill effectiveness measures how well your skill performs its job — not whether it triggers, but whether its output meets quality criteria. You define those criteria in a rubric, and an LLM judge scores the skill's output against them. This guide walks you through creating a project scaffold, writing rubric evals, running them, and reviewing the results.
+Build a scaffold, write rubric evals, run them, and have an LLM judge score your skill's output against your quality criteria.
+
+## What you'll learn
+
+Skill effectiveness measures how well your skill performs its job — not whether it triggers, but whether its output meets quality criteria. You define those criteria in a rubric, and an LLM judge scores the skill's output against them. Effectiveness is independent of trigger accuracy: a skill can fire reliably and still produce weak output.
 
 ## What you'll do
 
@@ -61,7 +65,7 @@ It generates two things:
 
 **Note:** The skill can create skill-prompt tests from scratch if none exist yet, or add rubric expectations to existing tests.
 
-For details on the skill's full workflow and criteria categories, see [Writing Skill Eval Rubrics](../write-skill-eval-rubric.md). For the complete `tests.json` field reference, see [Test Suite Configuration](../test-suite-configuration.md).
+For details on the skill's full workflow and criteria categories, see [Writing Skill Eval Rubrics](../write-skill-eval-rubric.md). For the complete `tests.json` field reference, see [Test Suite Reference](../test-suite-reference.md).
 
 ## Step 3: Run the test suite
 
@@ -121,7 +125,7 @@ Launch the harness-web dashboard to inspect your test run and judge results:
 
 Open `http://localhost:3099` in your browser. Navigate to your test run to see per-criterion pass/fail results from the LLM judge, including the reasoning behind each score. For a full walkthrough of the dashboard, see [Viewing Results](viewing-results.md).
 
-## Next Steps
+---
 
-- **Iterate on your rubric** — Refine criteria based on judge results. The judge re-evaluates from stored output, so you can adjust criteria without re-running the skill. See [Building Rubric Evals](../rubric-evals-guide.md) for iteration strategies and tips on writing effective criteria.
-- **Measure trigger accuracy** — If your skill isn't triggering reliably, you can measure and improve when Claude calls it using skill-call tests. See [Improving Skill Trigger Accuracy](skill-trigger-accuracy.md).
+**Next:** [Building Rubric Evals](../rubric-evals-guide.md) — iterate on rubric criteria and re-score stored output without re-running the skill.
+**Related:** [Improving Skill Trigger Accuracy](skill-trigger-accuracy.md) — if the skill isn't firing reliably, measure and improve when Claude calls it.

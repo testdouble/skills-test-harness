@@ -1,8 +1,8 @@
 # Analytics
 
-This guide assumes you've completed the setup steps in the [Test Harness README](../../README.md) and have run at least one test suite.
+> **Tier 1 · Anyone querying results.** Assumes you've completed [setup](../../README.md#setup), run at least one test suite, and imported data with `./harness update-analytics-data`. This page gets you queryable cross-run metrics from the CLI.
 
-The analytics system imports test run data into a DuckDB database backed by Parquet files, making it queryable through CLI commands or the web dashboard. This guide covers importing data, running queries, and finding your way around the analytics output.
+Import test run data into a DuckDB database backed by Parquet files, then query it from the CLI or the web dashboard. This page covers importing data, running queries, and finding your way around the analytics output.
 
 ## Importing data
 
@@ -79,3 +79,8 @@ For a visual interface to your analytics data, use the harness-web dashboard. Se
 - [Parquet Schema](../parquet-schema.md) — field reference for analytics Parquet files
 - [CLI](../cli.md) — full CLI command reference
 - [Data Package](../data.md) — shared data layer: types, DuckDB queries, and analytics functions
+
+---
+
+**Next:** [Parquet Schema](../parquet-schema.md) — the complete field reference for every analytics table you just imported.
+**Related:** [Viewing Results](viewing-results.md) — explore the same data visually in the harness-web dashboard.

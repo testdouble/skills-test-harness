@@ -19,6 +19,8 @@
   },
   "overrides": {
     "vite": "^8.0.8",
-    "picomatch": "^4.0.4"
+    "picomatch": "^4.0.4",
+    "hono": "^4.12.18",
+    "postcss": "^8.5.14"
   }
 }

@@ -1,8 +1,10 @@
 # Test Fixtures
 
-Shared fixture data and loading utilities for integration and unit tests across all workspace packages in the test harness.
+> **Tier 5 · Contributor reference.** Internal documentation for the `packages/test-fixtures` package; it is contributor-only test infrastructure with no user-facing equivalent. If you arrived here as a user, start at the [Test Harness README](../README.md).
 
-- **Last Updated:** 2026-03-28 15:06
+Change this package when you need shared fixture data for tests — adding an analytics scenario for DuckDB integration tests, adding a CLI JSON fixture for unit tests, or touching the `loadFixtures()` copy utility. It is the centralized fixture repository for integration and unit tests across all workspace packages.
+
+- **Last Updated:** 2026-05-15
 - **Authors:**
   - River Bailey (river.bailey@testdouble.com)
 
@@ -173,7 +175,7 @@ The 17 named scenarios cover specific analytics query behaviors:
 2. **Import directly** — Use the `"./*"` export path: `import data from '@testdouble/test-fixtures/cli/path/to/fixture.json'`
 3. **Cast to domain type** — Assign the import to a typed constant in a co-located `fixtures.ts` file
 
-## Related Documentation
+## Related References
 
 - [Test Harness Architecture](./test-harness-architecture.md) - System architecture including test-fixtures package boundaries and data flow
 - [Project Discovery](./project-discovery.md) - Full project discovery details for the test harness workspace
@@ -181,3 +183,8 @@ The 17 named scenarios cover specific analytics query behaviors:
 - [ESM Import Conventions](./coding-standards/esm-import-conventions.md) - Import patterns for workspace packages including test-fixtures
 - [Cross-Runtime Meta Resolution](./coding-standards/cross-runtime-meta-resolution.md) - How `currentDir()` resolves paths across Bun and Vitest
 - [Integration Test Lifecycle](./coding-standards/integration-test-lifecycle.md) - Temp directory lifecycle pattern used with `loadFixtures()`
+
+---
+
+**Next:** [Data Package](./data.md) — the primary consumer; its analytics integration tests load these fixtures via `loadFixtures()`.
+**Related:** [Bun Helpers](./bun-helpers.md) — `currentDir()` is the only dependency this package has, used to resolve fixture paths across runtimes.
