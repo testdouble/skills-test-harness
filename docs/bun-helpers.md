@@ -1,8 +1,10 @@
 # @testdouble/bun-helpers
 
-Cross-runtime path resolution utilities that abstract differences between Bun runtime, Vitest/Node test runner, and Bun compiled binaries.
+> **Tier 5 · Contributor reference.** Internal documentation for the `packages/bun-helpers` package; there is no user-facing equivalent. If you arrived here as a user, start at the [Test Harness README](../README.md).
 
-- **Last Updated:** 2026-03-28 12:00
+Change this package when you need cross-runtime path resolution — locating a sibling file (script, config, template) that must resolve correctly under the Bun runtime, the Vitest/Node test runner, and Bun compiled binaries alike. It encapsulates the `import.meta.dir` / `import.meta.dirname` / `import.meta.url` fallback chain so consumers don't reimplement it.
+
+- **Last Updated:** 2026-05-15
 - **Authors:**
   - River Bailey (river.bailey@testdouble.com)
 
@@ -165,9 +167,14 @@ The compiled binary tests temporarily override `process.execPath` using `Object.
    - Use `resolveRelativePath` when resolving non-TypeScript sibling files (scripts, configs, templates) that must work in compiled binaries
 3. **Pass `import.meta` directly** at the call site -- do not store it in a variable and pass it later from a different module
 
-## Related Documentation
+## Related References
 
 - [Cross-Runtime Meta Property Resolution](./coding-standards/cross-runtime-meta-resolution.md) - Coding standard that defines the fallback chain pattern and recommends using this package
 - [Test Harness Architecture](./test-harness-architecture.md) - System architecture showing bun-helpers in the dependency graph
 - [ESM Import Conventions](./coding-standards/esm-import-conventions.md) - Import conventions including `.js` extensions in relative imports
 - [Project Discovery](./project-discovery.md) - Workspace package layout and Bun runtime details
+
+---
+
+**Next:** [Test Harness Architecture](./test-harness-architecture.md) — where this package sits in the dependency graph and which packages consume it.
+**Related:** [Claude Integration](./claude-integration.md) — a consumer that uses `resolveRelativePath` to locate `sandbox-run.sh` across runtimes.

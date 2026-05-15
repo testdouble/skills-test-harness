@@ -1,8 +1,10 @@
 # Claude Integration
 
-Wraps the Claude CLI invocation behind a programmatic TypeScript API so that test runners and eval pipelines can execute Claude inside a Docker sandbox without constructing CLI arguments directly.
+> **Tier 5 · Contributor reference.** Internal documentation for the `packages/claude-integration` package; there is no user-facing equivalent. If you arrived here as a user, start at the [Test Harness README](../README.md).
 
-- **Last Updated:** 2026-03-28 12:00
+Change this package when you need to touch how the harness invokes Claude inside the Docker sandbox — the CLI flag construction, plugin-directory resolution, output-file extraction, or the sandbox shell scripts. It wraps the Claude CLI behind a programmatic TypeScript API so test runners and eval pipelines never construct CLI arguments directly.
+
+- **Last Updated:** 2026-05-15
 - **Authors:**
   - River Bailey (river.bailey@testdouble.com)
 
@@ -188,10 +190,15 @@ export class ClaudeError extends Error {
 
 All tests mock `@testdouble/docker-integration` and `@testdouble/bun-helpers` at the module level using `vi.mock()`. The `run-claude.test.ts` suite verifies argument construction by inspecting `vi.mocked(execInSandbox).mock.calls` rather than testing actual sandbox execution. Mocks are cleared in `beforeEach` to prevent cross-test contamination.
 
-## Related Documentation
+## Related References
 
 - [Docker Integration](./docker-integration.md) - The underlying sandbox execution layer that `runClaude` delegates to
 - [Test Harness Architecture](./test-harness-architecture.md) — System architecture showing how claude-integration fits into the package dependency graph
 - [CLI Package](./cli.md) — CLI commands that invoke `runClaude()` for test execution and SCIL
 - [Evals Package](./evals.md) — Evaluation engine that invokes `runClaude()` for LLM judge assessments
 - [Bun Helpers](./bun-helpers.md) — Cross-runtime path resolution utilities used by this package
+
+---
+
+**Next:** [Docker Integration](./docker-integration.md) — the underlying sandbox execution layer that `runClaude()` delegates to via `execInSandbox`.
+**Related:** [Bun Helpers](./bun-helpers.md) — the cross-runtime path resolution used to locate `sandbox-run.sh`.

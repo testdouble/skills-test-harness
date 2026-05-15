@@ -1,5 +1,9 @@
 # Docker Integration Package
 
+> **Tier 5 · Contributor reference.** Internal API deep-dive for the `@testdouble/docker-integration` package — the barrel exports, every public function signature, the consumer import map, and test patterns. If you're a user who just needs the sandbox set up before running tests, see [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md).
+
+This page is the typed reference for the package's public surface: each exported symbol, its signature and behavior, which consumer imports it, the error matrix, and the `Bun.spawn` mocking conventions for its tests. For the architecture-level walkthrough and the `sandbox-run.sh` script, see [Docker Integration](docker-integration.md).
+
 The `@testdouble/docker-integration` package is the single point of contact for all Docker Desktop sandbox interactions in the test harness. It wraps the `docker sandbox` CLI subcommands and exposes a typed TypeScript API for creating, removing, verifying, and executing commands inside Docker Desktop sandboxes.
 
 - **Package:** `@testdouble/docker-integration` (v0.1.0, private)
@@ -263,3 +267,8 @@ function makeStream(content: string): ReadableStream<Uint8Array> {
 - [Test Scaffolding](test-scaffolding.md) -- How scaffolds provide project context in the Docker sandbox
 - [Test Harness Architecture](test-harness-architecture.md) -- System architecture and package boundaries
 - [Cross-Runtime Meta Property Resolution](coding-standards/cross-runtime-meta-resolution.md) -- Coding standard for `import.meta` fallback chains
+
+---
+
+**Next:** [Docker Integration](docker-integration.md) -- the architecture walkthrough and the `sandbox-run.sh` script that runs inside the container.
+**Related:** [Test Harness Architecture](test-harness-architecture.md) -- where this package sits in the dependency graph.

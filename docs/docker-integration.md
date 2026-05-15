@@ -1,12 +1,16 @@
 # Docker Integration
 
+> **Tier 5 · Contributor reference.** Internal documentation for the `@testdouble/docker-integration` package — the sandbox API, the `sandbox-run.sh` script, error handling, and test patterns. If you're a user who just needs the sandbox set up before running tests, see [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md).
+
+This page tells you how the harness talks to Docker: the functions you call to create, verify, run inside, and tear down the sandbox; what `sandbox-run.sh` does inside the container; how errors propagate to each consumer; and how to mock `Bun.spawn` when testing this package. For the typed public-API deep dive, see [Docker Integration Package](docker-integration-package.md).
+
 Centralized package for all Docker Desktop sandbox interactions in the test harness — creating, removing, and executing commands inside sandboxes.
 
-- **Last Updated:** 2026-03-28 09:00
+- **Last Updated:** 2026-05-15
 - **Authors:**
   - River Bailey
 
-## Overview
+## Summary
 
 - The `@testdouble/docker-integration` package is the single point of contact for all Docker CLI commands in the test harness. No other package spawns `docker` processes directly.
 - Provides two categories of functions: **sandbox execution** (`ensureSandboxExists`, `runInSandbox`) for running Claude inside the sandbox, and **lifecycle management** (`createSandbox`, `removeSandbox`, `openShell`) for managing the sandbox itself.
@@ -297,3 +301,8 @@ This means a `Bun.spawn` mock is missing a return value. Ensure every `spawn` ca
 - [Skip Permissions in Test Sandbox](adrs/20260326084800-skip-permissions-in-test-sandbox.md) — ADR on using `--dangerously-skip-permissions` inside the sandbox
 - [Cross-Runtime Meta Property Resolution](coding-standards/cross-runtime-meta-resolution.md) — Coding standard for the `import.meta` fallback chain used in this package
 - [Claude Integration](./claude-integration.md) — Higher-level Claude CLI wrapper that delegates to this package via `execInSandbox`
+
+---
+
+**Next:** [Docker Integration Package](./docker-integration-package.md) — the typed public-API deep dive: barrel exports, consumer import map, and file inventory.
+**Related:** [Claude Integration](./claude-integration.md) — the layer directly above this one.

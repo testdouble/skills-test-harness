@@ -1,17 +1,19 @@
 # Data Package (`@testdouble/harness-data`)
 
-Shared data layer for the test harness: type definitions, test suite configuration parsing, JSONL I/O, DuckDB-powered analytics queries, stream-JSON parsing, SCIL train/test splitting, and skill frontmatter manipulation.
+> **Tier 5 · Contributor reference.** Internal documentation for the `packages/data` package. If you're a user looking to query analytics data, see [Analytics](getting-started/analytics.md).
 
-- **Last Updated:** 2026-04-06
+The shared data layer every other harness package depends on. Change this package when you need to touch a type that flows through the pipeline, the `tests.json` parser, JSONL I/O, the DuckDB analytics queries, stream-JSON parsing, SCIL/ACIL train/test splitting, or skill/agent frontmatter manipulation.
+
+What this package owns:
+
+- All TypeScript types that flow through the harness pipeline: test configuration, stream events, expectation results, analytics query shapes, and SCIL/ACIL domain types
+- Configuration parsing that reads `tests.json`, normalizes expectation shorthand formats into discriminated union types, validates scaffolds, and defaults model to `"sonnet"`
+- DuckDB analytics for JSONL-to-Parquet import and SQL-based queries over test run summaries, per-test details, and SCIL/ACIL improvement history
+- Stream-JSON parsing, JSONL read/write, SCIL train/test set splitting, skill description frontmatter manipulation, re-evaluation markers, and run status tracking
+
+- **Last Updated:** 2026-05-15
 - **Authors:**
   - River Bailey (river.bailey@testdouble.com)
-
-## Overview
-
-- Defines all TypeScript types that flow through the harness pipeline: test configuration, stream events, expectation results, analytics query shapes, and SCIL/ACIL domain types
-- Provides configuration parsing that reads `tests.json`, normalizes expectation shorthand formats into discriminated union types, validates scaffolds, and defaults model to `"sonnet"`
-- Implements DuckDB analytics for JSONL-to-Parquet import and SQL-based queries over test run summaries, per-test details, and SCIL/ACIL improvement history
-- Includes stream-JSON parsing, JSONL read/write, SCIL train/test set splitting, skill description frontmatter manipulation, re-evaluation markers, and run status tracking
 
 Key files:
 - `packages/data/src/types.ts` — All shared TypeScript interfaces and type unions
@@ -347,14 +349,19 @@ Tracks which test runs have been re-evaluated via a `.re-evaluated-runs.json` fi
 - **DuckDB integration tests:** Use real DuckDB with temp directories, writing fixture JSONL files via helper functions before running queries
 - **Deterministic SCIL splitting:** Tests verify the same seed always produces the same split assignment
 
-## Related Documentation
+## Related References
 
 - [Test Harness Architecture](./test-harness-architecture.md) — System architecture, package boundaries, and data flow
-- [Parquet Schema Reference](./parquet-schema.md) — Column-level schema for all seven Parquet tables
-- [Test Suite Configuration](./test-suite-reference.md) — Format and semantics of `tests.json` files
+- [Parquet Schema Reference](./parquet-schema.md) — Column-level schema for all Parquet tables
+- [Test Suite Reference](./test-suite-reference.md) — Format and semantics of `tests.json` files
 - [SCIL Improvement Loop](./skill-call-improvement-loop.md) — How SCIL uses train/test splits and iterative description refinement
 - [LLM Judge](./llm-judge.md) — LLM judge evaluation system that produces the criteria grouped by `queryTestRunDetails()`
 - [CLI Package](./cli.md) — CLI commands that orchestrate data reading/writing through this package
 - [Evals Package](./evals.md) — Evaluation engine that consumes types and JSONL readers from this package
 - [Web Dashboard](./web.md) — Web dashboard that queries DuckDB analytics exposed by this package
 - [Test Fixtures](./test-fixtures.md) — Shared test fixture data including analytics JSONL scenarios for integration tests
+
+---
+
+**Next:** [Test Harness Architecture](./test-harness-architecture.md) — see how this package fits into the package dependency graph and data flow.
+**Related:** [Parquet Schema Reference](./parquet-schema.md) — column-level schema for the analytics tables this package imports and queries.

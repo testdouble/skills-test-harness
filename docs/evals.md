@@ -1,15 +1,19 @@
 # Evals Package
 
-The `@testdouble/harness-evals` package (`packages/evals`) contains the evaluation logic for the test harness. It scores test run results against expectations, producing structured pass/fail records for both deterministic boolean checks and semantic LLM judge assessments.
+> **Tier 5 · Contributor reference.** Internal documentation for the `packages/evals` package. If you're a user looking to write and run quality evals, see [Building Rubric Evals](rubric-evals-guide.md).
 
-- **Last Updated:** 2026-03-28
-- **Package:** `@testdouble/harness-evals` (workspace package, not published)
+The evaluation engine. Change this package when you need to touch how test run results are scored against expectations — the deterministic boolean checks, the semantic LLM judge, rubric parsing, the judge prompt builder, or the top-level `evaluateTestRun()` orchestrator.
+
+After the `test-run` pipeline executes prompts inside Docker sandboxes and writes JSONL event streams, this package reads those streams and scores each test case's expectations, producing structured pass/fail records for both deterministic boolean checks and semantic LLM judge assessments.
+
+- **Last Updated:** 2026-05-15
+- **Package:** `@testdouble/harness-evals` (`packages/evals`, workspace package, not published)
 - **Runtime:** TypeScript on Bun, ESNext target, strict mode
 - **Tests:** Vitest (co-located `.test.ts` files)
 
-## Purpose
+## Consumers
 
-After the `test-run` pipeline executes prompts inside Docker sandboxes and writes JSONL event streams, the evals package reads those streams and scores each test case's expectations. It serves two consumers:
+It serves three consumers:
 
 1. **`test-eval` command** -- Evaluates all expectations (boolean + LLM judge) for a completed test run and converts results into `TestResultRecord` entries written to `test-results.jsonl`.
 2. **SCIL improvement loop (`step-5-run-eval`)** -- Uses `evaluateSkillCall` directly to check whether a specific skill was invoked during a prompt execution.
@@ -122,7 +126,7 @@ All results carry a `status` field:
 - `'evaluated'` -- Normal evaluation completed.
 - `'infrastructure-error'` -- Evaluation failed due to environment issues (missing rubric, sandbox timeout, parse failure). The result includes `error_message` and `passed: false`.
 
-## Related Documentation
+## Related References
 
 - [Test Harness Architecture](./test-harness-architecture.md) — System architecture, package boundaries, and dependency graph
 - [Execution Package](./execution.md) — The `runTestEval()` orchestrator that consumes `evaluateTestRun()`, the SCIL loop that uses `evaluateSkillCall` directly, and the ACIL loop that uses `evaluateAgentCall` directly
@@ -130,9 +134,14 @@ All results carry a `status` field:
 - [Data Package](./data.md) — Shared data layer providing JSONL I/O, stream event types, config records, and `getResultText`/`getSkillInvocations`
 - [Claude Integration](./claude-integration.md) — `runClaude()` used to invoke the judge model inside the Docker sandbox
 - [LLM Judge Evaluation](./llm-judge.md) — Detailed judge mechanics: prompt construction, scoring, output format, and error handling
-- [Test Suite Configuration](./test-suite-reference.md) — `tests.json` field reference including `llm-judge` and `skill-call` expectation formats
+- [Test Suite Reference](./test-suite-reference.md) — `tests.json` field reference including `llm-judge` and `skill-call` expectation formats
 - [Parquet Schema](./parquet-schema.md) — Analytics schema for evaluation results stored as Parquet
 - [Building Rubric Evals](./rubric-evals-guide.md) — Step-by-step guide to writing and running LLM-judge quality evals
 - [Building SCIL Evals](./scil-evals-guide.md) — Step-by-step guide to writing and running trigger accuracy evals
 - [Agent Call Improvement Loop](./agent-call-improvement-loop.md) — ACIL mechanics: agent detection, temp plugin isolation, holdout splits, scoring
 - [Writing Agent-Call Evals](./write-acil-evals.md) — Skill for generating agent-call test suites
+
+---
+
+**Next:** [LLM Judge Evaluation](./llm-judge.md) — detailed judge mechanics: prompt construction, scoring, output format, and error handling.
+**Related:** [Execution Package](./execution.md) — the `runTestEval()`, SCIL, and ACIL orchestrators that consume this package's evaluators.
