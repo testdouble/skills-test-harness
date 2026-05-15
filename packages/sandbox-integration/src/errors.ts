@@ -1,9 +1,9 @@
-export class DockerError extends Error {
+export class SandboxError extends Error {
   constructor(
     message: string,
     public exitCode: number | null,
   ) {
     super(message)
-    this.name = 'DockerError'
+    this.name = 'SandboxError'
   }
 }

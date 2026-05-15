@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@testdouble/docker-integration', () => ({
+vi.mock('@testdouble/sandbox-integration', () => ({
   execInSandbox: vi.fn().mockResolvedValue({ exitCode: 0, stdout: 'output', stderr: '' }),
 }))
 vi.mock('@testdouble/bun-helpers', () => ({
   resolveRelativePath: vi.fn().mockReturnValue('/resolved/sandbox-run.sh'),
 }))
 
-import { execInSandbox } from '@testdouble/docker-integration'
+import { execInSandbox } from '@testdouble/sandbox-integration'
 import { runClaude } from './run-claude.js'
 
 beforeEach(() => {

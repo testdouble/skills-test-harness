@@ -1,4 +1,4 @@
-import { ensureSandboxExists } from '@testdouble/docker-integration'
+import { ensureSandboxExists } from '@testdouble/sandbox-integration'
 import { resolvePaths } from '../test-runners/steps/step-1-resolve-paths.js'
 import { validateConfig } from '../test-runners/steps/step-2-validate-config.js'
 import { readConfig } from '../test-runners/steps/step-3-read-config.js'

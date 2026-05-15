@@ -5,7 +5,7 @@ sandbox-setup: build
 	./harness sandbox-setup
 
 sandbox-clean:
-	docker sandbox rm claude-skills-harness
+	sbx rm --force claude-skills-harness
 
 dev:
 	bun install
@@ -31,6 +31,7 @@ build:
 		--external '@duckdb/node-bindings-win32-x64'
 	DUCKDB_DIR=$$(find node_modules/.bun -maxdepth 6 -name "duckdb.node" -path "*node-bindings-$(DUCKDB_PLATFORM)*" 2>/dev/null | head -1 | xargs dirname) && \
 	rm -rf node_modules/@duckdb/node-bindings-$(DUCKDB_PLATFORM) && \
+	mkdir -p node_modules/@duckdb && \
 	ln -sf $(TESTS_DIR)/$$DUCKDB_DIR node_modules/@duckdb/node-bindings-$(DUCKDB_PLATFORM) && \
 	cp $$DUCKDB_DIR/libduckdb.dylib $(TESTS_DIR)/libduckdb.dylib
 

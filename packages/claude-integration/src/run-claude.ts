@@ -1,5 +1,5 @@
 import { resolveRelativePath } from '@testdouble/bun-helpers'
-import { execInSandbox } from '@testdouble/docker-integration'
+import { execInSandbox } from '@testdouble/sandbox-integration'
 import type { ClaudeRunOptions, ClaudeRunResult } from './types.js'
 
 const sandboxRunScript = resolveRelativePath(
@@ -12,7 +12,7 @@ export async function runClaude(options: ClaudeRunOptions): Promise<ClaudeRunRes
   const { model, prompt, pluginDirs = [], scaffold = null, debug = false } = options
 
   // Plugin dirs are passed as explicit args to sandbox-run.sh (not as --plugin-dir flags)
-  // so that docker sandbox exec maps them into the container filesystem.
+  // so that sbx exec maps them into the container filesystem.
   // Format: <plugin_dir_count> <dir1> <dir2> ... <claude_args...>
   const pluginDirArgs = [String(pluginDirs.length), ...pluginDirs]
 

@@ -1,5 +1,5 @@
 import { resolveRelativePath } from '@testdouble/bun-helpers'
-import { execInSandbox } from '@testdouble/docker-integration'
+import { execInSandbox } from '@testdouble/sandbox-integration'
 
 export interface OutputFile {
   path: string

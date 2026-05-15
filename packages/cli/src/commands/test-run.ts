@@ -9,7 +9,7 @@ export function builder(yargs: Argv): Argv {
   return yargs
     .option('suite', { type: 'string', describe: 'Test suite name (omit to run all suites)' })
     .option('test', { type: 'string', describe: 'Filter to single test by exact name' })
-    .option('debug', { type: 'boolean', default: false, describe: 'Show Docker output in real time' })
+    .option('debug', { type: 'boolean', default: false, describe: 'Show sandbox output in real time' })
     .option('repo-root', {
       type: 'string',
       default: process.cwd(),

@@ -1,4 +1,4 @@
-import { openShell } from '@testdouble/docker-integration'
+import { openShell } from '@testdouble/sandbox-integration'
 import type { Argv } from 'yargs'
 
 export const command = 'shell'

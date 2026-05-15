@@ -1,5 +1,5 @@
 {
-  "name": "@testdouble/docker-integration",
+  "name": "@testdouble/sandbox-integration",
   "version": "0.1.0",
   "private": true,
   "module": "index.ts",

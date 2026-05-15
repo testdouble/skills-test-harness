@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { DockerError } from './errors.js'
+import { SandboxError } from './errors.js'
 
 function makeStream(content: string): ReadableStream<Uint8Array> {
   return new ReadableStream({
@@ -22,26 +22,51 @@ afterEach(() => {
 })
 
 describe('ensureSandboxExists', () => {
-  it('resolves when sandbox is found in docker ls output', async () => {
+  it('resolves when sandbox is found in sbx ls output', async () => {
     ;(globalThis as any).Bun.spawn.mockReturnValue({
       stdout: makeStream('claude-skills-harness\n'),
       stderr: makeStream(''),
       exited: Promise.resolve(),
+      exitCode: 0,
     })
 
     const { ensureSandboxExists } = await import('./sandbox.js')
     await expect(ensureSandboxExists()).resolves.toBeUndefined()
   })
 
-  it('throws DockerError when sandbox is not found', async () => {
+  it('throws SandboxError when sandbox is not found', async () => {
     ;(globalThis as any).Bun.spawn.mockReturnValue({
       stdout: makeStream('some-other-sandbox\n'),
       stderr: makeStream(''),
       exited: Promise.resolve(),
+      exitCode: 0,
     })
 
     const { ensureSandboxExists } = await import('./sandbox.js')
-    await expect(ensureSandboxExists()).rejects.toThrow(DockerError)
+    await expect(ensureSandboxExists()).rejects.toThrow(SandboxError)
+  })
+
+  it('throws SandboxError when sbx ls exits non-zero', async () => {
+    ;(globalThis as any).Bun.spawn.mockReturnValue({
+      stdout: makeStream(''),
+      stderr: makeStream('not logged in'),
+      exited: Promise.resolve(),
+      exitCode: 1,
+    })
+
+    const { ensureSandboxExists } = await import('./sandbox.js')
+    await expect(ensureSandboxExists()).rejects.toThrow(/sbx login/)
+  })
+
+  it('throws SandboxError when sbx is missing', async () => {
+    const error = new Error('spawn sbx ENOENT') as Error & { code: string }
+    error.code = 'ENOENT'
+    ;(globalThis as any).Bun.spawn.mockImplementation(() => {
+      throw error
+    })
+
+    const { ensureSandboxExists } = await import('./sandbox.js')
+    await expect(ensureSandboxExists()).rejects.toThrow(/sbx CLI was not found/)
   })
 })
 
@@ -57,6 +82,10 @@ describe('execInSandbox', () => {
     const { execInSandbox } = await import('./sandbox.js')
     const result = await execInSandbox('/path/to/script', ['--print', 'hello'], null, false)
 
+    expect((globalThis as any).Bun.spawn).toHaveBeenCalledWith(
+      ['sbx', 'exec', 'claude-skills-harness', '/path/to/script', '', '--print', 'hello'],
+      expect.objectContaining({ stdout: 'pipe', stderr: 'pipe' }),
+    )
     expect(result.exitCode).toBe(0)
     expect(result.stdout).toBe('sandbox output')
     expect(result.stderr).toBe('stderr output')
