@@ -1,5 +1,9 @@
 # Skill Call Improvement Loop (SCIL)
 
+> **Tier 4 · Skill/agent authors tuning behavior, plus contributors.** This is the mechanics reference for the `scil` command — every flag, the holdout model, the divergent-convergent phase system, and the output files. Read [Building SCIL Evals](scil-evals-guide.md) first if you haven't run the loop yet.
+
+Use `scil` to iteratively tune a skill's description against real prompts until trigger accuracy holds. The command runs an evaluate-score-improve loop, tracks the best description across iterations, and writes it back to `SKILL.md`. This page documents every CLI flag, how holdout validation prevents overfitting, the phase system that controls improvement strategy and early exit, and the output files each run produces.
+
 Skill descriptions determine when Claude routes a user prompt to a skill. Getting them right is iterative — you test trigger accuracy, find failures, improve the description, and repeat. The `scil` command automates this cycle using the same Docker-based infrastructure as `test-run`.
 
 ## How It Works
@@ -213,7 +217,7 @@ The code-review skill performs a thorough review of ...
 Apply this description to SKILL.md? [y/N]
 ```
 
-## References
+## Related References
 
 - [Building SCIL Evals](scil-evals-guide.md) — step-by-step guide covering the full workflow from writing tests to running SCIL
 - [Test Suite Configuration](test-suite-reference.md) — full tests.json field reference for `skill-call` type tests
@@ -224,3 +228,8 @@ Apply this description to SKILL.md? [y/N]
 - [Data Package](data.md) — Shared data layer providing SCIL train/test splitting, prompt building, and frontmatter manipulation
 - [Evals Package](evals.md) — Evaluation engine providing `evaluateSkillCall` used by SCIL step-5
 - [Agent Call Improvement Loop](agent-call-improvement-loop.md) — parallel implementation for agent descriptions
+
+---
+
+**Next:** [Building SCIL Evals](scil-evals-guide.md) — manual test authoring and iteration strategies for the loop.
+**Related:** [Agent Call Improvement Loop](agent-call-improvement-loop.md) — the parallel loop for agent descriptions.

@@ -1,6 +1,10 @@
 # Agent Call Improvement Loop (ACIL)
 
-Agent descriptions determine when Claude delegates tasks to custom agents — the same mechanism used for skill triggering, but with different metadata fields and stream event shapes. The `acil` command automates the cycle of testing trigger accuracy, finding failures, improving the description, and repeating. It mirrors the [SCIL](skill-call-improvement-loop.md) architecture with agent-specific adaptations.
+> **Tier 4 · Skill/agent authors tuning behavior, plus contributors.** This is the mechanics reference for the `acil` command — every flag, the holdout model, the phase system, and how agent detection differs from skills. Run [Getting Started: Agent Trigger Accuracy](getting-started/agent-trigger-accuracy.md) first if you haven't measured agent triggering yet.
+
+Use `acil` to iteratively tune an agent's description against real prompts until trigger accuracy holds. The command runs an evaluate-score-improve loop, tracks the best description across iterations, and writes it back to the agent's `.md` frontmatter. This page documents every CLI flag, the holdout validation model, the divergent-convergent phase system, and the agent-specific detection and isolation behavior that distinguishes ACIL from SCIL.
+
+Agent descriptions determine when Claude delegates tasks to custom agents — the same mechanism used for skill triggering, but with different metadata fields and stream event shapes. It mirrors the [SCIL](skill-call-improvement-loop.md) architecture with agent-specific adaptations.
 
 ## How It Works
 
@@ -88,32 +92,9 @@ For each evaluation query, ACIL builds an isolated temporary plugin containing:
 
 When testing an improved description, only the target agent's description is overridden — all other agents and skills retain their original descriptions.
 
-## Pipeline Steps
+## Implementation
 
-The ACIL pipeline consists of 10 numbered steps in `packages/execution/src/acil/`:
-
-| Step | File | Function | Description |
-|------|------|----------|-------------|
-| 1 | `step-1-resolve-and-load.ts` | `resolveAndLoad` | Filter agent-call tests, resolve agent `.md` path, validate identifier format |
-| 2 | `step-2-split-sets.ts` | `splitSets` | Re-export from data package — deterministic stratified train/test split |
-| 3 | `step-3-read-agent.ts` | `readAgent` | Parse agent frontmatter and body, return name/description/body |
-| 4 | `step-4-build-temp-plugin.ts` | `buildTempPlugin` | Delegate to `buildTempAgentPluginWithDescription` |
-| 5 | `step-5-run-eval.ts` | `runEval` | Execute tests using `evaluateAgentCall`, return `AcilQueryResult[]` |
-| 6 | `step-6-score.ts` | `scoreResults` | Re-export from `common/score.ts` |
-| 7 | `step-7-improve-description.ts` | `improveDescription` | Build ACIL improvement prompt, run Claude, validate result |
-| 8 | `step-8-apply-description.ts` | `applyDescription` | Write improved description to agent `.md` file |
-| 9 | `step-9-write-output.ts` | `writeOutput` | Delegate to `common/write-output.ts` with `prefix: 'acil'` |
-| 10 | `step-10-print-report.ts` | `printReport` | Re-export from `common/print-report.ts` |
-
-Steps 6, 9, and 10 are thin re-export wrappers around shared modules in `common/`, which are also used by the SCIL pipeline.
-
-## Shared Modules
-
-ACIL and SCIL share three modules in `packages/execution/src/common/`:
-
-- **`common/score.ts`** — `scoreResults()` and `selectBestIteration()` using generic `Scoreable`/`ScoredIteration` interfaces
-- **`common/write-output.ts`** — `writeIterationOutput()` and `writeSummaryOutput()` using `WritableIteration` interface, parameterized by `prefix`
-- **`common/print-report.ts`** — `printIterationProgress()` and `printFinalSummary()` using `PrintableResult`/`PrintableIteration` interfaces
+The ACIL pipeline (numbered step files, shared scoring/output/report modules) is contributor-level implementation detail. See [Execution Package](execution.md) for the ACIL pipeline steps and shared modules.
 
 ## Holdout Sets
 
@@ -168,10 +149,15 @@ ACIL validates agent identifiers before constructing file paths:
 - **Format validation** — agent identifiers must match `plugin:agent` format (`/^[a-z0-9-]+:[a-z0-9-]+$/`)
 - **Path traversal prevention** — resolved paths are checked with `path.resolve` + `startsWith` to ensure they stay within the repository root
 
-## References
+## Related References
 
 - [Skill Call Improvement Loop (SCIL)](skill-call-improvement-loop.md) — parallel implementation for skill descriptions
 - [Test Suite Configuration](test-suite-reference.md) — full tests.json field reference for `agent-call` type tests
 - [Data Package](data.md) — shared data layer providing train/test splitting, ACIL prompt building, and frontmatter manipulation
 - [Evals Package](evals.md) — evaluation engine providing `evaluateAgentCall` used by ACIL step-5
-- [Execution Package](execution.md) — execution package architecture including ACIL pipeline
+- [Execution Package](execution.md) — execution package architecture including ACIL pipeline steps and shared modules
+
+---
+
+**Next:** [Getting Started: Agent Trigger Accuracy](getting-started/agent-trigger-accuracy.md) — write and run an agent-call test suite end to end.
+**Related:** [Skill Call Improvement Loop (SCIL)](skill-call-improvement-loop.md) — the parallel loop for skill descriptions.

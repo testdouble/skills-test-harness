@@ -352,3 +352,32 @@ Tests are co-located with source files. Tests that previously mocked `paths.js` 
 - [Step-Based Pipeline](./coding-standards/step-based-pipeline.md) — Coding standard for the numbered-step architecture
 - [Custom Error Hierarchy](./coding-standards/custom-error-hierarchy.md) — Error class conventions
 - [Agent Call Improvement Loop](agent-call-improvement-loop.md) — ACIL mechanics: agent detection, temp plugin isolation, holdout splits, scoring
+
+## ACIL Pipeline Steps (received from agent-call-improvement-loop.md — integrate in Tier 5)
+
+## Pipeline Steps
+
+The ACIL pipeline consists of 10 numbered steps in `packages/execution/src/acil/`:
+
+| Step | File | Function | Description |
+|------|------|----------|-------------|
+| 1 | `step-1-resolve-and-load.ts` | `resolveAndLoad` | Filter agent-call tests, resolve agent `.md` path, validate identifier format |
+| 2 | `step-2-split-sets.ts` | `splitSets` | Re-export from data package — deterministic stratified train/test split |
+| 3 | `step-3-read-agent.ts` | `readAgent` | Parse agent frontmatter and body, return name/description/body |
+| 4 | `step-4-build-temp-plugin.ts` | `buildTempPlugin` | Delegate to `buildTempAgentPluginWithDescription` |
+| 5 | `step-5-run-eval.ts` | `runEval` | Execute tests using `evaluateAgentCall`, return `AcilQueryResult[]` |
+| 6 | `step-6-score.ts` | `scoreResults` | Re-export from `common/score.ts` |
+| 7 | `step-7-improve-description.ts` | `improveDescription` | Build ACIL improvement prompt, run Claude, validate result |
+| 8 | `step-8-apply-description.ts` | `applyDescription` | Write improved description to agent `.md` file |
+| 9 | `step-9-write-output.ts` | `writeOutput` | Delegate to `common/write-output.ts` with `prefix: 'acil'` |
+| 10 | `step-10-print-report.ts` | `printReport` | Re-export from `common/print-report.ts` |
+
+Steps 6, 9, and 10 are thin re-export wrappers around shared modules in `common/`, which are also used by the SCIL pipeline.
+
+## Shared Modules
+
+ACIL and SCIL share three modules in `packages/execution/src/common/`:
+
+- **`common/score.ts`** — `scoreResults()` and `selectBestIteration()` using generic `Scoreable`/`ScoredIteration` interfaces
+- **`common/write-output.ts`** — `writeIterationOutput()` and `writeSummaryOutput()` using `WritableIteration` interface, parameterized by `prefix`
+- **`common/print-report.ts`** — `printIterationProgress()` and `printFinalSummary()` using `PrintableResult`/`PrintableIteration` interfaces

@@ -1,6 +1,10 @@
 # LLM Judge Evaluation
 
-The LLM judge is an expectation type that evaluates skill output against a rubric of discrete criteria using a second Claude invocation. It extends the test harness beyond code-based assertions (`result-contains`, `skill-call`) to support semantic quality evaluation — e.g., "does the code review call out the SQL injection on line 23?"
+> **Tier 4 · Skill/agent authors tuning quality evals, plus contributors.** This is the mechanics reference for the `llm-judge` expectation — the rubric format, scoring model, judge prompt construction, and result fields. Read [Building Rubric Evals](rubric-evals-guide.md) first if you haven't written a rubric yet.
+
+Use the `llm-judge` expectation to score skill or agent output against a rubric of discrete criteria with a second Claude invocation. This page documents how to configure the expectation, the rubric file format and criterion types, how the judge prompt is built and scored, the result rows it writes, error handling, and prompt size limits.
+
+The LLM judge extends the test harness beyond code-based assertions (`result-contains`, `skill-call`) to support semantic quality evaluation — e.g., "does the code review call out the SQL injection on line 23?"
 
 The judge runs as step 3b in the `test-eval` pipeline, after existing expectations are evaluated and before results are written.
 
@@ -274,7 +278,7 @@ The judge prompt has built-in truncation to stay within OS argument limits (macO
 - **No per-criterion failure counting**: Only the aggregate row affects the test pass/fail total. Individual criterion failures are informational only.
 - **Single model per expectation**: Each `llm-judge` expectation uses one model. To compare judge models, add separate expectations with different `model` values.
 
-## References
+## Related References
 
 - [Building Rubric Evals](rubric-evals-guide.md) — step-by-step guide covering the full workflow from writing rubrics to evaluating results
 - [Test Suite Configuration](test-suite-reference.md) — full tests.json field reference including the `llm-judge` expectation format
@@ -286,3 +290,8 @@ The judge prompt has built-in truncation to stay within OS argument limits (macO
 - [Docker Integration](docker-integration.md) — `runInSandbox` API used to execute judge invocations
 - [Evals Package](evals.md) — Package containing the LLM judge implementation, boolean evals, and evaluation orchestrator
 - [Claude Integration](claude-integration.md) — `runClaude()` wrapper used to invoke the judge model
+
+---
+
+**Next:** [Building Rubric Evals](rubric-evals-guide.md) — write a rubric and run judge evaluation end to end.
+**Related:** [Parquet Schema](parquet-schema.md) — the analytics fields judge results land in.
