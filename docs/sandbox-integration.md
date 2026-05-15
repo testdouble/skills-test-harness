@@ -1,10 +1,10 @@
-# Docker Integration
+# Sandbox Integration
 
-> **Tier 5 · Contributor reference.** Internal documentation for the `@testdouble/docker-integration` package — the sandbox API, the `sandbox-run.sh` script, error handling, and test patterns. If you're a user who just needs the sandbox set up before running tests, see [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md).
+> **Tier 5 · Contributor reference.** Internal documentation for the `@testdouble/sandbox-integration` package — the sandbox API, the `sandbox-run.sh` script, error handling, and test patterns. If you're a user who just needs the sandbox set up before running tests, see [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md).
 
-This page tells you how the harness talks to Docker: the functions you call to create, verify, run inside, and tear down the sandbox; what `sandbox-run.sh` does inside the container; how errors propagate to each consumer; and how to mock `Bun.spawn` when testing this package. For the typed public-API deep dive, see [Docker Integration Package](docker-integration-package.md).
+This page tells you how the harness talks to Docker Sandboxes via `sbx`: the functions you call to create, verify, run inside, and tear down the Test Sandbox; what `sandbox-run.sh` does inside the sandbox; how errors propagate to each consumer; and how to mock `Bun.spawn` when testing this package. For the typed public-API deep dive, see [Sandbox Integration Package](sandbox-integration-package.md).
 
-Centralized package for all Docker Desktop sandbox interactions in the test harness — creating, removing, and executing commands inside sandboxes.
+Centralized package for all Test Sandbox interactions in the test harness — creating, removing, and executing commands inside sandboxes.
 
 - **Last Updated:** 2026-05-15
 - **Authors:**
@@ -12,16 +12,16 @@ Centralized package for all Docker Desktop sandbox interactions in the test harn
 
 ## Summary
 
-- The `@testdouble/docker-integration` package is the single point of contact for all Docker CLI commands in the test harness. No other package spawns `docker` processes directly.
-- Provides two categories of functions: **sandbox execution** (`ensureSandboxExists`, `runInSandbox`) for running Claude inside the sandbox, and **lifecycle management** (`createSandbox`, `removeSandbox`, `openShell`) for managing the sandbox itself.
-- Uses Docker Desktop sandboxes (not traditional containers) via the `docker sandbox` CLI subcommands.
+- The `@testdouble/sandbox-integration` package is the single point of contact for all Sandbox CLI commands in the test harness. No other package spawns `sbx` processes directly.
+- Provides two categories of functions: **sandbox execution** (`ensureSandboxExists`, `execInSandbox`) for running Claude inside the sandbox, and **lifecycle management** (`createSandbox`, `removeSandbox`, `openShell`) for managing the sandbox itself.
+- Uses Docker Desktop sandboxes (not traditional containers) via the `sbx` CLI subcommands.
 - Returns a clean `SandboxResult` type instead of exposing raw `Bun.spawn` process handles.
 
 Key files:
-- `packages/docker-integration/index.ts` — Public API barrel export
-- `packages/docker-integration/src/sandbox.ts` — `ensureSandboxExists`, `runInSandbox`, `SANDBOX_NAME`
-- `packages/docker-integration/src/lifecycle.ts` — `createSandbox`, `removeSandbox`, `openShell`
-- `packages/docker-integration/sandbox-run.sh` — Shell script executed inside the sandbox to prepare the working directory and invoke Claude
+- `packages/sandbox-integration/index.ts` — Public API barrel export
+- `packages/sandbox-integration/src/sandbox.ts` — `ensureSandboxExists`, `execInSandbox`, `SANDBOX_NAME`
+- `packages/sandbox-integration/src/lifecycle.ts` — `createSandbox`, `removeSandbox`, `openShell`
+- `packages/sandbox-integration/sandbox-run.sh` — Shell script executed inside the sandbox to prepare the working directory and invoke Claude
 
 ## Architecture
 
@@ -41,14 +41,14 @@ Key files:
                          └───────┼────────────────┼────────────┼────┘
                                  │                │            │
                     ┌────────────▼────────────────▼────────────▼──────┐
-                    │       @testdouble/docker-integration            │
+                    │       @testdouble/sandbox-integration            │
                     │                                                 │
                     │  ┌─────────────────┐   ┌────────────────────┐  │
                     │  │   sandbox.ts     │   │   lifecycle.ts      │ │
                     │  │                 │   │                    │  │
                     │  │ ensureSandbox   │   │ createSandbox()    │  │
                     │  │  Exists()      │◄──│ removeSandbox()    │  │
-                    │  │ runInSandbox() │   │ openShell()        │  │
+                    │  │ execInSandbox() │   │ openShell()        │  │
                     │  │ SANDBOX_NAME   │   │                    │  │
                     │  └───────┬─────────┘   └────────────────────┘  │
                     │          │                                      │
@@ -66,21 +66,21 @@ Key files:
 
 | File | Purpose |
 |------|---------|
-| `packages/docker-integration/package.json` | Package metadata (`@testdouble/docker-integration`) |
-| `packages/docker-integration/index.ts` | Barrel re-export of all public symbols |
-| `packages/docker-integration/src/sandbox.ts` | `SANDBOX_NAME`, `ensureSandboxExists`, `runInSandbox` |
-| `packages/docker-integration/src/lifecycle.ts` | `createSandbox`, `removeSandbox`, `openShell` |
-| `packages/docker-integration/src/types.ts` | `SandboxResult` interface |
-| `packages/docker-integration/src/errors.ts` | `DockerError` class |
-| `packages/docker-integration/sandbox-run.sh` | Scaffold setup and Claude invocation inside the sandbox |
-| `packages/docker-integration/src/sandbox.test.ts` | Tests for sandbox execution functions |
-| `packages/docker-integration/src/lifecycle.test.ts` | Tests for lifecycle management functions |
-| `packages/docker-integration/src/errors.test.ts` | Tests for `DockerError` |
+| `packages/sandbox-integration/package.json` | Package metadata (`@testdouble/sandbox-integration`) |
+| `packages/sandbox-integration/index.ts` | Barrel re-export of all public symbols |
+| `packages/sandbox-integration/src/sandbox.ts` | `SANDBOX_NAME`, `ensureSandboxExists`, `execInSandbox` |
+| `packages/sandbox-integration/src/lifecycle.ts` | `createSandbox`, `removeSandbox`, `openShell` |
+| `packages/sandbox-integration/src/types.ts` | `SandboxResult` interface |
+| `packages/sandbox-integration/src/errors.ts` | `SandboxError` class |
+| `packages/sandbox-integration/sandbox-run.sh` | Scaffold setup and Claude invocation inside the sandbox |
+| `packages/sandbox-integration/src/sandbox.test.ts` | Tests for sandbox execution functions |
+| `packages/sandbox-integration/src/lifecycle.test.ts` | Tests for lifecycle management functions |
+| `packages/sandbox-integration/src/errors.test.ts` | Tests for `SandboxError` |
 
 ## Core Types
 
 ```typescript
-// types.ts — Return type of runInSandbox
+// types.ts — Return type of execInSandbox
 export interface SandboxResult {
   exitCode: number   // proc.exitCode, defaults to 1 if null
   stdout: string     // full captured stdout
@@ -88,10 +88,10 @@ export interface SandboxResult {
 }
 
 // errors.ts — Thrown by sandbox and lifecycle functions
-export class DockerError extends Error {
+export class SandboxError extends Error {
   constructor(message: string, public exitCode: number | null) {
     super(message)
-    this.name = 'DockerError'
+    this.name = 'SandboxError'
   }
 }
 ```
@@ -108,26 +108,26 @@ export class DockerError extends Error {
 
 #### ensureSandboxExists
 
-Pre-flight check that the sandbox is running. Runs `docker sandbox ls` and verifies `SANDBOX_NAME` appears in the output. Throws `DockerError` with `exitCode: null` if not found.
+Pre-flight check that the sandbox is running. Runs `sbx ls --quiet` and verifies `SANDBOX_NAME` exactly matches one output line. Throws `SandboxError` with `exitCode: null` if not found.
 
 Called by:
 - `commands/test-run.ts` — before the per-suite test loop
 - `scil/loop.ts` — before the SCIL iteration loop
 - `lifecycle.ts: openShell()` — before spawning an interactive bash session
 
-#### runInSandbox
+#### execInSandbox
 
-The primary execution function. Spawns a Claude process inside the Docker sandbox and captures all output.
+The primary execution function. Spawns a Claude process inside the Test Sandbox and captures all output.
 
 ```typescript
-export async function runInSandbox(
+export async function execInSandbox(
   claudeArgs: string[],
   scaffoldPath: string | null,
   debug: boolean
 ): Promise<SandboxResult>
 ```
 
-**Command built:** `docker sandbox exec claude-skills-harness <sandboxRunScript> <scaffoldPath> ...claudeArgs`
+**Command built:** `sbx exec claude-skills-harness <sandboxRunScript> <scaffoldPath> ...claudeArgs`
 
 **Output handling:**
 - stdout is streamed chunk-by-chunk via a `ReadableStream` reader. When `debug` is `true`, each chunk is also written to `process.stdout` in real time.
@@ -146,7 +146,7 @@ export async function runInSandbox(
 
 ### sandbox-run.sh
 
-Shell script that runs inside the Docker sandbox. Receives `SCAFFOLD_PATH` as `$1` and remaining args are passed through to `claude`.
+Shell script that runs inside the Test Sandbox. Receives `SCAFFOLD_PATH` as `$1` and remaining args are passed through to `claude`.
 
 ```sh
 #!/bin/sh
@@ -169,7 +169,7 @@ fi
 exec claude "$@"
 ```
 
-When a scaffold path is provided, it copies the scaffold into a fresh temp directory and initializes a git repository with a single commit. This gives Claude a clean, committed working tree to operate in. When no scaffold is needed, `runInSandbox` passes an empty string and the script skips directly to `exec claude`.
+When a scaffold path is provided, it copies the scaffold into a fresh temp directory and initializes a git repository with a single commit. This gives Claude a clean, committed working tree to operate in. When no scaffold is needed, `execInSandbox` passes an empty string and the script skips directly to `exec claude`.
 
 ### Lifecycle Management
 
@@ -179,7 +179,7 @@ When a scaffold path is provided, it copies the scaffold into a fresh temp direc
 export async function createSandbox(repoRoot: string): Promise<void>
 ```
 
-Checks if the sandbox already exists via an internal `sandboxExists()` helper. If it does, prints a help message to stderr and returns. Otherwise, spawns `docker sandbox run --name claude-skills-harness claude <repoRoot>` with inherited stdio for interactive OAuth login.
+Checks if the sandbox already exists via an internal `sandboxExists()` helper. If it does, prints a help message to stderr and returns. Otherwise, spawns `sbx run --name claude-skills-harness claude <repoRoot>` with inherited stdio for interactive OAuth login.
 
 Called by `commands/sandbox-setup.ts`.
 
@@ -189,9 +189,9 @@ Called by `commands/sandbox-setup.ts`.
 export async function removeSandbox(): Promise<void>
 ```
 
-Runs `docker sandbox rm claude-skills-harness`. Drains stdout and stderr in parallel. Throws `DockerError` with the process exit code on failure.
+Runs `sbx rm --force claude-skills-harness`. Drains stdout and stderr in parallel. Throws `SandboxError` with the process exit code on failure.
 
-Called by `commands/clean.ts`, which catches `DockerError` and re-throws as `HarnessError`.
+Called by `commands/clean.ts`, which catches `SandboxError` and re-throws as `HarnessError`.
 
 #### openShell
 
@@ -199,7 +199,7 @@ Called by `commands/clean.ts`, which catches `DockerError` and re-throws as `Har
 export async function openShell(): Promise<void>
 ```
 
-Calls `ensureSandboxExists()` first, then spawns `docker sandbox exec -it claude-skills-harness -- bash` with inherited stdio for an interactive debugging session.
+Calls `ensureSandboxExists()` first, then spawns `sbx exec -it claude-skills-harness bash` with inherited stdio for an interactive debugging session.
 
 Called by `commands/shell.ts`.
 
@@ -222,26 +222,26 @@ See [Cross-Runtime Meta Property Resolution](coding-standards/cross-runtime-meta
 
 | Scenario | Error Type | Behavior |
 |----------|------------|----------|
-| Sandbox not found by `ensureSandboxExists` | `DockerError` (exitCode: `null`) | Thrown with message suggesting `./harness sandbox-setup` |
-| `docker sandbox rm` fails | `DockerError` (exitCode: process code) | Thrown with stdout+stderr in message |
-| Non-zero exit code from `runInSandbox` | No error thrown | Returned in `SandboxResult.exitCode`; caller decides |
-| `runInSandbox` with `proc.exitCode` null | No error thrown | `exitCode` defaults to `1` in `SandboxResult` |
+| Sandbox not found by `ensureSandboxExists` | `SandboxError` (exitCode: `null`) | Thrown with message suggesting `./harness sandbox-setup` |
+| `sbx rm` fails | `SandboxError` (exitCode: process code) | Thrown with stdout+stderr in message |
+| Non-zero exit code from `execInSandbox` | No error thrown | Returned in `SandboxResult.exitCode`; caller decides |
+| `execInSandbox` with `proc.exitCode` null | No error thrown | `exitCode` defaults to `1` in `SandboxResult` |
 
 **Consumer error handling patterns:**
 
 | Layer | Pattern |
 |-------|---------|
-| CLI commands (`clean.ts`) | Catches `DockerError`, re-throws as `HarnessError` |
-| Pre-flight checks (`test-run.ts`, `loop.ts`) | No catch — `DockerError` propagates and crashes the process |
+| CLI commands (`clean.ts`) | Catches `SandboxError`, re-throws as `HarnessError` |
+| Pre-flight checks (`test-run.ts`, `loop.ts`) | No catch — `SandboxError` propagates and crashes the process |
 | Test runners (`prompt/`, `skill-call/`) | Checks `exitCode` on `SandboxResult`, increments failure counter |
 | LLM judge (`step-3b`) | Catches all errors, records `status: 'infrastructure-error'` in results |
 | SCIL step-5 | Catches errors per work-item, logs to stderr, continues |
 
 ## Testing
 
-- `packages/docker-integration/src/errors.test.ts` — `DockerError` construction and properties
-- `packages/docker-integration/src/sandbox.test.ts` — `ensureSandboxExists` and `runInSandbox` with mocked `Bun.spawn`
-- `packages/docker-integration/src/lifecycle.test.ts` — `removeSandbox`, `createSandbox`, `openShell` with mocked `Bun.spawn` and `sandbox.js`
+- `packages/sandbox-integration/src/errors.test.ts` — `SandboxError` construction and properties
+- `packages/sandbox-integration/src/sandbox.test.ts` — `ensureSandboxExists` and `execInSandbox` with mocked `Bun.spawn`
+- `packages/sandbox-integration/src/lifecycle.test.ts` — `removeSandbox`, `createSandbox`, `openShell` with mocked `Bun.spawn` and `sandbox.js`
 
 ### Test Patterns
 
@@ -276,16 +276,16 @@ Modules under test are imported dynamically inside each `it` block via `await im
 
 ### Sandbox not found
 
-If `ensureSandboxExists` throws `DockerError`, run:
+If `ensureSandboxExists` throws `SandboxError`, run:
 
 1. `./harness sandbox-setup` — creates the sandbox and completes OAuth
-2. Verify with `docker sandbox ls` — should list `claude-skills-harness`
+2. Verify with `sbx ls --quiet` — should list `claude-skills-harness`
 
 ### Sandbox already exists during setup
 
 `createSandbox` returns early with a help message. To recreate:
 
-1. `docker sandbox rm claude-skills-harness`
+1. `sbx rm --force claude-skills-harness`
 2. `./harness sandbox-setup`
 
 ### Tests fail with "Cannot read properties of undefined (reading 'exited')"
@@ -294,15 +294,15 @@ This means a `Bun.spawn` mock is missing a return value. Ensure every `spawn` ca
 
 ## Related Documentation
 
-- [Test Scaffolding](test-scaffolding.md) — How scaffolds provide project context in the Docker sandbox
-- [LLM Judge](llm-judge.md) — Judge evaluation runs inside the sandbox via `runInSandbox`
-- [Test Suite Reference](test-suite-reference.md) — Test case config including scaffold and model fields consumed by `runInSandbox`
-- [Skill Call Improvement Loop](skill-call-improvement-loop.md) — SCIL uses `ensureSandboxExists` and `runInSandbox`
+- [Test Scaffolding](test-scaffolding.md) — How scaffolds provide project context in the Test Sandbox
+- [LLM Judge](llm-judge.md) — Judge evaluation runs inside the sandbox via `execInSandbox`
+- [Test Suite Reference](test-suite-reference.md) — Test case config including scaffold and model fields consumed by `execInSandbox`
+- [Skill Call Improvement Loop](skill-call-improvement-loop.md) — SCIL uses `ensureSandboxExists` and `execInSandbox`
 - [Skip Permissions in Test Sandbox](adrs/20260326084800-skip-permissions-in-test-sandbox.md) — ADR on using `--dangerously-skip-permissions` inside the sandbox
 - [Cross-Runtime Meta Property Resolution](coding-standards/cross-runtime-meta-resolution.md) — Coding standard for the `import.meta` fallback chain used in this package
 - [Claude Integration](./claude-integration.md) — Higher-level Claude CLI wrapper that delegates to this package via `execInSandbox`
 
 ---
 
-**Next:** [Docker Integration Package](./docker-integration-package.md) — the typed public-API deep dive: barrel exports, consumer import map, and file inventory.
+**Next:** [Sandbox Integration Package](./sandbox-integration-package.md) — the typed public-API deep dive: barrel exports, consumer import map, and file inventory.
 **Related:** [Claude Integration](./claude-integration.md) — the layer directly above this one.

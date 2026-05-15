@@ -409,7 +409,7 @@ BrowserRouter
 - [Parquet Schema](./parquet-schema.md) — Schema definitions for the analytics Parquet files queried by the data layer
 - [LLM Judge](./llm-judge.md) — LLM judge evaluation system whose results are displayed in the Test Run Detail page
 - [Data Package](./data.md) — Shared data layer: types, DuckDB queries, and analytics functions consumed by the web server
-- [Docker Integration](./docker-integration.md) — Docker sandbox architecture that produces the test run data this dashboard displays
+- [Sandbox Integration](./sandbox-integration.md) — Test Sandbox architecture that produces the test run data this dashboard displays
 - [CLI Package](./cli.md) — CLI commands that produce the test run and analytics data this dashboard displays
 
 ---

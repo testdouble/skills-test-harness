@@ -4,7 +4,7 @@
 
 The evaluation engine. Change this package when you need to touch how test run results are scored against expectations — the deterministic boolean checks, the semantic LLM judge, rubric parsing, the judge prompt builder, or the top-level `evaluateTestRun()` orchestrator.
 
-After the `test-run` pipeline executes prompts inside Docker sandboxes and writes JSONL event streams, this package reads those streams and scores each test case's expectations, producing structured pass/fail records for both deterministic boolean checks and semantic LLM judge assessments.
+After the `test-run` pipeline executes prompts inside Test Sandboxes and writes JSONL event streams, this package reads those streams and scores each test case's expectations, producing structured pass/fail records for both deterministic boolean checks and semantic LLM judge assessments.
 
 - **Last Updated:** 2026-05-15
 - **Package:** `@testdouble/harness-evals` (`packages/evals`, workspace package, not published)
@@ -132,7 +132,7 @@ All results carry a `status` field:
 - [Execution Package](./execution.md) — The `runTestEval()` orchestrator that consumes `evaluateTestRun()`, the SCIL loop that uses `evaluateSkillCall` directly, and the ACIL loop that uses `evaluateAgentCall` directly
 - [CLI Package](./cli.md) — Thin Yargs wrapper that delegates to the execution package
 - [Data Package](./data.md) — Shared data layer providing JSONL I/O, stream event types, config records, and `getResultText`/`getSkillInvocations`
-- [Claude Integration](./claude-integration.md) — `runClaude()` used to invoke the judge model inside the Docker sandbox
+- [Claude Integration](./claude-integration.md) — `runClaude()` used to invoke the judge model inside the Test Sandbox
 - [LLM Judge Evaluation](./llm-judge.md) — Detailed judge mechanics: prompt construction, scoring, output format, and error handling
 - [Test Suite Reference](./test-suite-reference.md) — `tests.json` field reference including `llm-judge` and `skill-call` expectation formats
 - [Parquet Schema](./parquet-schema.md) — Analytics schema for evaluation results stored as Parquet

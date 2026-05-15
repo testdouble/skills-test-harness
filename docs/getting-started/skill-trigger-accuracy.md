@@ -50,7 +50,7 @@ Run all tests in your suite:
 ./harness test-run --suite {skill-name}
 ```
 
-The harness executes each prompt inside the Docker sandbox, records whether your skill was triggered, and prints a pass/fail summary.
+The harness executes each prompt inside the Test Sandbox, records whether your skill was triggered, and prints a pass/fail summary.
 
 **Tip:** To run a single test in isolation (useful for debugging):
 

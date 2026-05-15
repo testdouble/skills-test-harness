@@ -127,7 +127,7 @@ After generating the test suite, you can:
 - [Agent Call Improvement Loop](agent-call-improvement-loop.md) — ACIL mechanics: agent detection, temp plugin isolation, holdout splits, scoring
 - [Test Suite Reference](test-suite-reference.md) — full tests.json field reference for `agent-call` type tests
 - [Writing Skill-Call Evals](write-scil-evals.md) — parallel skill for skill-call test suites
-- [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Docker sandbox
+- [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Test Sandbox
 - [Test Harness README](../README.md) — prerequisites, setup, and running tests
 
 ---

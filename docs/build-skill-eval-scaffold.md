@@ -130,7 +130,7 @@ After generating the scaffold, you can:
 ## References
 
 - [Building Rubric Evals](rubric-evals-guide.md) — step-by-step guide covering the full workflow from scaffolds to rubric evaluation
-- [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context inside the Docker sandbox
+- [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context inside the Test Sandbox
 - [Test Suite Reference](test-suite-reference.md) — full tests.json field reference
 - [Writing Skill Eval Rubrics](write-skill-eval-rubric.md) — the `/write-skill-eval-rubric` skill: workflow, criteria categories, output format
 - [Writing Skill-Call Evals](write-scil-evals.md) — the `/write-scil-evals` skill: workflow, prompt categories, output format
@@ -140,4 +140,4 @@ After generating the scaffold, you can:
 ---
 
 **Next:** [Writing Skill Eval Rubrics](write-skill-eval-rubric.md) — define the rubric criteria the judge scores your skill's output against.
-**Related:** [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context inside the Docker sandbox.
+**Related:** [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context inside the Test Sandbox.

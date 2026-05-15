@@ -42,7 +42,7 @@
 - Dependency manifest: `packages/cli/package.json`
 - CLI framework: Yargs
 - Compiled binary: `harness`
-- Depends on: `@testdouble/harness-execution`, `@testdouble/harness-data`, `@testdouble/docker-integration`, `@testdouble/claude-integration` (workspace)
+- Depends on: `@testdouble/harness-execution`, `@testdouble/harness-data`, `@testdouble/sandbox-integration`, `@testdouble/claude-integration` (workspace)
 - Test directory: co-located in `packages/cli/src/`
 
 #### @testdouble/harness-execution
@@ -50,7 +50,7 @@
 - Root: `packages/execution/`
 - Dependency manifest: `packages/execution/package.json`
 - Owns: test-run pipeline, test-eval pipeline, SCIL/ACIL improvement loops, error hierarchy, path config
-- Depends on: `@testdouble/harness-data`, `@testdouble/harness-evals`, `@testdouble/claude-integration`, `@testdouble/docker-integration` (workspace)
+- Depends on: `@testdouble/harness-data`, `@testdouble/harness-evals`, `@testdouble/claude-integration`, `@testdouble/sandbox-integration` (workspace)
 - Test directory: co-located in `packages/execution/src/`
 
 #### @testdouble/harness-data
@@ -73,14 +73,14 @@
 - Root: `packages/claude-integration/`
 - Dependency manifest: `packages/claude-integration/package.json`
 - Owns: Claude CLI execution, plugin directory resolution
-- Depends on: `@testdouble/docker-integration`, `@testdouble/bun-helpers` (workspace)
+- Depends on: `@testdouble/sandbox-integration`, `@testdouble/bun-helpers` (workspace)
 - Test directory: co-located in `packages/claude-integration/src/`
 
-#### @testdouble/docker-integration
+#### @testdouble/sandbox-integration
 
-- Root: `packages/docker-integration/`
-- Dependency manifest: `packages/docker-integration/package.json`
-- Owns: Docker sandbox lifecycle, command execution
+- Root: `packages/sandbox-integration/`
+- Dependency manifest: `packages/sandbox-integration/package.json`
+- Owns: Test Sandbox lifecycle, command execution
 - Depends on: `@testdouble/bun-helpers` (workspace)
 
 #### @testdouble/harness-web
@@ -112,13 +112,13 @@
 - Native library: `libduckdb.dylib` (platform-specific, copied during build)
 - Analytics store: `analytics/` (Parquet files)
 - Test output: `output/` (timestamped JSONL run data)
-- Docker sandbox: `packages/docker-integration/` (see [docs/docker-integration.md](docker-integration.md))
+- Test Sandbox: `packages/sandbox-integration/` (see [docs/sandbox-integration.md](sandbox-integration.md))
 - Test suites: `test-suites/` (11 test suites)
 
 ### Documentation
 
 - `docs/test-harness-architecture.md` — System architecture, package boundaries, data flow, and dependency graph
-- `docs/docker-integration.md` — Docker sandbox API, lifecycle, and consumer patterns
+- `docs/sandbox-integration.md` — Test Sandbox API, lifecycle, and consumer patterns
 - `docs/llm-judge.md` — LLM-as-judge evaluation approach
 - `docs/parquet-schema.md` — DuckDB/Parquet table schemas
 - `docs/rubric-evals-guide.md` — rubric-based evaluation guide
@@ -137,7 +137,7 @@
 - `docs/data.md` — data package: types, config parsing, JSONL I/O, DuckDB analytics
 - `docs/evals.md` — evals package: boolean evals, LLM judge scoring, orchestrator
 - `docs/claude-integration.md` — Claude CLI wrapper API, argument construction, sandbox delegation
-- `docs/docker-integration-package.md` — Docker integration package: full API, error handling, testing
+- `docs/sandbox-integration-package.md` — sandbox integration package: full API, error handling, testing
 - `docs/web.md` — web dashboard: Hono API, React SPA, analytics views
 - `docs/bun-helpers.md` — cross-runtime path resolution utilities
 - `docs/test-fixtures.md` — shared test fixture data, loadFixtures utility

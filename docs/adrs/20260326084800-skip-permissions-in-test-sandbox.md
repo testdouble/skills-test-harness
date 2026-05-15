@@ -9,7 +9,7 @@
 
 ## Context
 
-The test harness runs Claude Code in `--print` mode (non-interactive) inside an isolated Docker sandbox. In this mode, Claude cannot prompt the user for permission approval. When a prompt test invokes a skill via the `Skill` tool, Claude Code denies the call because `Skill` is not in any auto-approved tools list. Claude then falls back to performing the task manually — bypassing the skill entirely — which causes `skill-call` expectations to fail consistently.
+The test harness runs Claude Code in `--print` mode (non-interactive) inside an isolated Test Sandbox. In this mode, Claude cannot prompt the user for permission approval. When a prompt test invokes a skill via the `Skill` tool, Claude Code denies the call because `Skill` is not in any auto-approved tools list. Claude then falls back to performing the task manually — bypassing the skill entirely — which causes `skill-call` expectations to fail consistently.
 
 This was discovered through the code-review test suite, where the prompt `run a /code-review on lib/example.rb` correctly triggered a `Skill` tool call, but the call returned `is_error: true` with the `Skill` tool listed in `permission_denials`. Claude's thinking confirmed the fallback: "Let me read the file first and then do the code review manually."
 
@@ -18,7 +18,7 @@ The problem affects all prompt-type tests that expect skill invocation, making i
 ## Decision Drivers
 
 - Tests must run non-interactively — no human is present to approve permission prompts
-- The Docker sandbox already provides process and filesystem isolation
+- The Test Sandbox already provides process and filesystem isolation
 - Permission denials are infrastructure artifacts, not skill quality signals — they mask real test results
 - The test harness is ephemeral and disposable; it is not a production workload
 - Test results must be deterministic and reproducible across runs
@@ -32,11 +32,11 @@ The problem affects all prompt-type tests that expect skill invocation, making i
    - Con: May be insufficient — once a skill executes, its body invokes additional tools (`Bash(git *)`, `Read`, `Grep`, `Glob`, `Agent`). While the skill's `allowed-tools` frontmatter should cover these, untested permission interactions could cause silent failures deeper in execution
    - Con: Requires incremental flag additions as new permission issues are discovered, creating ongoing maintenance burden
 
-2. **`--dangerously-skip-permissions`** — Skip all permission checks entirely in the Docker sandbox.
+2. **`--dangerously-skip-permissions`** — Skip all permission checks entirely in the Test Sandbox.
 
    - Pro: Eliminates the entire class of permission-related test failures
    - Pro: Simple, deterministic, and zero-maintenance — no classifier behavior or incremental flag additions to reason about
-   - Pro: The Docker sandbox already provides the isolation boundary that permissions would otherwise enforce
+   - Pro: The Test Sandbox already provides the isolation boundary that permissions would otherwise enforce
    - Con: No permission guardrails at all within the sandbox; a misbehaving test could modify or delete sandbox contents unchecked
    - Con: The flag name itself signals risk, which could cause concern during code review
 
@@ -50,7 +50,7 @@ The problem affects all prompt-type tests that expect skill invocation, making i
 
 ## Decision
 
-We will use **`--dangerously-skip-permissions`** because the Docker sandbox already provides the isolation boundary that makes permission checks redundant in this context. The test harness exists to evaluate skill quality — not to test Claude Code's permission system. Stripping permissions eliminates an entire class of infrastructure-artifact failures and keeps test results focused on what matters: whether skills trigger correctly and produce quality output.
+We will use **`--dangerously-skip-permissions`** because the Test Sandbox already provides the isolation boundary that makes permission checks redundant in this context. The test harness exists to evaluate skill quality — not to test Claude Code's permission system. Stripping permissions eliminates an entire class of infrastructure-artifact failures and keeps test results focused on what matters: whether skills trigger correctly and produce quality output.
 
 The flag will be added to the Claude CLI arguments in both the prompt test runner and the skill-call test runner.
 
@@ -69,7 +69,7 @@ The flag will be added to the Claude CLI arguments in both the prompt test runne
 
 **Neutral:**
 
-- The Docker sandbox isolation model is unchanged — it already prevents test actions from affecting the host system regardless of permission settings
+- The Test Sandbox isolation model is unchanged — it already prevents test actions from affecting the host system regardless of permission settings
 
 ## Notes
 
@@ -79,13 +79,13 @@ The flag will be added to the Claude CLI arguments in both the prompt test runne
 |------|---------|
 | `tests/packages/cli/src/test-runners/prompt/index.ts` | Prompt test runner — builds Claude CLI args (lines 74-79) |
 | `tests/packages/cli/src/test-runners/skill-call/index.ts` | Skill-call test runner — builds Claude CLI args (lines 77-82) |
-| `tests/packages/docker-integration/src/sandbox.ts` | Docker sandbox executor — passes args to `docker sandbox exec` |
-| `tests/packages/docker-integration/sandbox-run.sh` | Shell script inside sandbox that invokes `claude "$@"` |
-| `tests/packages/cli/src/commands/sandbox-setup.ts` | Sandbox creation and OAuth setup (delegates to `@testdouble/docker-integration`) |
+| `tests/packages/sandbox-integration/src/sandbox.ts` | Test Sandbox executor — passes args to `sbx exec` |
+| `tests/packages/sandbox-integration/sandbox-run.sh` | Shell script inside sandbox that invokes `claude "$@"` |
+| `tests/packages/cli/src/commands/sandbox-setup.ts` | Sandbox creation and OAuth setup (delegates to `@testdouble/sandbox-integration`) |
 
 **Related documentation:**
 
 - [Claude Code Auto Mode](https://www.anthropic.com/engineering/claude-code-auto-mode) — Anthropic's guidance on permission handling in automated environments
 - [Claude Code CLI Reference](https://code.claude.com/docs/en/cli-reference) — Full CLI flag documentation including `--dangerously-skip-permissions` and `--allowedTools`
 - [Claude Code Permission Modes](https://code.claude.com/docs/en/permission-modes) — Permission mode documentation
-- [Docker Integration](../docker-integration.md) — Full API reference for the sandbox execution package
+- [Sandbox Integration](../sandbox-integration.md) — Full API reference for the sandbox execution package

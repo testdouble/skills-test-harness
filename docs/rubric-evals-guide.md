@@ -210,7 +210,7 @@ The judge receives a prompt containing:
 
 The judge responds with JSON scoring each criterion as pass or fail with reasoning. The aggregate score is `passed_criteria / total_criteria`, compared against the threshold.
 
-The judge runs as a separate Claude invocation in the Docker sandbox using `--print` mode. No skill plugins are loaded — it evaluates output only.
+The judge runs as a separate Claude invocation in the Test Sandbox using `--print` mode. No skill plugins are loaded — it evaluates output only.
 
 For the complete technical details, see [LLM Judge Evaluation](llm-judge.md).
 
@@ -219,7 +219,7 @@ For the complete technical details, see [LLM Judge Evaluation](llm-judge.md).
 - [Test Suite Reference](test-suite-reference.md) — full tests.json field reference including `llm-judge` expectation format
 - [Writing Skill Eval Rubrics](write-skill-eval-rubric.md) — the `/write-skill-eval-rubric` skill workflow and criteria categories
 - [Writing Agent Eval Rubrics](write-agent-eval-rubric.md) — the `/write-agent-eval-rubric` skill workflow for agent rubric evals
-- [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Docker sandbox
+- [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Test Sandbox
 - [Evals Package](evals.md) — evaluation engine implementing LLM judge and boolean eval logic
 - [CLI Package](cli.md) — `test-eval` command that runs rubric evaluations
 

@@ -6,7 +6,7 @@ Add a `scaffold` field to a test to give your skill a realistic project to work 
 
 ## Concept: What Scaffolds Are
 
-Scaffolds provide a pre-built project structure that Claude Code runs against inside the Docker sandbox. They give skills something to work with — source files to review, configurations to discover, documentation to enhance — so tests can verify skill behavior against realistic project contexts.
+Scaffolds provide a pre-built project structure that Claude Code runs against inside the Test Sandbox. They give skills something to work with — source files to review, configurations to discover, documentation to enhance — so tests can verify skill behavior against realistic project contexts.
 
 ### How Scaffolding Works
 
@@ -46,7 +46,7 @@ tests/test-suites/code-review/
 ┌─────────────────────────────────────────────────────────────────┐
 │ 2. Sandbox Execution (per test)                                 │
 │                                                                 │
-│    docker sandbox exec claude-skills-harness                    │
+│    sbx exec claude-skills-harness                    │
 │      sandbox-run.sh {scaffold-path} {claude-args}               │
 │         │                                                       │
 │         ▼                                                       │
@@ -74,7 +74,7 @@ tests/test-suites/code-review/
 
 1. **Config validation** — The harness reads `tests.json` and verifies that every test's `scaffold` field points to an existing directory under `scaffolds/`. Missing scaffolds cause an immediate exit with a clear error message.
 
-2. **Sandbox exec** — For each test with a scaffold, the harness passes the full scaffold path to `sandbox-run.sh` via `docker sandbox exec`.
+2. **Sandbox exec** — For each test with a scaffold, the harness passes the full scaffold path to `sandbox-run.sh` via `sbx exec`.
 
 3. **Script copies scaffold** — Inside the sandbox, `sandbox-run.sh` copies the scaffold contents into a temporary working directory and changes into it.
 
@@ -222,8 +222,8 @@ Each test suite has its own `scaffolds/` directory. If multiple suites need the 
 
 - [Building SCIL Evals](scil-evals-guide.md) — trigger accuracy evals (scaffolds are optional)
 - [Building Rubric Evals](rubric-evals-guide.md) — quality evals (scaffolds provide context for the judge)
-- [Docker Integration](docker-integration.md) — how `sandbox-run.sh` copies scaffolds into the sandbox and initializes a git repo
-- [Docker Integration Package](docker-integration-package.md) — full API reference for the Docker integration package
+- [Sandbox Integration](sandbox-integration.md) — how `sandbox-run.sh` copies scaffolds into the sandbox and initializes a git repo
+- [Sandbox Integration Package](sandbox-integration-package.md) — full API reference for the sandbox integration package
 - [Claude Integration](claude-integration.md) — Claude CLI wrapper that passes scaffold paths to the sandbox
 
 ---

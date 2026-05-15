@@ -2,7 +2,7 @@
 
 > **Tier 5 · Contributor reference.** Internal documentation for the `@testdouble/harness-cli` package — the CLI layer only: Yargs command registration, argument and flag parsing, and path resolution from `process.cwd()`. If you're a user looking for what commands and flags to run, see [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md). For pipeline internals (test-run/test-eval steps, SCIL/ACIL loops, error hierarchy, path config), see [Execution Package](./execution.md).
 
-This page documents the CLI boundary: the eight commands the `harness` binary exposes, how each command builder parses its arguments and flags, how paths are resolved once via `createPathConfig(process.cwd())`, and how `HarnessError` is caught for clean exit. The CLI owns no pipeline logic — every command is a thin wrapper that delegates to `@testdouble/harness-execution` (test-run, test-eval, SCIL, ACIL) or `@testdouble/docker-integration` (sandbox lifecycle). Pipeline implementation, the numbered step files, and all core types live in [Execution Package](./execution.md).
+This page documents the CLI boundary: the eight commands the `harness` binary exposes, how each command builder parses its arguments and flags, how paths are resolved once via `createPathConfig(process.cwd())`, and how `HarnessError` is caught for clean exit. The CLI owns no pipeline logic — every command is a thin wrapper that delegates to `@testdouble/harness-execution` (test-run, test-eval, SCIL, ACIL) or `@testdouble/sandbox-integration` (sandbox lifecycle). Pipeline implementation, the numbered step files, and all core types live in [Execution Package](./execution.md).
 
 The `@testdouble/harness-cli` package is the command-line entry point for the test harness. It is a thin Yargs wrapper that parses arguments, resolves paths from `process.cwd()`, and delegates all pipeline orchestration to `@testdouble/harness-execution`.
 
@@ -13,7 +13,7 @@ The `@testdouble/harness-cli` package is the command-line entry point for the te
 ## Summary
 
 - Eight CLI commands exposed via the `harness` binary: `test-run`, `test-eval`, `scil`, `acil`, `update-analytics-data`, `shell`, `clean`, and `sandbox-setup`
-- All test execution happens inside a Docker sandbox via `@testdouble/docker-integration`, with Claude invoked through `@testdouble/claude-integration`
+- All test execution happens inside a Test Sandbox via `@testdouble/sandbox-integration`, with Claude invoked through `@testdouble/claude-integration`
 - Two test runner types handle different test kinds: prompt tests (full Claude sessions) and skill-call tests (trigger detection with temporary stripped-down plugins)
 - The SCIL (Skill Call Improvement Loop) command iteratively improves skill descriptions by running evaluation cycles and using Claude to generate better descriptions
 - The ACIL (Agent Call Improvement Loop) command iteratively improves agent descriptions by running evaluation cycles and using Claude to generate better descriptions
@@ -69,8 +69,8 @@ Key files:
 | `packages/cli/src/commands/scil.ts` | `scil` command — entry point for the Skill Call Improvement Loop |
 | `packages/cli/src/commands/acil.ts` | `acil` command — entry point for the Agent Call Improvement Loop |
 | `packages/cli/src/commands/update-analytics.ts` | `update-analytics-data` command — imports JSONL to Parquet |
-| `packages/cli/src/commands/shell.ts` | `shell` command — opens interactive shell in Docker sandbox |
-| `packages/cli/src/commands/clean.ts` | `clean` command — removes the Docker sandbox |
+| `packages/cli/src/commands/shell.ts` | `shell` command — opens interactive shell in Test Sandbox |
+| `packages/cli/src/commands/clean.ts` | `clean` command — removes the Test Sandbox |
 | `packages/cli/src/commands/sandbox-setup.ts` | `sandbox-setup` command — creates sandbox and authenticates via OAuth |
 
 ## Core Types
@@ -88,7 +88,7 @@ Each command module in `packages/cli/src/commands/` is a thin Yargs wrapper that
 - **scil** — Calls `runScilLoop()` from the execution package for iterative skill description improvement
 - **acil** — Calls `runAcilLoop()` from the execution package for iterative agent description improvement
 - **update-analytics-data** — Calls the execution package's analytics ingestion
-- **shell** / **clean** / **sandbox-setup** — Delegate to `@testdouble/docker-integration` for sandbox lifecycle
+- **shell** / **clean** / **sandbox-setup** — Delegate to `@testdouble/sandbox-integration` for sandbox lifecycle
 
 See [execution.md](./execution.md) for implementation details of each pipeline (test-run steps, test-eval steps, SCIL loop, ACIL loop, concurrency pool, scoring, error hierarchy).
 
@@ -102,7 +102,7 @@ The CLI catches `HarnessError` at the top level (`index.ts`) and writes the mess
 |--------|---------|-------------|---------|
 | `--suite` | `test-run` | Test suite name (omit to run all) | all suites |
 | `--test` | `test-run` | Filter to single test by name | none |
-| `--debug` | `test-run`, `test-eval`, `scil` | Show Docker/debug output | `false` |
+| `--debug` | `test-run`, `test-eval`, `scil` | Show sandbox/debug output | `false` |
 | `--suite` | `scil`, `acil` | Test suite name (required) | none |
 | `--skill` | `scil` | Target skill in `plugin:skill` format | inferred |
 | `--agent` | `acil` | Target agent in `plugin:agent` format | inferred |
@@ -135,7 +135,7 @@ Test files are co-located with their source files. Tests use Vitest with the sta
 - [Execution Package](./execution.md) — Execution orchestration layer that the CLI delegates to (test-run, test-eval, SCIL pipelines, error hierarchy, path config)
 - [Test Harness Architecture](./test-harness-architecture.md) — System-wide architecture, package boundaries, and data flow
 - [Test Suite Reference](./test-suite-reference.md) — How `tests.json` files are structured
-- [Docker Integration](./docker-integration.md) — Docker sandbox API and consumer patterns
+- [Sandbox Integration](./sandbox-integration.md) — Test Sandbox API and consumer patterns
 - [Skill Call Improvement Loop](./skill-call-improvement-loop.md) — Detailed SCIL algorithm and design
 - [Parquet Schema](./parquet-schema.md) — Schema for analytics data produced by `update-analytics-data`
 - [Data Package](./data.md) — Shared data layer: types, config parsing, JSONL I/O, DuckDB analytics, SCIL utilities

@@ -8,15 +8,16 @@ things you can improve independently:
 - **Effectiveness** — once invoked, does the output meet quality criteria you
   define? An LLM judge scores it against a rubric.
 
-You write evals, run them inside a Docker sandbox, and track trigger accuracy,
+You write evals, run them inside a Test Sandbox, and track trigger accuracy,
 output quality, and cost over time through a dashboard and analytics. **Skills**
 and **agents** each have their own trigger-accuracy and effectiveness paths —
 pick the one that matches what you're improving.
 
 ## Prerequisites
 
-- **Docker** — the harness runs Claude Code in a Docker sandbox. Install
-  [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+- **Docker Sandboxes (`sbx`)** — the harness runs Claude Code inside Docker
+  Sandboxes via the standalone `sbx` CLI. Install `sbx` using Docker's
+  instructions, then run `sbx login` before creating the harness sandbox.
 - **Bun** — the CLI and web app are built with Bun. Install from
   [bun.sh](https://bun.sh).
 
@@ -31,10 +32,11 @@ All commands run from the **repository root**.
    make build
    ```
 
-2. **Create the Docker sandbox and log in.** This creates a persistent sandbox
-   and opens Claude Code so you can authenticate:
+2. **Create the Test Sandbox and log in.** Authenticate the Sandbox CLI, then
+   create a persistent sandbox and open Claude Code so you can authenticate:
 
    ```bash
+   sbx login
    ./harness sandbox-setup
    ```
 
@@ -84,7 +86,7 @@ reference material — reach for them when a guide points you here.
 ### Configuration Reference
 
 - [Test Suite Reference](docs/test-suite-reference.md) — full `tests.json` field reference: test types, expectation types, validation
-- [Test Scaffolding](docs/test-scaffolding.md) — how scaffolds provide project context inside the Docker sandbox
+- [Test Scaffolding](docs/test-scaffolding.md) — how scaffolds provide project context inside the Test Sandbox
 
 ### Eval Authoring Skills
 
@@ -108,7 +110,7 @@ Claude Code skills that generate eval suites for you:
 ### Architecture
 
 - [Test Harness Architecture](docs/test-harness-architecture.md) — system architecture, package boundaries, data flow, and dependency graph
-- [Docker Integration](docs/docker-integration.md) — Docker sandbox architecture, API, lifecycle, and consumer patterns
+- [Sandbox Integration](docs/sandbox-integration.md) — Test Sandbox architecture, API, lifecycle, and consumer patterns
 - [Project Discovery](docs/project-discovery.md) — generated project attributes: languages, frameworks, tooling, commands
 
 ### Package Documentation (contributor)
@@ -118,7 +120,7 @@ Claude Code skills that generate eval suites for you:
 - [Data](docs/data.md) — shared data layer: types, config parsing, JSONL I/O, DuckDB analytics, SCIL utilities
 - [Evals](docs/evals.md) — evaluation engine: boolean evals, LLM judge scoring, rubric parsing, orchestrator
 - [Claude Integration](docs/claude-integration.md) — Claude CLI wrapper API, argument construction, sandbox delegation
-- [Docker Integration Package](docs/docker-integration-package.md) — Docker sandbox API: full public interface, error handling, testing patterns
+- [Sandbox Integration Package](docs/sandbox-integration-package.md) — Test Sandbox API: full public interface, error handling, testing patterns
 - [Web](docs/web.md) — Hono API server, React SPA, test run and SCIL views, per-test analytics
 - [Bun Helpers](docs/bun-helpers.md) — cross-runtime path resolution utilities
 - [Test Fixtures](docs/test-fixtures.md) — shared fixture data, loadFixtures utility, analytics JSONL scenarios

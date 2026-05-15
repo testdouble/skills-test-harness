@@ -4,15 +4,15 @@
 
 Use `scil` to iteratively tune a skill's description against real prompts until trigger accuracy holds. The command runs an evaluate-score-improve loop, tracks the best description across iterations, and writes it back to `SKILL.md`. This page documents every CLI flag, how holdout validation prevents overfitting, the phase system that controls improvement strategy and early exit, and the output files each run produces.
 
-Skill descriptions determine when Claude routes a user prompt to a skill. Getting them right is iterative — you test trigger accuracy, find failures, improve the description, and repeat. The `scil` command automates this cycle using the same Docker-based infrastructure as `test-run`.
+Skill descriptions determine when Claude routes a user prompt to a skill. Getting them right is iterative — you test trigger accuracy, find failures, improve the description, and repeat. The `scil` command automates this cycle using the same sandbox-based infrastructure as `test-run`.
 
 ## How It Works
 
 SCIL runs a loop over `skill-call` type tests in a test suite:
 
-1. **Evaluate** — run each test case against the current skill description in a Docker container, recording whether the skill was invoked as expected
+1. **Evaluate** — run each test case against the current skill description in a Test Sandbox, recording whether the skill was invoked as expected
 2. **Score** — compute trigger accuracy across all test cases
-3. **Improve** — send the failures and history to Claude in a Docker container and ask for an improved description, using phase-specific instructions (see [Divergent-Convergent Phases](#divergent-convergent-phases) below)
+3. **Improve** — send the failures and history to Claude in a Test Sandbox and ask for an improved description, using phase-specific instructions (see [Divergent-Convergent Phases](#divergent-convergent-phases) below)
 4. **Repeat** — loop up to `--max-iterations` times, tracking the best description found
 5. **Apply** — write the best description back to `SKILL.md`, either automatically (`--apply`) or after prompting
 
@@ -20,7 +20,7 @@ At the end of every iteration, SCIL prints a progress summary. When the loop exi
 
 ## Prerequisites
 
-`scil` uses the same Docker sandbox as `test-run`. Build the harness and set up the sandbox before running:
+`scil` uses the same Test Sandbox as `test-run`. Build the harness and set up the sandbox before running:
 
 ```bash
 make build
@@ -223,7 +223,7 @@ Apply this description to SKILL.md? [y/N]
 - [Test Suite Reference](test-suite-reference.md) — full tests.json field reference for `skill-call` type tests
 - [Writing Skill-Call Evals](write-scil-evals.md) — using the `/write-scil-evals` skill to generate test suites
 - [Test Harness README](../README.md) — prerequisites, setup, and running tests
-- [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Docker sandbox
+- [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Test Sandbox
 - [CLI Package](cli.md) — CLI package implementing the `scil` command and test-run pipeline
 - [Data Package](data.md) — Shared data layer providing SCIL train/test splitting, prompt building, and frontmatter manipulation
 - [Evals Package](evals.md) — Evaluation engine providing `evaluateSkillCall` used by SCIL step-5

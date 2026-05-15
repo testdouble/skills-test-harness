@@ -15,7 +15,7 @@ The `@testdouble/harness-execution` package owns all test execution orchestratio
 - Four high-level orchestrators: `runTestSuite()` for test execution, `runTestEval()` for result evaluation, `runScilLoop()` for iterative skill description improvement, and `runAcilLoop()` for iterative agent description improvement
 - All filesystem paths (`outputDir`, `testsDir`, `repoRoot`) are passed as parameters — the package never calls `process.cwd()` or reads environment variables
 - Owns the error hierarchy (`HarnessError`, `ConfigNotFoundError`, `RunNotFoundError`), path config factory, and the step-based pipelines that coordinate the other packages
-- Sits between the CLI (which parses args and resolves paths) and the lower-level packages (harness-data, harness-evals, claude-integration, docker-integration)
+- Sits between the CLI (which parses args and resolves paths) and the lower-level packages (harness-data, harness-evals, claude-integration, sandbox-integration)
 
 Key files:
 - `packages/execution/index.ts` — Barrel exports (public API surface)
@@ -61,7 +61,7 @@ Key files:
            harness-data   harness-evals   claude-integration
                                                │
                                                v
-                                       docker-integration
+                                       sandbox-integration
 ```
 
 ## Key Files
@@ -106,7 +106,7 @@ Key files:
 interface RunTestSuiteOptions {
   suites: string[]       // Suite names to execute
   testFilter?: string    // Optional: filter to single test by name
-  debug: boolean         // Show Docker output in real time
+  debug: boolean         // Show sandbox output in real time
   outputDir: string      // Where to write JSONL output (e.g., tests/output/)
   testsDir: string       // Root tests/ directory
   repoRoot: string       // Repository root (parent of testsDir)
@@ -137,7 +137,7 @@ interface ScilConfig {
   concurrency: number     // Parallel sandbox exec calls
   runsPerQuery: number    // Runs per test case for majority vote
   model: string           // Model for improvement prompt
-  debug: boolean          // Show Docker output in real time
+  debug: boolean          // Show sandbox output in real time
   apply: boolean          // Auto-apply best description without prompting
   outputDir: string       // Where to write SCIL output
   testsDir: string        // Root tests/ directory
@@ -153,7 +153,7 @@ interface AcilConfig {
   concurrency: number     // Parallel sandbox exec calls
   runsPerQuery: number    // Runs per test case for majority vote
   model: string           // Model for improvement prompt
-  debug: boolean          // Show Docker output in real time
+  debug: boolean          // Show sandbox output in real time
   apply: boolean          // Auto-apply best description without prompting
   outputDir: string       // Where to write ACIL output
   testsDir: string        // Root tests/ directory
@@ -378,7 +378,7 @@ Tests are co-located with source files. Tests that previously mocked `paths.js` 
 - [Data Package](./data.md) — Shared data layer consumed by execution orchestrators
 - [Evals Package](./evals.md) — Evaluation engine called by `runTestEval`
 - [Claude Integration](./claude-integration.md) — Claude CLI wrapper used for running prompts in sandbox
-- [Docker Integration](./docker-integration.md) — Docker sandbox API used for sandbox lifecycle
+- [Sandbox Integration](./sandbox-integration.md) — Test Sandbox API used for sandbox lifecycle
 - [Skill Call Improvement Loop](./skill-call-improvement-loop.md) — Detailed SCIL algorithm and design
 - [Step-Based Pipeline](./coding-standards/step-based-pipeline.md) — Coding standard for the numbered-step architecture
 - [Custom Error Hierarchy](./coding-standards/custom-error-hierarchy.md) — Error class conventions

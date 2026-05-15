@@ -229,7 +229,7 @@ After the first SCIL run, you may want to refine the test suite:
 
 - [Test Suite Reference](test-suite-reference.md) — full tests.json field reference
 - [Writing Skill-Call Evals](write-scil-evals.md) — the `/write-scil-evals` skill workflow and prompt categories
-- [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Docker sandbox
+- [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Test Sandbox
 - [CLI Package](cli.md) — CLI implementing the `scil` command and test-run pipeline
 - [Data Package](data.md) — SCIL train/test splitting, prompt building, and frontmatter manipulation
 - [Evals Package](evals.md) — `evaluateSkillCall` used by SCIL step-5
