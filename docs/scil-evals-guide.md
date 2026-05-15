@@ -1,44 +1,14 @@
 # Building SCIL Evals
 
-This guide walks through the full process of creating skill-call evals, running them, and using the SCIL loop to improve a skill's trigger description. By the end, you'll have a test suite that measures trigger accuracy and a refined skill description tuned against real prompts.
+> **Tier 2 · Skill authors (trigger accuracy).** This guide covers writing skill-call test suites by hand and running the SCIL (Skill Call Improvement Loop) to refine a skill's trigger description. If you're starting fresh, run [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md) first — it walks the `/write-scil-evals` quick start end to end.
 
-## Overview
+Write skill-call tests manually, run and evaluate them, then use the `scil` command to iteratively tune a skill's description against real prompts until trigger accuracy holds.
 
-SCIL (Skill Call Improvement Loop) evals test whether Claude correctly routes user prompts to the right skill. The process has three phases:
+This guide assumes you've completed setup and run at least one test suite — see [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md) if you haven't.
 
-1. **Write the test suite** — define prompts that should and should not trigger the skill
-2. **Run and evaluate** — execute the tests and check trigger accuracy
-3. **Improve with SCIL** — iteratively refine the skill's description using automated evaluation
+The fastest way to scaffold a SCIL eval suite is the `/write-scil-evals` skill, which interviews you for positive, negative, and sibling trigger prompts and generates the `tests.json` and prompt files. That path is covered in the getting-started guide and in [Writing Skill-Call Evals](write-scil-evals.md). The rest of this guide covers the manual alternative and the SCIL loop.
 
-## Prerequisites
-
-Before starting, make sure the harness is built and the Docker sandbox is ready:
-
-```bash
-cd tests
-make build
-./harness sandbox-setup
-```
-
-See the [Test Harness README](../README.md) for full setup instructions.
-
-## Step 1: Write the Test Suite
-
-You can write the test suite manually or use the `/write-scil-evals` skill to generate it.
-
-### Option A: Use the /write-scil-evals Skill
-
-The fastest way to create a SCIL eval suite. Invoke it with the target skill:
-
-```
-/write-scil-evals r-and-d:code-review
-```
-
-The skill walks you through collecting positive triggers (prompts that should trigger the skill), negative triggers (prompts that should not), and sibling triggers (prompts targeting other skills in the same plugin). It then generates the `tests.json` and prompt files.
-
-For full details on the skill's workflow and prompt categories, see [Writing Skill-Call Evals](write-scil-evals.md).
-
-### Option B: Write Manually
+## Step 1: Write the Test Suite Manually
 
 Create a test suite directory with the following structure:
 
@@ -50,7 +20,7 @@ tests/test-suites/{skill-name}/
     ...
 ```
 
-#### Write prompt files
+### Write prompt files
 
 Each prompt file contains a single user message — the kind of thing a real user would type. Write prompts that exercise the skill's trigger boundary:
 
@@ -69,7 +39,7 @@ Write me a review of the movie Inception.
 Can you write documentation for the authentication module?
 ```
 
-#### Write tests.json
+### Write tests.json
 
 Configure the test suite with `"type": "skill-call"` tests. Each test points to a prompt file and declares whether the skill should trigger.
 
@@ -255,14 +225,16 @@ After the first SCIL run, you may want to refine the test suite:
 - **Add scaffolds** — some skills behave differently with vs. without project context
 - **Re-run SCIL** — each run starts fresh from the current SKILL.md description
 
-## References
+## Related References
 
-- [Test Suite Configuration](test-suite-reference.md) — full tests.json field reference
+- [Test Suite Reference](test-suite-reference.md) — full tests.json field reference
 - [Writing Skill-Call Evals](write-scil-evals.md) — the `/write-scil-evals` skill workflow and prompt categories
-- [Skill Call Improvement Loop](skill-call-improvement-loop.md) — detailed SCIL mechanics: holdout splits, scoring, improvement prompt
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Docker sandbox
-- [Building Rubric Evals](rubric-evals-guide.md) — step-by-step guide for LLM-judge quality evals
 - [CLI Package](cli.md) — CLI implementing the `scil` command and test-run pipeline
 - [Data Package](data.md) — SCIL train/test splitting, prompt building, and frontmatter manipulation
 - [Evals Package](evals.md) — `evaluateSkillCall` used by SCIL step-5
-- [Test Harness README](../README.md) — prerequisites, setup, and running tests
+
+---
+
+**Next:** [Skill Call Improvement Loop](skill-call-improvement-loop.md) — detailed SCIL mechanics: holdout splits, scoring, the improvement prompt, and every CLI flag.
+**Related:** [Building Rubric Evals](rubric-evals-guide.md) — once triggering is reliable, measure output quality with an LLM judge.
