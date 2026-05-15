@@ -171,7 +171,7 @@ ACIL validates agent identifiers before constructing file paths:
 ## References
 
 - [Skill Call Improvement Loop (SCIL)](skill-call-improvement-loop.md) — parallel implementation for skill descriptions
-- [Test Suite Configuration](test-suite-configuration.md) — full tests.json field reference for `agent-call` type tests
+- [Test Suite Configuration](test-suite-reference.md) — full tests.json field reference for `agent-call` type tests
 - [Data Package](data.md) — shared data layer providing train/test splitting, ACIL prompt building, and frontmatter manipulation
 - [Evals Package](evals.md) — evaluation engine providing `evaluateAgentCall` used by ACIL step-5
 - [Execution Package](execution.md) — execution package architecture including ACIL pipeline

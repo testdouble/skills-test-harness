@@ -292,7 +292,7 @@ This means a `Bun.spawn` mock is missing a return value. Ensure every `spawn` ca
 
 - [Test Scaffolding](test-scaffolding.md) — How scaffolds provide project context in the Docker sandbox
 - [LLM Judge](llm-judge.md) — Judge evaluation runs inside the sandbox via `runInSandbox`
-- [Test Suite Configuration](test-suite-configuration.md) — Test case config including scaffold and model fields consumed by `runInSandbox`
+- [Test Suite Configuration](test-suite-reference.md) — Test case config including scaffold and model fields consumed by `runInSandbox`
 - [Skill Call Improvement Loop](skill-call-improvement-loop.md) — SCIL uses `ensureSandboxExists` and `runInSandbox`
 - [Skip Permissions in Test Sandbox](adrs/20260326084800-skip-permissions-in-test-sandbox.md) — ADR on using `--dangerously-skip-permissions` inside the sandbox
 - [Cross-Runtime Meta Property Resolution](coding-standards/cross-runtime-meta-resolution.md) — Coding standard for the `import.meta` fallback chain used in this package

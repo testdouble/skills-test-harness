@@ -104,7 +104,7 @@ After generating the scaffold, you can:
 
 - [Building Rubric Evals](rubric-evals-guide.md) — step-by-step guide covering the full workflow from scaffolds to rubric evaluation
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context inside the Docker sandbox
-- [Test Suite Configuration](test-suite-configuration.md) — full tests.json field reference
+- [Test Suite Configuration](test-suite-reference.md) — full tests.json field reference
 - [Writing Agent Eval Rubrics](write-agent-eval-rubric.md) — the `/write-agent-eval-rubric` skill: workflow, criteria categories, output format
 - [Building Skill Eval Scaffolds](build-skill-eval-scaffold.md) — the equivalent skill for skill-based scaffold generation
 - [Writing Agent-Call Evals](write-acil-evals.md) — the `/write-acil-evals` skill: workflow, prompt categories, output format

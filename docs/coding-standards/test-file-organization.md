@@ -275,6 +275,5 @@ export default defineConfig({
 ### Project Documentation
 
 - [Integration Test Lifecycle](./integration-test-lifecycle.md) — temp directory lifecycle, real filesystem/DuckDB usage, extracted test helpers, and section comments
-- [Test Plan](../test-plan.md) — overall test strategy and TP-### item definitions
-- [Test Suite Configuration](../test-suite-configuration.md) — tests.json field reference for eval test suites
+- [Test Suite Reference](../test-suite-reference.md) — tests.json field reference for eval test suites
 - [Project Discovery](../project-discovery.md) — workspace package layout and test commands

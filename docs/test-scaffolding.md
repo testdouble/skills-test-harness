@@ -213,7 +213,7 @@ Each test suite has its own `scaffolds/` directory. If multiple suites need the 
 ## References
 
 - [Test Harness README](../README.md) — prerequisites, setup, and running tests
-- [Test Suite Configuration](test-suite-configuration.md) — full tests.json field reference including the `scaffold` field
+- [Test Suite Configuration](test-suite-reference.md) — full tests.json field reference including the `scaffold` field
 - [Building SCIL Evals](scil-evals-guide.md) — step-by-step guide for trigger accuracy evals (scaffolds are optional)
 - [Building Rubric Evals](rubric-evals-guide.md) — step-by-step guide for quality evals (scaffolds provide context for the judge)
 - [Docker Integration](docker-integration.md) — how `sandbox-run.sh` copies scaffolds into the sandbox and initializes a git repo

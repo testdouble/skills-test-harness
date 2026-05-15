@@ -132,7 +132,7 @@ Test files are co-located with their source files. Tests use Vitest with the sta
 
 - [Execution Package](./execution.md) — Execution orchestration layer that the CLI delegates to (test-run, test-eval, SCIL pipelines, error hierarchy, path config)
 - [Test Harness Architecture](./test-harness-architecture.md) — System-wide architecture, package boundaries, and data flow
-- [Test Suite Configuration](./test-suite-configuration.md) — How `tests.json` files are structured
+- [Test Suite Configuration](./test-suite-reference.md) — How `tests.json` files are structured
 - [Docker Integration](./docker-integration.md) — Docker sandbox API and consumer patterns
 - [Skill Call Improvement Loop](./skill-call-improvement-loop.md) — Detailed SCIL algorithm and design
 - [Parquet Schema](./parquet-schema.md) — Schema for analytics data produced by `update-analytics-data`

@@ -58,7 +58,7 @@ what problem you want to solve.
 - [Building Rubric Evals](docs/rubric-evals-guide.md) — step-by-step guide to writing and running LLM-judge quality evals
 
 ### Configuration
-- [Test Suite Configuration](docs/test-suite-configuration.md) — full tests.json field reference: test types, expectation types, validation
+- [Test Suite Configuration](docs/test-suite-reference.md) — full tests.json field reference: test types, expectation types, validation
 - [Test Scaffolding](docs/test-scaffolding.md) — how scaffolds provide project context inside the Docker sandbox
 
 ### Eval Skills
@@ -78,8 +78,6 @@ what problem you want to solve.
 - [Test Harness Architecture](docs/test-harness-architecture.md) — system architecture, package boundaries, data flow, and dependency graph
 - [Docker Integration](docs/docker-integration.md) — Docker sandbox architecture, API, lifecycle, and consumer patterns
 - [Project Discovery](docs/project-discovery.md) — project attributes: languages, frameworks, tooling, commands
-- [Test Plan](docs/test-plan.md) — overall test strategy
-- [Analytics Integration Test Plan](docs/test-plan-analytics-integration.md) — analytics integration test plan
 
 ### Package Documentation
 - [CLI](docs/cli.md) — CLI commands, test-run pipeline, test-eval, SCIL loop, temp plugin construction, error handling

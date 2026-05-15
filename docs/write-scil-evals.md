@@ -118,7 +118,7 @@ After generating the test suite, you can:
 ## References
 
 - [Building SCIL Evals](scil-evals-guide.md) — step-by-step guide covering the full workflow from writing tests to running SCIL
-- [Test Suite Configuration](test-suite-configuration.md) — full tests.json field reference for `skill-call` type tests
+- [Test Suite Configuration](test-suite-reference.md) — full tests.json field reference for `skill-call` type tests
 - [Skill Call Improvement Loop](skill-call-improvement-loop.md) — SCIL mechanics: holdout splits, scoring, improvement prompt, CLI flags
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Docker sandbox
 - [Script Extraction](script-extraction.md) — the `/script-extraction` skill: hardening skills by extracting mechanical steps into scripts

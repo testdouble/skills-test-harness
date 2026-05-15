@@ -118,7 +118,7 @@ Configure the test suite with `"type": "skill-call"` tests. Each test points to 
 - Aim for 3-5 positive triggers and 3+ negative triggers
 - Include sibling triggers when the plugin has multiple skills
 
-For the full field reference, see [Test Suite Configuration](test-suite-configuration.md).
+For the full field reference, see [Test Suite Configuration](test-suite-reference.md).
 
 ## Step 2: Run and Evaluate
 
@@ -257,7 +257,7 @@ After the first SCIL run, you may want to refine the test suite:
 
 ## References
 
-- [Test Suite Configuration](test-suite-configuration.md) — full tests.json field reference
+- [Test Suite Configuration](test-suite-reference.md) — full tests.json field reference
 - [Writing Skill-Call Evals](write-scil-evals.md) — the `/write-scil-evals` skill workflow and prompt categories
 - [Skill Call Improvement Loop](skill-call-improvement-loop.md) — detailed SCIL mechanics: holdout splits, scoring, improvement prompt
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Docker sandbox

@@ -130,7 +130,7 @@ All results carry a `status` field:
 - [Data Package](./data.md) — Shared data layer providing JSONL I/O, stream event types, config records, and `getResultText`/`getSkillInvocations`
 - [Claude Integration](./claude-integration.md) — `runClaude()` used to invoke the judge model inside the Docker sandbox
 - [LLM Judge Evaluation](./llm-judge.md) — Detailed judge mechanics: prompt construction, scoring, output format, and error handling
-- [Test Suite Configuration](./test-suite-configuration.md) — `tests.json` field reference including `llm-judge` and `skill-call` expectation formats
+- [Test Suite Configuration](./test-suite-reference.md) — `tests.json` field reference including `llm-judge` and `skill-call` expectation formats
 - [Parquet Schema](./parquet-schema.md) — Analytics schema for evaluation results stored as Parquet
 - [Building Rubric Evals](./rubric-evals-guide.md) — Step-by-step guide to writing and running LLM-judge quality evals
 - [Building SCIL Evals](./scil-evals-guide.md) — Step-by-step guide to writing and running trigger accuracy evals

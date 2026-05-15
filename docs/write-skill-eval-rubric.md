@@ -156,7 +156,7 @@ For details on how the llm-judge system works, see [LLM Judge Evaluation](llm-ju
 ## References
 
 - [Building Rubric Evals](rubric-evals-guide.md) — step-by-step guide covering the full workflow from writing rubrics to evaluating results
-- [Test Suite Configuration](test-suite-configuration.md) — full tests.json field reference including the `llm-judge` expectation format
+- [Test Suite Configuration](test-suite-reference.md) — full tests.json field reference including the `llm-judge` expectation format
 - [LLM Judge Evaluation](llm-judge.md) — judge mechanics: prompt construction, scoring, output format, error handling
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context for the judge
 - [Script Extraction](script-extraction.md) — the `/script-extraction` skill: hardening skills by extracting mechanical steps into scripts

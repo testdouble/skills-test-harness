@@ -136,7 +136,7 @@ Add an `llm-judge` expectation to a skill-prompt test in `tests.json`:
 
 A threshold of `0.8` with 10 criteria means at least 8 must pass. The harness validates that the rubric file exists at load time.
 
-For the full field reference, see [Test Suite Configuration](test-suite-configuration.md).
+For the full field reference, see [Test Suite Configuration](test-suite-reference.md).
 
 ## Step 2: Run the Tests
 
@@ -248,7 +248,7 @@ For the complete technical details, see [LLM Judge Evaluation](llm-judge.md).
 
 ## References
 
-- [Test Suite Configuration](test-suite-configuration.md) — full tests.json field reference including `llm-judge` expectation format
+- [Test Suite Configuration](test-suite-reference.md) — full tests.json field reference including `llm-judge` expectation format
 - [Writing Skill Eval Rubrics](write-skill-eval-rubric.md) — the `/write-skill-eval-rubric` skill workflow and criteria categories
 - [Writing Agent Eval Rubrics](write-agent-eval-rubric.md) — the `/write-agent-eval-rubric` skill workflow for agent rubric evals
 - [LLM Judge Evaluation](llm-judge.md) — judge mechanics: prompt construction, scoring, output format, error handling

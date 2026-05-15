@@ -351,7 +351,7 @@ Tracks which test runs have been re-evaluated via a `.re-evaluated-runs.json` fi
 
 - [Test Harness Architecture](./test-harness-architecture.md) — System architecture, package boundaries, and data flow
 - [Parquet Schema Reference](./parquet-schema.md) — Column-level schema for all seven Parquet tables
-- [Test Suite Configuration](./test-suite-configuration.md) — Format and semantics of `tests.json` files
+- [Test Suite Configuration](./test-suite-reference.md) — Format and semantics of `tests.json` files
 - [SCIL Improvement Loop](./skill-call-improvement-loop.md) — How SCIL uses train/test splits and iterative description refinement
 - [LLM Judge](./llm-judge.md) — LLM judge evaluation system that produces the criteria grouped by `queryTestRunDetails()`
 - [CLI Package](./cli.md) — CLI commands that orchestrate data reading/writing through this package

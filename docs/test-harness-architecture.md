@@ -427,7 +427,7 @@ analytics/*.parquet ──▶ DuckDB SQL queries ──▶ Hono API ──▶ Re
 - [Project Discovery](./project-discovery.md) — Full project attributes: languages, frameworks, tooling, commands
 - [Docker Integration](./docker-integration.md) — Docker sandbox API, lifecycle, and consumer patterns
 - [Parquet Schema](./parquet-schema.md) — DuckDB/Parquet table schemas
-- [Test Suite Configuration](./test-suite-configuration.md) — `tests.json` field reference
+- [Test Suite Configuration](./test-suite-reference.md) — `tests.json` field reference
 - [LLM Judge](./llm-judge.md) — LLM-as-judge evaluation approach
 - [SCIL Evals Guide](./scil-evals-guide.md) — Skill Call Improvement Loop guide
 - [ACIL Evals Guide](./agent-call-improvement-loop.md) — Agent Call Improvement Loop guide

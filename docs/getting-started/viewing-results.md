@@ -56,7 +56,7 @@ A table of every test in the run, showing:
 
 A table of individual expectation assertions. Each row shows the expectation type (e.g., `skill-call`, `agent-call`, `result-contains`), the expected value, and whether it passed.
 
-For skill-call and agent-call tests, this is where you see whether your skill or agent was correctly triggered (or correctly not triggered). For details on how these expectations work, see [Test Suite Configuration](../test-suite-configuration.md).
+For skill-call and agent-call tests, this is where you see whether your skill or agent was correctly triggered (or correctly not triggered). For details on how these expectations work, see [Test Suite Configuration](../test-suite-reference.md).
 
 ### LLM judge results
 

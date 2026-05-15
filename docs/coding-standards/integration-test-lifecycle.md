@@ -294,6 +294,4 @@ it('creates a parquet file', { timeout: 30000 }, async () => { ... })
 ### Project Documentation
 
 - [Test File Organization and Naming](./test-file-organization.md) — file naming suffixes, co-location, describe/it patterns, and Vitest config separation
-- [Test Plan](../test-plan.md) — overall test strategy
-- [Test Plan: Analytics Integration](../test-plan-analytics-integration.md) — analytics-specific integration test plan
 - [Project Discovery](../project-discovery.md) — workspace package layout and test commands

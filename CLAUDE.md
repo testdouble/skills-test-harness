@@ -47,7 +47,7 @@
 
 - See [`docs/scil-evals-guide.md`](docs/scil-evals-guide.md) for building and running SCIL trigger accuracy evals
 - See [`docs/rubric-evals-guide.md`](docs/rubric-evals-guide.md) for building and running LLM-judge quality evals
-- See [`docs/test-suite-configuration.md`](docs/test-suite-configuration.md) for the full tests.json field reference
+- See [`docs/test-suite-reference.md`](docs/test-suite-reference.md) for the full tests.json field reference
 - See [`docs/test-scaffolding.md`](docs/test-scaffolding.md) for how scaffolds provide project context in the Docker sandbox
 - See [`docs/skill-call-improvement-loop.md`](docs/skill-call-improvement-loop.md) for SCIL mechanics: holdout splits, scoring, improvement prompt
 - See [`docs/agent-call-improvement-loop.md`](docs/agent-call-improvement-loop.md) for ACIL mechanics: agent detection, temp plugin isolation, holdout splits, scoring
@@ -60,5 +60,3 @@
 - See [`docs/write-skill-eval-rubric.md`](docs/write-skill-eval-rubric.md) for the `/write-skill-eval-rubric` skill workflow
 - See [`docs/write-agent-eval-rubric.md`](docs/write-agent-eval-rubric.md) for the `/write-agent-eval-rubric` skill workflow
 - See [`docs/script-extraction.md`](docs/script-extraction.md) for the `/script-extraction` skill workflow
-- See [`docs/test-plan.md`](docs/test-plan.md) for overall test strategy
-- See [`docs/test-plan-analytics-integration.md`](docs/test-plan-analytics-integration.md) for analytics integration test plan

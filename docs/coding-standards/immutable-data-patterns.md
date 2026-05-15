@@ -151,5 +151,4 @@ mockTestSuiteConfig.tests.push(newTest) // mutates the shared fixture's array
 ### Project Documentation
 
 - [Test File Organization and Naming](./test-file-organization.md) — companion coding standard for test structure and naming conventions
-- [Test Plan](../test-plan.md) — overall test strategy
 - [Project Discovery](../project-discovery.md) — workspace package layout and test commands

@@ -61,7 +61,7 @@ It generates two things:
 
 **Note:** The skill can create skill-prompt tests from scratch if none exist yet, or add rubric expectations to existing tests.
 
-For details on the skill's full workflow and criteria categories, see [Writing Skill Eval Rubrics](../write-skill-eval-rubric.md). For the complete `tests.json` field reference, see [Test Suite Configuration](../test-suite-configuration.md).
+For details on the skill's full workflow and criteria categories, see [Writing Skill Eval Rubrics](../write-skill-eval-rubric.md). For the complete `tests.json` field reference, see [Test Suite Configuration](../test-suite-reference.md).
 
 ## Step 3: Run the test suite
 

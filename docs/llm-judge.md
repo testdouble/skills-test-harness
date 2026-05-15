@@ -277,7 +277,7 @@ The judge prompt has built-in truncation to stay within OS argument limits (macO
 ## References
 
 - [Building Rubric Evals](rubric-evals-guide.md) — step-by-step guide covering the full workflow from writing rubrics to evaluating results
-- [Test Suite Configuration](test-suite-configuration.md) — full tests.json field reference including the `llm-judge` expectation format
+- [Test Suite Configuration](test-suite-reference.md) — full tests.json field reference including the `llm-judge` expectation format
 - [Writing Skill Eval Rubrics](write-skill-eval-rubric.md) — using the `/write-skill-eval-rubric` skill to generate rubric files for skills
 - [Writing Agent Eval Rubrics](write-agent-eval-rubric.md) — using the `/write-agent-eval-rubric` skill to generate rubric files for agents
 - [Test Harness README](../README.md) — prerequisites, setup, and running tests

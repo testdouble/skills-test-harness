@@ -124,10 +124,8 @@
 - `docs/rubric-evals-guide.md` — rubric-based evaluation guide
 - `docs/scil-evals-guide.md` — SCIL evaluation guide
 - `docs/skill-call-improvement-loop.md` — iterative skill improvement feedback loop
-- `docs/test-plan.md` — overall test strategy
-- `docs/test-plan-analytics-integration.md` — analytics integration test plan
 - `docs/test-scaffolding.md` — scaffold directory setup for sandbox tests
-- `docs/test-suite-configuration.md` — tests.json field reference
+- `docs/test-suite-reference.md` — tests.json field reference
 - `docs/write-skill-eval-rubric.md` — authoring skill rubric files
 - `docs/write-agent-eval-rubric.md` — authoring agent rubric files
 - `docs/script-extraction.md` — extracting mechanical steps from skills into shell scripts
