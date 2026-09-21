@@ -59,4 +59,5 @@
 - See [`docs/write-acil-evals.md`](docs/write-acil-evals.md) for the `/write-acil-evals` skill workflow
 - See [`docs/write-skill-eval-rubric.md`](docs/write-skill-eval-rubric.md) for the `/write-skill-eval-rubric` skill workflow
 - See [`docs/write-agent-eval-rubric.md`](docs/write-agent-eval-rubric.md) for the `/write-agent-eval-rubric` skill workflow
+- See [`docs/audit-eval-suite.md`](docs/audit-eval-suite.md) for the `/audit-eval-suite` skill workflow
 - See [`docs/script-extraction.md`](docs/script-extraction.md) for the `/script-extraction` skill workflow

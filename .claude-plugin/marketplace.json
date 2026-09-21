@@ -1,7 +1,7 @@
 {
   "name": "skills-test-harness",
   "description": "Plugins that ship with the skills-test-harness: eval-authoring skills that generate test scaffolds and eval suites for Claude Code skills and agents.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "owner": {
     "name": "Test Double"
   },
@@ -10,8 +10,8 @@
       "name": "eval-authoring",
       "displayName": "Eval Authoring",
       "source": "./eval-authoring",
-      "description": "Skills that author eval suites for the skills-test-harness. Scaffold builders (build-skill-eval-scaffold, build-agent-eval-scaffold) generate realistic project fixtures; trigger-test writers (write-scil-evals, write-acil-evals) produce skill-call and agent-call tests; rubric writers (write-skill-eval-rubric, write-agent-eval-rubric) produce LLM-judge rubrics and wire them into skill-prompt and agent-prompt tests. Depends on nothing; run it from the harness repo where the target plugin:skill or plugin:agent lives.",
-      "version": "1.0.0",
+      "description": "Skills that author and maintain eval suites for the skills-test-harness. Scaffold builders (build-skill-eval-scaffold, build-agent-eval-scaffold) generate realistic project fixtures, with a --for trigger mode for repo-context scaffolds; trigger-test writers (write-scil-evals, write-acil-evals) produce skill-call and agent-call tests; rubric writers (write-skill-eval-rubric, write-agent-eval-rubric) produce LLM-judge rubrics and deterministic checks for skill-prompt and agent-prompt tests; audit-eval-suite reports drift between a suite and the target it tests. Depends on nothing; run it from the harness repo where the target plugin:skill or plugin:agent lives.",
+      "version": "1.1.0",
       "defaultEnabled": true,
       "author": {
         "name": "Test Double"

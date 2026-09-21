@@ -93,14 +93,20 @@ reference material — reach for them when a guide points you here.
 
 ### Eval Authoring Skills
 
-Claude Code skills that generate eval suites for you:
+Claude Code skills that generate eval suites for you. They ship as the `eval-authoring` plugin in this repo:
 
-- [Building Skill Eval Scaffolds](docs/build-skill-eval-scaffold.md) — `/build-skill-eval-scaffold`: analysis, signal planning, scaffold generation
+```
+/plugin marketplace add testdouble/skills-test-harness
+/plugin install eval-authoring@skills-test-harness
+```
+
+- [Building Skill Eval Scaffolds](docs/build-skill-eval-scaffold.md) — `/build-skill-eval-scaffold`: analysis, signal planning, scaffold generation; `--for trigger` builds context scaffolds for skill-call tests
 - [Building Agent Eval Scaffolds](docs/build-agent-eval-scaffold.md) — `/build-agent-eval-scaffold`: the agent equivalent
 - [Writing Skill-Call Evals](docs/write-scil-evals.md) — `/write-scil-evals`: prompt categories, output format
 - [Writing Agent-Call Evals](docs/write-acil-evals.md) — `/write-acil-evals`: the agent equivalent
 - [Writing Skill Eval Rubrics](docs/write-skill-eval-rubric.md) — `/write-skill-eval-rubric`: criteria categories, output format
 - [Writing Agent Eval Rubrics](docs/write-agent-eval-rubric.md) — `/write-agent-eval-rubric`: the agent equivalent
+- [Auditing Eval Suites](docs/audit-eval-suite.md) — `/audit-eval-suite`: find drift between a suite and the skill or agent it tests, and which skill repairs it
 - [Script Extraction](docs/script-extraction.md) — `/script-extraction`: hardening skills by extracting mechanical steps into shell scripts
 
 ### Deep Dives
