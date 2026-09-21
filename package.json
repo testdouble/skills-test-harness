@@ -1,6 +1,7 @@
 {
   "name": "testdouble-harness",
   "private": true,
+  "packageManager": "bun@1.4.2",
   "workspaces": ["packages/*"],
   "scripts": {
     "test": "vitest run",
@@ -14,13 +15,14 @@
     "ci-checks": "npm run lint && npm run format:check && npm run typecheck && npm run test && npm run test:integration && bun audit --audit-level=moderate"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.12",
-    "vitest": "^4.1.4"
+    "@biomejs/biome": "^2.5.14",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
   },
   "overrides": {
-    "vite": "^8.0.8",
-    "picomatch": "^4.0.4",
-    "hono": "^4.12.18",
-    "postcss": "^8.5.14"
+    "vite": "^8.3.0",
+    "picomatch": "^4.0.7",
+    "hono": "^4.13.8",
+    "postcss": "^8.5.23"
   }
 }

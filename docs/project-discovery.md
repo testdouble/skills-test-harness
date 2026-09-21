@@ -13,13 +13,13 @@
 
 - Root: repository root
 - Language: TypeScript (ESNext target, strict mode)
-- Package manager: Bun
+- Package manager: Bun 1.4.2 (pinned by `"packageManager"` in the root `package.json`)
 - Dependency manifest: `package.json`
 - Lock file: `bun.lock`
 
 ### Frameworks and Tooling
 
-- Test: Vitest ^4.1.0
+- Test: Vitest ^5.0.1
 - DB: DuckDB (`@duckdb/node-api`)
 - Build: Bun compile + Vite 8
 - Task runner: `Makefile`
@@ -88,7 +88,7 @@
 - Root: `packages/web/`
 - Dependency manifest: `packages/web/package.json`
 - Web server: Hono
-- Frontend: React 18 + React Router 6
+- Frontend: React 19 + React Router 7
 - CSS: Tailwind CSS v4
 - Build: Vite 8 (`@vitejs/plugin-react`, `@tailwindcss/vite`)
 - Compiled binary: `harness-web`

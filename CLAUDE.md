@@ -30,7 +30,7 @@
 - Test: `make test` (Vitest, unit + integration)
 - Build: `make build` (Bun compile + Vite 8)
 - Dev server: `make dev`
-- Packages: `packages/cli` (Yargs CLI), `packages/execution` (test-run, test-eval, SCIL/ACIL orchestration), `packages/data` (DuckDB), `packages/web` (Hono + React 18 + Tailwind v4), `packages/test-fixtures`, `packages/sandbox-integration` (Test Sandbox API)
+- Packages: `packages/cli` (Yargs CLI), `packages/execution` (test-run, test-eval, SCIL/ACIL orchestration), `packages/data` (DuckDB), `packages/web` (Hono + React 19 + Tailwind v4), `packages/test-fixtures`, `packages/sandbox-integration` (Test Sandbox API)
 - See [`docs/sandbox-integration.md`](docs/sandbox-integration.md) for Test Sandbox architecture, API reference, and consumer patterns
 - See [`docs/test-harness-architecture.md`](docs/test-harness-architecture.md) for system architecture, package boundaries, data flow, and dependency graph
 - See [`docs/execution.md`](docs/execution.md) for the execution package: test-run pipeline, test-eval, SCIL/ACIL loops, error hierarchy, and path config

@@ -10,9 +10,9 @@ Change this package when you need to touch the dashboard's Hono API server, the 
 
 ## Overview
 
-- Full-stack package with a Hono API server (Bun runtime) and a React 18 + Tailwind v4 SPA client, built with Vite 8
+- Full-stack package with a Hono API server (Bun runtime) and a React 19 + Tailwind v4 SPA client, built with Vite 8
 - Server delegates all data queries to `@testdouble/harness-data` — route handlers are thin wrappers that forward a `dataDir` path and return JSON
-- Client uses React Router v6 for SPA navigation across five pages: Test Run History, Test Run Detail, SCIL History, SCIL Detail, and Per-Test Analytics
+- Client uses React Router v7 for SPA navigation across five pages: Test Run History, Test Run Detail, SCIL History, SCIL Detail, and Per-Test Analytics
 - Compiled as a standalone Bun executable (`harness-web`) with embedded client assets via Bun's `{ type: 'file' }` imports
 
 Key files:

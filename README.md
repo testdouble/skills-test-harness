@@ -18,8 +18,11 @@ pick the one that matches what you're improving.
 - **Docker Sandboxes (`sbx`)** — the harness runs Claude Code inside Docker
   Sandboxes via the standalone [`sbx`](https://docs.docker.com/reference/cli/sbx/) CLI. Install `sbx` using [Docker's
   instructions](https://docs.docker.com/ai/sandboxes/), then run `sbx login` before creating the harness sandbox.
-- **Bun** — the CLI and web app are built with Bun. Install from
-  [bun.sh](https://bun.sh).
+- **Bun 1.4.2** — the CLI and web app are built with Bun; the root `package.json` pins
+  `"packageManager": "bun@1.4.2"` and CI installs that version. Install from [bun.sh](https://bun.sh).
+- **Node.js 22.12 or newer on `PATH`** — Vitest runs its test workers under `node`; without it the tests that stub
+  `Bun` globals fail with "Attempting to change configurable attribute of unconfigurable property". Needed only to run
+  the test suite.
 
 ## Setup
 

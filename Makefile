@@ -16,19 +16,9 @@ build:
 	bun install
 	cd packages/web && bun run build
 	cd packages/web && bun build ./src/server/index.ts --compile --outfile $(TESTS_DIR)/harness-web \
-		--external '@duckdb/node-bindings-linux-x64' \
-		--external '@duckdb/node-bindings-linux-arm64' \
-		--external '@duckdb/node-bindings-darwin-x64' \
-		--external '@duckdb/node-bindings-darwin-arm64' \
-		--external '@duckdb/node-bindings-win32-arm64' \
-		--external '@duckdb/node-bindings-win32-x64'
+		--external '@duckdb/node-bindings-*'
 	cd packages/cli && bun build ./index.ts --compile --outfile $(TESTS_DIR)/harness \
-		--external '@duckdb/node-bindings-linux-x64' \
-		--external '@duckdb/node-bindings-linux-arm64' \
-		--external '@duckdb/node-bindings-darwin-x64' \
-		--external '@duckdb/node-bindings-darwin-arm64' \
-		--external '@duckdb/node-bindings-win32-arm64' \
-		--external '@duckdb/node-bindings-win32-x64'
+		--external '@duckdb/node-bindings-*'
 	DUCKDB_DIR=$$(find node_modules/.bun -maxdepth 6 -name "duckdb.node" -path "*node-bindings-$(DUCKDB_PLATFORM)*" 2>/dev/null | head -1 | xargs dirname) && \
 	rm -rf node_modules/@duckdb/node-bindings-$(DUCKDB_PLATFORM) && \
 	mkdir -p node_modules/@duckdb && \

@@ -8,6 +8,6 @@
     "@testdouble/bun-helpers": "workspace:*"
   },
   "devDependencies": {
-    "bun-types": "latest"
+    "bun-types": "^1.4.2"
   }
 }
