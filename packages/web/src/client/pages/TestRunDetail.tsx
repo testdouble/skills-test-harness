@@ -1,5 +1,5 @@
 import { marked } from 'marked'
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, type JSX, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 interface TestRunDetailRow {

@@ -88,7 +88,7 @@
 - Root: `packages/web/`
 - Dependency manifest: `packages/web/package.json`
 - Web server: Hono
-- Frontend: React 18 + React Router 7
+- Frontend: React 19 + React Router 7
 - CSS: Tailwind CSS v4
 - Build: Vite 8 (`@vitejs/plugin-react`, `@tailwindcss/vite`)
 - Compiled binary: `harness-web`

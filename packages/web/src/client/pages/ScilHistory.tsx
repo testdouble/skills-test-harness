@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { type JSX, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 interface ScilHistoryRow {
