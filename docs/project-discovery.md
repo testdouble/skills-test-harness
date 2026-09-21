@@ -19,7 +19,7 @@
 
 ### Frameworks and Tooling
 
-- Test: Vitest ^4.1.0
+- Test: Vitest ^5.0.1
 - DB: DuckDB (`@duckdb/node-api`)
 - Build: Bun compile + Vite 8
 - Task runner: `Makefile`

@@ -88,7 +88,7 @@ beforeEach(() => {
 **What to avoid:**
 
 ```typescript
-// Don't skip clearAllMocks — previous test's call counts leak into assertions
+// Keep clearAllMocks explicit — Vitest 5 clears call history before each test by default, but the call documents the intent
 beforeEach(() => {
   vi.mocked(resolvePaths).mockReturnValue({ testSuiteDir: '/suites/my-suite' })
 })
