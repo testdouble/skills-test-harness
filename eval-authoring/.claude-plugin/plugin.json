@@ -3,7 +3,7 @@
   "name": "eval-authoring",
   "displayName": "Eval Authoring",
   "version": "1.0.0",
-  "description": "Skills that author eval suites for the skills-test-harness. Home of build-skill-eval-scaffold and build-agent-eval-scaffold, which interview you and generate realistic project scaffolds for rubric (effectiveness) evaluation of a Claude Code skill or agent. Depends on nothing; run it from the harness repo where the target plugin:skill or plugin:agent lives.",
+  "description": "Skills that author eval suites for the skills-test-harness. Scaffold builders (build-skill-eval-scaffold, build-agent-eval-scaffold) generate realistic project fixtures; trigger-test writers (write-scil-evals, write-acil-evals) produce skill-call and agent-call tests; rubric writers (write-skill-eval-rubric, write-agent-eval-rubric) produce LLM-judge rubrics and wire them into skill-prompt and agent-prompt tests. Depends on nothing; run it from the harness repo where the target plugin:skill or plugin:agent lives.",
   "author": {
     "name": "Test Double",
     "url": "https://github.com/testdouble"
@@ -11,5 +11,13 @@
   "homepage": "https://github.com/testdouble/skills-test-harness#eval-authoring-skills",
   "repository": "https://github.com/testdouble/skills-test-harness",
   "license": "MIT",
-  "keywords": ["evals", "testing", "scaffold", "rubric", "skills", "agents", "claude-code"]
+  "keywords": [
+    "evals",
+    "testing",
+    "scaffold",
+    "rubric",
+    "skills",
+    "agents",
+    "claude-code"
+  ]
 }

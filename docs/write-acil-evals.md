@@ -61,18 +61,16 @@ Each test entry in `tests.json` follows the agent-call format:
 
 ## Workflow
 
-The skill walks through a 9-step process:
+The skill walks through an 8-step process with two pauses for the user: one to collect prompts, one to confirm before writing.
 
-1. **Identify the target agent** — parse the `plugin:agent` argument, validate format, and read the agent's `.md` file
-2. **Detect sibling agents and skills** — list other agents and skills in the same plugin to determine if sibling prompts are needed
-3. **Determine test suite location** — default to `tests/test-suites/{agent-name}/`, detect create vs. update mode
-4. **Collect positive trigger prompts** — 3-5 prompts that SHOULD trigger the agent
-5. **Collect negative trigger prompts** — 3+ prompts that should NOT trigger the agent (false-positive resistance)
-6. **Collect sibling trigger prompts** — 3+ prompts targeting sibling agents or skills (skipped when no siblings exist)
-7. **Generate test configuration** — create tests.json entries and prompt files with auto-generated names
-8. **Present summary for review** — show everything before writing
-9. **Write files** — create or update the test suite
-
+1. **Identify the target agent** — parse and validate the `plugin:agent` argument, read the agent's definition file, and note the description's boundary statements (they are what negative and sibling prompts test)
+2. **Detect siblings** — list the sibling agents and sibling skills in the same plugin
+3. **Locate the test suite** — `tests/test-suites/{agent-name}/`; detect create vs. update mode and note existing scaffolds
+4. **Collect trigger prompts** — one message asks for all three categories (positive, negative, sibling) with guidance for each, and asks the user to flag any prompt whose trigger decision depends on repo state
+5. **Assign scaffolds** — flagged prompts get `scaffold` set when the named scaffold exists; otherwise the gap is reported with the `/build-agent-eval-scaffold … --for trigger` command that builds it
+6. **Generate test configuration** — tests.json entries and prompt files with auto-generated names
+7. **Present summary and confirm** — everything that will be written, plus scaffold assignments and gaps
+8. **Write and validate** — create or update the suite, then run `scripts/validate-suite.sh`, which re-checks what the harness checks at load time, and fix every finding before reporting
 ## Prompt Categories
 
 ### Positive triggers (3-5 required)

@@ -77,6 +77,10 @@ When the skill writes output files to the filesystem, the rubric can include `##
 
 Each `## File:` section targets a specific output file path. Criteria categories within file sections are optional — only include the categories that have criteria. If the skill does not produce a referenced file, all criteria in that section auto-fail.
 
+### Deterministic checks
+
+Alongside the `llm-judge` expectation, the skill proposes up to two `result-contains` strings for text the skill's output format guarantees (a fixed report heading) and up to two `result-does-not-contain` strings for text that means the skill did not run. These are cheap and never flaky, but a mismatch fails the whole test, so the skill proposes none when nothing is guaranteed.
+
 ### llm-judge expectation format
 
 Each llm-judge expectation in `tests.json` follows this format:
@@ -97,21 +101,15 @@ Each llm-judge expectation in `tests.json` follows this format:
 
 ## Workflow
 
-The skill walks through a 12-step process:
+The skill walks through a 7-step process with three pauses for the user: test targets, the drafted rubric, and a final preview.
 
-1. **Identify the target skill** — parse the `plugin:skill` argument, read the skill's SKILL.md, and detect whether the skill writes output files to the filesystem
-2. **Locate and inspect the test suite** — read existing `tests.json`, rubrics, and scaffold files; detect create vs. update mode
-3. **Determine test targets** — list skill-prompt tests to receive the rubric; optionally create new skill-prompt tests. When file output was detected, collect output file paths and update prompts to specify where files should be written
-4. **Interview: Presence criteria** — things the output MUST identify or include
-5. **Interview: Specificity criteria** — the output must reference concrete details (files, lines, methods)
-6. **Interview: Depth criteria** — the output must be actionable (fixes, examples, reasoning)
-7. **Interview: Absence criteria** — things the output must NOT do (hallucinations, incorrect claims)
-8. **Interview: File output criteria** — when file output was detected, collect criteria for each output file across the four categories (each optional). Skipped when no file output is detected
-9. **Configure llm-judge settings** — set model and threshold (defaults: opus, 0.8)
-10. **Determine rubric filename** — default `{skill-name}-quality.md`, or use existing filename for updates
-11. **Preview** — show rubric content (including `## File:` sections if applicable), tests.json changes, and new prompt files for confirmation
-12. **Write files** — create or update rubric, tests.json, and prompt files
-
+1. **Identify the target skill** — parse and validate the `plugin:skill` argument, run `scripts/collect-target-inputs.sh` to resolve the skill's SKILL.md, reference files, and dispatched agents, then read them to learn the output type, what the skill checks for, and whether it writes files
+2. **Inspect the test suite** — read existing `tests.json`, rubrics, and the scaffold files the `skill-prompt` tests use; detect create vs. update mode
+3. **Interview: Test targets** — propose which `skill-prompt` tests receive the rubric, whether to add a new one, and (for file-writing skills) the output paths the prompt should pin
+4. **Draft the rubric** — Presence, Specificity, Depth, and Absence criteria drawn from the skill's own checks and the scaffold's planted signals; `## File:` sections for file output; zero to two deterministic `result-contains` / `result-does-not-contain` checks for text the skill guarantees; llm-judge settings (defaults: opus, 0.8) and the rubric filename
+5. **Interview: Edit the draft** — the user approves, adds, removes, or modifies criteria, checks, and settings
+6. **Preview and confirm** — the exact rubric markdown, tests.json changes, and new prompt files
+7. **Write and validate** — write everything, then run `scripts/validate-suite.sh` and fix every finding before reporting
 ## Criteria Categories
 
 ### Presence (required)

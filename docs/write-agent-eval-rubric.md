@@ -77,6 +77,10 @@ When the agent writes output files to the filesystem, the rubric can include `##
 
 Each `## File:` section targets a specific output file path. Criteria categories within file sections are optional — only include the categories that have criteria. If the agent does not produce a referenced file, all criteria in that section auto-fail.
 
+### Deterministic checks
+
+Alongside the `llm-judge` expectation, the skill proposes up to two `result-contains` strings for text the agent's output format guarantees (a fixed report heading) and up to two `result-does-not-contain` strings for text that means the agent did not run. These are cheap and never flaky, but a mismatch fails the whole test, so the skill proposes none when nothing is guaranteed.
+
 ### llm-judge expectation format
 
 Each llm-judge expectation in `tests.json` follows this format:
@@ -115,21 +119,15 @@ Agent-prompt tests reference the agent via the `agentFile` field in `plugin:agen
 
 ## Workflow
 
-The skill walks through a 12-step process:
+The skill walks through a 7-step process with three pauses for the user: test targets, the drafted rubric, and a final preview.
 
-1. **Identify the target agent** — parse the `plugin:agent` argument, read the agent's definition file, and detect whether the agent writes output files to the filesystem
-2. **Locate and inspect the test suite** — read existing `tests.json`, rubrics, and scaffold files; detect create vs. update mode
-3. **Determine test targets** — list agent-prompt tests to receive the rubric; optionally create new agent-prompt tests. When file output was detected, collect output file paths and update prompts to specify where files should be written
-4. **Interview: Presence criteria** — things the output MUST identify or include
-5. **Interview: Specificity criteria** — the output must reference concrete details (files, lines, methods)
-6. **Interview: Depth criteria** — the output must be actionable (fixes, examples, reasoning)
-7. **Interview: Absence criteria** — things the output must NOT do (hallucinations, incorrect claims)
-8. **Interview: File output criteria** — when file output was detected, collect criteria for each output file across the four categories (each optional). Skipped when no file output is detected
-9. **Configure llm-judge settings** — set model and threshold (defaults: opus, 0.8)
-10. **Determine rubric filename** — default `{agent-name}-quality.md`, or use existing filename for updates
-11. **Preview** — show rubric content (including `## File:` sections if applicable), tests.json changes, and new prompt files for confirmation
-12. **Write files** — create or update rubric, tests.json, and prompt files
-
+1. **Identify the target agent** — parse and validate the `plugin:agent` argument, read the agent definition to learn the output type, what the agent checks for, and whether it writes files
+2. **Inspect the test suite** — read existing `tests.json`, rubrics, and the scaffold files the `agent-prompt` tests use; detect create vs. update mode
+3. **Interview: Test targets** — propose which `agent-prompt` tests receive the rubric, whether to add a new one, and (for file-writing agents) the output paths the prompt should pin
+4. **Draft the rubric** — Presence, Specificity, Depth, and Absence criteria drawn from the agent's own checks and the scaffold's planted signals; `## File:` sections for file output; zero to two deterministic `result-contains` / `result-does-not-contain` checks for text the agent guarantees; llm-judge settings (defaults: opus, 0.8) and the rubric filename
+5. **Interview: Edit the draft** — the user approves, adds, removes, or modifies criteria, checks, and settings
+6. **Preview and confirm** — the exact rubric markdown, tests.json changes, and new prompt files
+7. **Write and validate** — write everything, then run `scripts/validate-suite.sh` and fix every finding before reporting
 ## Create vs. Update
 
 - **New rubric**: Creates the rubric file, adds `llm-judge` expectations to selected tests, and optionally creates new agent-prompt test entries

@@ -61,18 +61,16 @@ Each test entry in `tests.json` follows the skill-call format:
 
 ## Workflow
 
-The skill walks through a 9-step process:
+The skill walks through an 8-step process with two pauses for the user: one to collect prompts, one to confirm before writing.
 
-1. **Identify the target skill** — parse the `plugin:skill` argument and read the skill's SKILL.md
-2. **Detect sibling skills** — list other skills in the same plugin to determine if sibling prompts are needed
-3. **Determine test suite location** — default to `tests/test-suites/{skill-name}/`, detect create vs. update mode
-4. **Collect positive trigger prompts** — 3-5 prompts that SHOULD trigger the skill
-5. **Collect negative trigger prompts** — 3+ prompts that should NOT trigger the skill (false-positive resistance)
-6. **Collect sibling trigger prompts** — 3+ prompts targeting sibling skills (skipped for solo-skill plugins)
-7. **Generate test configuration** — create tests.json entries and prompt files with auto-generated names
-8. **Present summary for review** — show everything before writing
-9. **Write files** — create or update the test suite
-
+1. **Identify the target skill** — parse and validate the `plugin:skill` argument, read the skill's SKILL.md, and note the description's boundary statements (they are what negative and sibling prompts test)
+2. **Detect siblings** — list the sibling skills in the same plugin
+3. **Locate the test suite** — `tests/test-suites/{skill-name}/`; detect create vs. update mode and note existing scaffolds
+4. **Collect trigger prompts** — one message asks for all three categories (positive, negative, sibling) with guidance for each, and asks the user to flag any prompt whose trigger decision depends on repo state
+5. **Assign scaffolds** — flagged prompts get `scaffold` set when the named scaffold exists; otherwise the gap is reported with the `/build-skill-eval-scaffold … --for trigger` command that builds it
+6. **Generate test configuration** — tests.json entries and prompt files with auto-generated names
+7. **Present summary and confirm** — everything that will be written, plus scaffold assignments and gaps
+8. **Write and validate** — create or update the suite, then run `scripts/validate-suite.sh`, which re-checks what the harness checks at load time, and fix every finding before reporting
 ## Prompt Categories
 
 ### Positive triggers (3-5 required)
