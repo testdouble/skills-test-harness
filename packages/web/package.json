@@ -12,7 +12,7 @@
   "dependencies": {
     "@testdouble/harness-data": "workspace:*",
     "hono": "^4.13.8",
-    "marked": "^15",
+    "marked": "^18.0.13",
     "picomatch": "^4.0.7",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
