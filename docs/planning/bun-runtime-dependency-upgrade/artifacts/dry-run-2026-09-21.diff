@@ -1,0 +1,284 @@
+diff --git a/Makefile b/Makefile
+index 62f91da..0863685 100644
+--- a/Makefile
++++ b/Makefile
+@@ -16,19 +16,9 @@ build:
+ 	bun install
+ 	cd packages/web && bun run build
+ 	cd packages/web && bun build ./src/server/index.ts --compile --outfile $(TESTS_DIR)/harness-web \
+-		--external '@duckdb/node-bindings-linux-x64' \
+-		--external '@duckdb/node-bindings-linux-arm64' \
+-		--external '@duckdb/node-bindings-darwin-x64' \
+-		--external '@duckdb/node-bindings-darwin-arm64' \
+-		--external '@duckdb/node-bindings-win32-arm64' \
+-		--external '@duckdb/node-bindings-win32-x64'
++		--external '@duckdb/node-bindings-*'
+ 	cd packages/cli && bun build ./index.ts --compile --outfile $(TESTS_DIR)/harness \
+-		--external '@duckdb/node-bindings-linux-x64' \
+-		--external '@duckdb/node-bindings-linux-arm64' \
+-		--external '@duckdb/node-bindings-darwin-x64' \
+-		--external '@duckdb/node-bindings-darwin-arm64' \
+-		--external '@duckdb/node-bindings-win32-arm64' \
+-		--external '@duckdb/node-bindings-win32-x64'
++		--external '@duckdb/node-bindings-*'
+ 	DUCKDB_DIR=$$(find node_modules/.bun -maxdepth 6 -name "duckdb.node" -path "*node-bindings-$(DUCKDB_PLATFORM)*" 2>/dev/null | head -1 | xargs dirname) && \
+ 	rm -rf node_modules/@duckdb/node-bindings-$(DUCKDB_PLATFORM) && \
+ 	mkdir -p node_modules/@duckdb && \
+diff --git a/biome.json b/biome.json
+index 9bfcb6a..981149d 100644
+--- a/biome.json
++++ b/biome.json
+@@ -1,5 +1,5 @@
+ {
+-  "$schema": "https://biomejs.dev/schemas/2.4.12/schema.json",
++  "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+   "vcs": {
+     "enabled": true,
+     "clientKind": "git",
+@@ -24,7 +24,7 @@
+   "linter": {
+     "enabled": true,
+     "rules": {
+-      "recommended": true,
++      "preset": "recommended",
+       "suspicious": {
+         "noExplicitAny": "warn",
+         "noGlobalIsNan": "off",
+diff --git a/package.json b/package.json
+index 98efab6..d9ce801 100644
+--- a/package.json
++++ b/package.json
+@@ -1,7 +1,10 @@
+ {
+   "name": "testdouble-harness",
+   "private": true,
+-  "workspaces": ["packages/*"],
++  "packageManager": "bun@1.4.2",
++  "workspaces": [
++    "packages/*"
++  ],
+   "scripts": {
+     "test": "vitest run",
+     "test:watch": "vitest",
+@@ -14,8 +17,9 @@
+     "ci-checks": "npm run lint && npm run format:check && npm run typecheck && npm run test && npm run test:integration && bun audit --audit-level=moderate"
+   },
+   "devDependencies": {
+-    "@biomejs/biome": "^2.4.12",
+-    "vitest": "^4.1.4"
++    "@biomejs/biome": "^2.5.14",
++    "typescript": "^7.0.2",
++    "vitest": "^5.0.1"
+   },
+   "overrides": {
+     "vite": "^8.0.8",
+diff --git a/packages/bun-helpers/package.json b/packages/bun-helpers/package.json
+index 963c74e..83547dc 100644
+--- a/packages/bun-helpers/package.json
++++ b/packages/bun-helpers/package.json
+@@ -4,6 +4,6 @@
+   "private": true,
+   "module": "index.ts",
+   "devDependencies": {
+-    "bun-types": "latest"
++    "bun-types": "^1.4.2"
+   }
+ }
+diff --git a/packages/claude-integration/package.json b/packages/claude-integration/package.json
+index 2e7e2df..d5aa5d4 100644
+--- a/packages/claude-integration/package.json
++++ b/packages/claude-integration/package.json
+@@ -8,6 +8,6 @@
+     "@testdouble/bun-helpers": "workspace:*"
+   },
+   "devDependencies": {
+-    "bun-types": "latest"
++    "bun-types": "^1.4.2"
+   }
+ }
+diff --git a/packages/cli/package.json b/packages/cli/package.json
+index e73870a..3043c22 100644
+--- a/packages/cli/package.json
++++ b/packages/cli/package.json
+@@ -11,12 +11,12 @@
+     "@testdouble/harness-data": "workspace:*",
+     "@testdouble/harness-evals": "workspace:*",
+     "@testdouble/harness-execution": "workspace:*",
+-    "cli-table3": "latest",
+-    "yargs": "latest"
++    "cli-table3": "^0.6.5",
++    "yargs": "^18.2.0"
+   },
+   "devDependencies": {
+     "@testdouble/test-fixtures": "workspace:*",
+-    "@types/yargs": "latest",
+-    "bun-types": "latest"
++    "@types/yargs": "^17.0.35",
++    "bun-types": "^1.4.2"
+   }
+ }
+diff --git a/packages/data/package.json b/packages/data/package.json
+index 8dd7e10..81abbd5 100644
+--- a/packages/data/package.json
++++ b/packages/data/package.json
+@@ -4,10 +4,10 @@
+   "private": true,
+   "module": "index.ts",
+   "dependencies": {
+-    "@duckdb/node-api": "latest"
++    "@duckdb/node-api": "^1.5.5-r.5"
+   },
+   "devDependencies": {
+     "@testdouble/test-fixtures": "workspace:*",
+-    "bun-types": "^1.3.11"
++    "bun-types": "^1.4.2"
+   }
+ }
+diff --git a/packages/evals/package.json b/packages/evals/package.json
+index ad98766..f04f286 100644
+--- a/packages/evals/package.json
++++ b/packages/evals/package.json
+@@ -9,6 +9,6 @@
+   },
+   "devDependencies": {
+     "@testdouble/test-fixtures": "workspace:*",
+-    "bun-types": "latest"
++    "bun-types": "^1.4.2"
+   }
+ }
+diff --git a/packages/execution/package.json b/packages/execution/package.json
+index fe8c91f..b7aa232 100644
+--- a/packages/execution/package.json
++++ b/packages/execution/package.json
+@@ -11,6 +11,6 @@
+   },
+   "devDependencies": {
+     "@testdouble/test-fixtures": "workspace:*",
+-    "bun-types": "^1.3.11"
++    "bun-types": "^1.4.2"
+   }
+ }
+diff --git a/packages/sandbox-integration/package.json b/packages/sandbox-integration/package.json
+index d82d4f2..77baa3b 100644
+--- a/packages/sandbox-integration/package.json
++++ b/packages/sandbox-integration/package.json
+@@ -4,6 +4,6 @@
+   "private": true,
+   "module": "index.ts",
+   "devDependencies": {
+-    "bun-types": "latest"
++    "bun-types": "^1.4.2"
+   }
+ }
+diff --git a/packages/web/package.json b/packages/web/package.json
+index 06e293e..9075233 100644
+--- a/packages/web/package.json
++++ b/packages/web/package.json
+@@ -11,22 +11,22 @@
+   },
+   "dependencies": {
+     "@testdouble/harness-data": "workspace:*",
+-    "hono": "latest",
+-    "marked": "^15",
+-    "picomatch": "^4.0.4",
+-    "react": "^18",
+-    "react-dom": "^18",
+-    "react-router-dom": "^6",
+-    "yargs": "^18.0.0"
++    "hono": "^4.13.8",
++    "marked": "^18.0.13",
++    "picomatch": "^4.0.7",
++    "react": "^19.3.0",
++    "react-dom": "^19.3.0",
++    "react-router-dom": "^7.18.4",
++    "yargs": "^18.2.0"
+   },
+   "devDependencies": {
+-    "@tailwindcss/vite": "^4.2.2",
+-    "@types/react": "^18",
+-    "@types/react-dom": "^18",
++    "@tailwindcss/vite": "^4.3.3",
++    "@types/react": "^19.3.0",
++    "@types/react-dom": "^19.3.0",
+     "@types/yargs": "^17.0.35",
+-    "@vitejs/plugin-react": "^6.0.1",
+-    "bun-types": "^1.3.11",
+-    "tailwindcss": "latest",
+-    "vite": "^8.0.8"
++    "@vitejs/plugin-react": "^6.1.1",
++    "bun-types": "^1.4.2",
++    "tailwindcss": "^4.3.3",
++    "vite": "^8.3.0"
+   }
+ }
+diff --git a/packages/web/src/client/pages/AcilDetail.tsx b/packages/web/src/client/pages/AcilDetail.tsx
+index fd85fe6..e6e8dd1 100644
+--- a/packages/web/src/client/pages/AcilDetail.tsx
++++ b/packages/web/src/client/pages/AcilDetail.tsx
+@@ -1,4 +1,4 @@
+-import { useEffect, useState } from 'react'
++import { type JSX, useEffect, useState } from 'react'
+ import { Link, useParams } from 'react-router-dom'
+ 
+ interface AcilTrainResult {
+diff --git a/packages/web/src/client/pages/AcilHistory.tsx b/packages/web/src/client/pages/AcilHistory.tsx
+index 415faf5..6acda4e 100644
+--- a/packages/web/src/client/pages/AcilHistory.tsx
++++ b/packages/web/src/client/pages/AcilHistory.tsx
+@@ -1,4 +1,4 @@
+-import { useEffect, useState } from 'react'
++import { type JSX, useEffect, useState } from 'react'
+ import { Link } from 'react-router-dom'
+ 
+ interface AcilHistoryRow {
+diff --git a/packages/web/src/client/pages/PerTestAnalytics.tsx b/packages/web/src/client/pages/PerTestAnalytics.tsx
+index 9848c7c..a17f2c8 100644
+--- a/packages/web/src/client/pages/PerTestAnalytics.tsx
++++ b/packages/web/src/client/pages/PerTestAnalytics.tsx
+@@ -1,4 +1,4 @@
+-import { useEffect, useState } from 'react'
++import { type JSX, useEffect, useState } from 'react'
+ 
+ interface PerTestRow {
+   test_run_id: string
+diff --git a/packages/web/src/client/pages/ScilDetail.tsx b/packages/web/src/client/pages/ScilDetail.tsx
+index f224cbf..f5ecdd9 100644
+--- a/packages/web/src/client/pages/ScilDetail.tsx
++++ b/packages/web/src/client/pages/ScilDetail.tsx
+@@ -1,4 +1,4 @@
+-import { useEffect, useState } from 'react'
++import { type JSX, useEffect, useState } from 'react'
+ import { Link, useParams } from 'react-router-dom'
+ 
+ interface ScilTrainResult {
+diff --git a/packages/web/src/client/pages/ScilHistory.tsx b/packages/web/src/client/pages/ScilHistory.tsx
+index e442a2a..4cc4f1f 100644
+--- a/packages/web/src/client/pages/ScilHistory.tsx
++++ b/packages/web/src/client/pages/ScilHistory.tsx
+@@ -1,4 +1,4 @@
+-import { useEffect, useState } from 'react'
++import { type JSX, useEffect, useState } from 'react'
+ import { Link } from 'react-router-dom'
+ 
+ interface ScilHistoryRow {
+diff --git a/packages/web/src/client/pages/TestRunDetail.tsx b/packages/web/src/client/pages/TestRunDetail.tsx
+index bdf0399..5ded9b2 100644
+--- a/packages/web/src/client/pages/TestRunDetail.tsx
++++ b/packages/web/src/client/pages/TestRunDetail.tsx
+@@ -1,5 +1,5 @@
+ import { marked } from 'marked'
+-import { Fragment, useEffect, useState } from 'react'
++import { Fragment, type JSX, useEffect, useState } from 'react'
+ import { Link, useParams } from 'react-router-dom'
+ 
+ interface TestRunDetailRow {
+diff --git a/packages/web/src/client/pages/TestRunHistory.tsx b/packages/web/src/client/pages/TestRunHistory.tsx
+index 89a76e6..aaa96b0 100644
+--- a/packages/web/src/client/pages/TestRunHistory.tsx
++++ b/packages/web/src/client/pages/TestRunHistory.tsx
+@@ -1,4 +1,4 @@
+-import { useEffect, useState } from 'react'
++import { type JSX, useEffect, useState } from 'react'
+ import { Link } from 'react-router-dom'
+ 
+ interface TestRunSummary {
