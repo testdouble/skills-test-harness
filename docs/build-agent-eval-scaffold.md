@@ -1,6 +1,6 @@
 # Building Agent Eval Scaffolds
 
-> **Tier 3 · Skill/agent authors building evals.** The `/build-agent-eval-scaffold` skill generates a realistic project fixture for rubric (effectiveness) evaluation of a Claude Code agent; you need a target `plugin:agent` already defined.
+> **Tier 3 · Skill/agent authors building evals.** The `/build-agent-eval-scaffold` skill generates a realistic project fixture for evaluating a Claude Code agent — planted signals for rubric (effectiveness) evaluation by default, or repo context cues for trigger accuracy with `--for trigger`; you need a target `plugin:agent` already defined.
 
 Run `/build-agent-eval-scaffold` to generate a realistic project scaffold an agent can be evaluated against. Given a `plugin:agent` identifier and an optional project description, it analyzes the target agent's definition file to understand what inputs it expects and what signals it looks for, then interviews you in structured phases before writing a scaffold at `tests/test-suites/{agent}/scaffolds/{name}/`. Run it before writing rubric criteria with `/write-agent-eval-rubric`.
 
@@ -11,6 +11,7 @@ Use this skill when you need to:
 - Create a new test scaffold for an agent's rubric evals
 - Build a realistic project fixture that contains specific signals for an agent to find
 - Set up a scaffold directory before writing rubric criteria with `/write-agent-eval-rubric`
+- Build a trigger-context scaffold (`--for trigger`) that a `agent-call` test can run a repo-dependent prompt against
 
 ## When NOT to use this skill
 
@@ -26,6 +27,7 @@ Invoke the skill with a `plugin:agent` argument and an optional project descript
 ```
 /build-agent-eval-scaffold r-and-d:gap-analyzer
 /build-agent-eval-scaffold r-and-d:gap-analyzer for a rails 7 project with postgres
+/build-agent-eval-scaffold r-and-d:gap-analyzer --for trigger for a rails 7 project with postgres
 ```
 
 If no argument is provided, the skill will ask which `plugin:agent` to build a scaffold for.
@@ -59,10 +61,10 @@ After writing the files, the skill runs `scripts/validate-scaffold.sh` against t
 
 The skill walks through a 6-step process with three interview pauses:
 
-1. **Parse arguments** — extract the `plugin:agent` identifier and optional project description
+1. **Parse arguments** — extract the `plugin:agent` identifier, the optional `--for trigger` flag, and the optional project description
 2. **Analyze target agent** — read the agent's definition file to understand what inputs, signals, and environment the agent expects
 3. **Interview: Analysis and project shape** — present the agent's purpose, expected inputs, signal categories, environment requirements, and any existing scaffolds alongside the proposed tech stack and a kebab-case scaffold name with `-project` suffix; the user confirms or corrects all of it in one reply
-4. **Interview: Signals to plant** — suggest specific signals based on the agent analysis; the user approves, removes, modifies, or adds signals
+4. **Interview: Signals or cues to plant** — in quality mode, suggest specific signals based on the agent analysis; in trigger mode, suggest context cues with the direction each should push the trigger decision; the user approves, removes, modifies, or adds entries
 5. **Interview: File plan** — present a complete file plan with paths, descriptions, and signal assignments for each file
 6. **Generate scaffold** — create directories, write all files with realistic content, then run `scripts/validate-scaffold.sh` and fix every error it reports before reporting the result
 
@@ -78,6 +80,16 @@ In Step 2, the skill reads the agent's definition file (`.md` file with YAML fro
 ### Graceful skip
 
 If the analysis reveals the agent does not operate on project files (e.g., it queries GitHub APIs or generates content from conversation context), the skill informs the user that a file scaffold would not be useful and stops.
+
+## Trigger Mode
+
+`--for trigger` builds a scaffold for `agent-call` tests instead of `agent-prompt` tests. The difference is what gets planted and where.
+
+In a `agent-call` test the harness replaces the agent's body with a no-op, so nothing inside the scaffold is ever analyzed. The only thing the scaffold can change is the decision to call the agent, and that decision is made from the prompt plus what Claude can see before the call: the auto-loaded `CLAUDE.md`, `README.md`, top-level file and directory names, and any file the prompt names explicitly. Trigger cues live in those places.
+
+The skill derives cues from the agent description's "use when" clauses and "does not … use X" boundaries, plus the sibling descriptions in the same plugin, and asks for each cue's **direction**: does its presence mean Claude should delegate to the agent, or that a sibling should handle it instead? One scaffold carries one context; the counterpart (cues absent, or pointing at a sibling) is a second run. Scaffold names take a `-context-project` suffix, and the short-file warnings from the validator are expected in this mode.
+
+After building a trigger scaffold, run `/write-acil-evals r-and-d:gap-analyzer` and name the scaffold for the prompts that depend on it.
 
 ## Signal Planning
 

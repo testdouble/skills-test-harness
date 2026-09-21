@@ -1,6 +1,6 @@
 # Building Skill Eval Scaffolds
 
-> **Tier 3 · Skill/agent authors building evals.** The `/build-skill-eval-scaffold` skill generates a realistic project fixture for rubric (effectiveness) evaluation of a Claude Code skill; you need a target `plugin:skill` already defined.
+> **Tier 3 · Skill/agent authors building evals.** The `/build-skill-eval-scaffold` skill generates a realistic project fixture for evaluating a Claude Code skill — planted signals for rubric (effectiveness) evaluation by default, or repo context cues for trigger accuracy with `--for trigger`; you need a target `plugin:skill` already defined.
 
 Run `/build-skill-eval-scaffold` to generate a realistic project scaffold a skill can be evaluated against. Given a `plugin:skill` identifier and an optional project description, it analyzes the target skill to understand what inputs it expects and what signals it looks for, then interviews you in structured phases before writing a scaffold at `tests/test-suites/{skill}/scaffolds/{name}/`. Run it before writing rubric criteria with `/write-skill-eval-rubric`.
 
@@ -11,6 +11,7 @@ Use this skill when you need to:
 - Create a new test scaffold for a skill's rubric evals
 - Build a realistic project fixture that contains specific signals for a skill to find
 - Set up a scaffold directory before writing rubric criteria with `/write-skill-eval-rubric`
+- Build a trigger-context scaffold (`--for trigger`) that a `skill-call` test can run a repo-dependent prompt against
 
 ## When NOT to use this skill
 
@@ -26,6 +27,7 @@ Invoke the skill with a `plugin:skill` argument and an optional project descript
 ```
 /build-skill-eval-scaffold r-and-d:code-review
 /build-skill-eval-scaffold r-and-d:code-review for a rails 7 project with postgres
+/build-skill-eval-scaffold r-and-d:code-review --for trigger for a rails 7 project with postgres
 ```
 
 If no argument is provided, the skill will ask which `plugin:skill` to build a scaffold for.
@@ -59,10 +61,10 @@ After writing the files, the skill runs `scripts/validate-scaffold.sh` against t
 
 The skill walks through a 6-step process with three interview pauses:
 
-1. **Parse arguments** — extract the `plugin:skill` identifier and optional project description
+1. **Parse arguments** — extract the `plugin:skill` identifier, the optional `--for trigger` flag, and the optional project description
 2. **Analyze target skill** — run `scripts/collect-target-inputs.sh` to resolve the skill's SKILL.md, reference files, and dispatched agent definitions, then read them to understand what inputs, signals, and environment the skill expects
 3. **Interview: Analysis and project shape** — present the skill's purpose, expected inputs, signal categories, environment requirements, and any existing scaffolds alongside the proposed tech stack and a kebab-case scaffold name with `-project` suffix; the user confirms or corrects all of it in one reply
-4. **Interview: Signals to plant** — suggest specific signals based on the skill analysis; the user approves, removes, modifies, or adds signals
+4. **Interview: Signals or cues to plant** — in quality mode, suggest specific signals based on the skill analysis; in trigger mode, suggest context cues with the direction each should push the trigger decision; the user approves, removes, modifies, or adds entries
 5. **Interview: File plan** — present a complete file plan with paths, descriptions, and signal assignments for each file
 6. **Generate scaffold** — create directories, write all files with realistic content, then run `scripts/validate-scaffold.sh` and fix every error it reports before reporting the result
 
@@ -89,6 +91,16 @@ Agent definitions referenced by the skill (via `subagent_type` in `Agent` tool c
 ### Graceful skip
 
 If the analysis reveals the skill does not operate on project files (e.g., it queries GitHub APIs or generates content from conversation context), the skill informs the user that a file scaffold would not be useful and stops.
+
+## Trigger Mode
+
+`--for trigger` builds a scaffold for `skill-call` tests instead of `skill-prompt` tests. The difference is what gets planted and where.
+
+In a `skill-call` test the harness replaces the skill's body with a no-op, so nothing inside the scaffold is ever analyzed. The only thing the scaffold can change is the decision to call the skill, and that decision is made from the prompt plus what Claude can see before the call: the auto-loaded `CLAUDE.md`, `README.md`, top-level file and directory names, and any file the prompt names explicitly. Trigger cues live in those places.
+
+The skill derives cues from the skill description's "use when" clauses and "does not … use X" boundaries, plus the sibling descriptions in the same plugin, and asks for each cue's **direction**: does its presence mean the skill should fire, or that a sibling should handle it instead? One scaffold carries one context; the counterpart (cues absent, or pointing at a sibling) is a second run. Scaffold names take a `-context-project` suffix, and the short-file warnings from the validator are expected in this mode.
+
+After building a trigger scaffold, run `/write-scil-evals r-and-d:code-review` and name the scaffold for the prompts that depend on it.
 
 ## Signal Planning
 
