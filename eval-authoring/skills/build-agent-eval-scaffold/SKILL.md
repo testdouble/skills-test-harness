@@ -101,4 +101,6 @@ After the user approves the file plan:
 
 2. Write each file using the Write tool. For each file, generate realistic content that matches the tech stack and project context, and include its planned signals the way a real developer would have written them — the Constraints above govern what the content may and may not contain.
 
-3. Report the outcome: the scaffold path first, then the complete list of files created with their paths relative to the repository root.
+3. Validate the result by running `${CLAUDE_SKILL_DIR}/scripts/validate-scaffold.sh tests/test-suites/{agent}/scaffolds/{name}`. It checks the Constraints mechanically and prints one finding per line between `findings-start` and `findings-end` as `{error|warning} {path} {message}`, plus `errors`, `warnings`, and `status`. Fix every `error` (delete the offending file or rewrite it), review each `warning` and fix the ones that are not deliberate, then re-run until `errors: 0`. A syntax error in `package.json` can make every `.js` file fail its check, so fix invalid JSON first. Extensions listed under `syntax-unchecked` had no parser available on this machine; re-read those files yourself for syntax problems.
+
+4. Report the outcome: the scaffold path first, then the complete list of files created with their paths relative to the repository root, then any warnings you left in place and why.

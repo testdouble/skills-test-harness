@@ -27,13 +27,13 @@ Parse the user's input into two parts:
 
 If no argument was provided, or the first token contains no colon, ask the user which `plugin:skill` to create a scaffold for and stop until they answer.
 
-Validate that the skill exists by confirming the file `{plugin}/skills/{skill}/SKILL.md` exists in the repository root. If it does not exist, tell the user and ask them to correct the input.
+Collect the target's inputs by running `${CLAUDE_SKILL_DIR}/scripts/collect-target-inputs.sh {plugin} {skill}` from the repository root. It prints `status`, the `skill-file` path, the reference files between `reference-files-start` and `reference-files-end` (or `reference-files: none`), and one line per dispatched agent between `agents-start` and `agents-end` (or `agents: none`) in the form `{agent-plugin}:{agent} {path} {found|missing}`. If it reports `status: error`, show the `reason` to the user and ask them to correct the input.
 
 ## Step 2: Analyze target skill
 
-Read three categories of material from the target skill to understand what the scaffold needs to provide:
+Read three categories of material listed by the script to understand what the scaffold needs to provide:
 
-**2a. SKILL.md** — Read `{plugin}/skills/{skill}/SKILL.md`. Analyze the full body to identify:
+**2a. SKILL.md** — Read the `skill-file`. Analyze the full body to identify:
 
 - What inputs and environment the skill expects (source code files, config files, documentation, specific project structure)
 - What outputs the skill produces (code reviews, coding standards, ADRs, test plans, documentation)
@@ -41,9 +41,9 @@ Read three categories of material from the target skill to understand what the s
 - What tools the skill uses (Read, Glob, Grep, Bash commands — these reveal what file types and patterns the skill inspects)
 - Whether the skill operates on project files at all, or whether it operates on external state (GitHub PRs, CI pipelines, conversation context)
 
-**2b. References** — Use Glob for `{plugin}/skills/{skill}/references/**/*` and read each file found. Reference files contain templates, checklists, and domain knowledge that reveal what the skill checks for in detail. These are critical for understanding the specific signals the scaffold should contain.
+**2b. References** — Read every file listed between `reference-files-start` and `reference-files-end`. Reference files contain templates, checklists, and domain knowledge that reveal what the skill checks for in detail. These are critical for understanding the specific signals the scaffold should contain.
 
-**2c. Agents** — Search the SKILL.md body and its reference files for `Agent` tool dispatches, particularly `subagent_type` values. These values are namespaced as `{agent-plugin}:{agent}`, and the agent's plugin is often not the target skill's plugin BECAUSE a skill in one plugin commonly dispatches agents defined in a shared foundation plugin. For each value, split on the colon and read `{agent-plugin}/agents/{agent}.md` from the repository root; if a value has no colon, look in `{plugin}/agents/{agent}.md`. Agent definitions describe specific analysis focuses (structural coupling, security vulnerabilities, concurrency patterns, etc.) that inform what signals should be planted in the scaffold. If a referenced agent file cannot be found, note it in the analysis summary and continue with what was found.
+**2c. Agents** — Read the `{path}` of every agent line marked `found`. The script already resolved each `subagent_type` value to the plugin that defines the agent, which is often not the target skill's plugin. Agent definitions describe specific analysis focuses (structural coupling, security vulnerabilities, concurrency patterns, etc.) that inform what signals should be planted in the scaffold. Carry any agent marked `missing` into the Step 3 summary and continue with what was found.
 
 **Graceful skip:** If the analysis reveals the skill does not operate on project files — for example, it queries GitHub APIs (`gh` commands), operates on pull request state, or generates content from conversation context rather than analyzing files in a working directory — inform the user that a file scaffold would not be useful for this skill type and stop. Explain what the skill operates on instead.
 
@@ -109,4 +109,6 @@ After the user approves the file plan:
 
 2. Write each file using the Write tool. For each file, generate realistic content that matches the tech stack and project context, and include its planned signals the way a real developer would have written them — the Constraints above govern what the content may and may not contain.
 
-3. Report the outcome: the scaffold path first, then the complete list of files created with their paths relative to the repository root.
+3. Validate the result by running `${CLAUDE_SKILL_DIR}/scripts/validate-scaffold.sh tests/test-suites/{skill}/scaffolds/{name}`. It checks the Constraints mechanically and prints one finding per line between `findings-start` and `findings-end` as `{error|warning} {path} {message}`, plus `errors`, `warnings`, and `status`. Fix every `error` (delete the offending file or rewrite it), review each `warning` and fix the ones that are not deliberate, then re-run until `errors: 0`. A syntax error in `package.json` can make every `.js` file fail its check, so fix invalid JSON first. Extensions listed under `syntax-unchecked` had no parser available on this machine; re-read those files yourself for syntax problems.
+
+4. Report the outcome: the scaffold path first, then the complete list of files created with their paths relative to the repository root, then any warnings you left in place and why.

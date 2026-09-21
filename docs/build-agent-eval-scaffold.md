@@ -53,6 +53,8 @@ The following are excluded from scaffolds:
 - Lock files (`package-lock.json`, `Gemfile.lock`, `go.sum`) — unless they serve as a specific signal
 - Dependency directories (`node_modules`, `vendor`, `__pycache__`)
 
+After writing the files, the skill runs `scripts/validate-scaffold.sh` against the scaffold directory. The script checks these exclusions, greps for marker comments, syntax-checks source files with whatever parsers are installed (`node`, `python3`, `ruby`, `gofmt`, `php`, `bash`, plus JSON), and warns about application source files outside the 50–150 line range. Errors are fixed before the skill reports; warnings are reviewed and either fixed or explained.
+
 ## Workflow
 
 The skill walks through a 6-step process with three interview pauses:
@@ -62,7 +64,7 @@ The skill walks through a 6-step process with three interview pauses:
 3. **Interview: Analysis and project shape** — present the agent's purpose, expected inputs, signal categories, environment requirements, and any existing scaffolds alongside the proposed tech stack and a kebab-case scaffold name with `-project` suffix; the user confirms or corrects all of it in one reply
 4. **Interview: Signals to plant** — suggest specific signals based on the agent analysis; the user approves, removes, modifies, or adds signals
 5. **Interview: File plan** — present a complete file plan with paths, descriptions, and signal assignments for each file
-6. **Generate scaffold** — create directories and write all files with realistic content
+6. **Generate scaffold** — create directories, write all files with realistic content, then run `scripts/validate-scaffold.sh` and fix every error it reports before reporting the result
 
 ## Agent Analysis
 

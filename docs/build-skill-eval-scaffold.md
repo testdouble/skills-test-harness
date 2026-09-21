@@ -53,20 +53,22 @@ The following are excluded from scaffolds:
 - Lock files (`package-lock.json`, `Gemfile.lock`, `go.sum`) — unless they serve as a specific signal
 - Dependency directories (`node_modules`, `vendor`, `__pycache__`)
 
+After writing the files, the skill runs `scripts/validate-scaffold.sh` against the scaffold directory. The script checks these exclusions, greps for marker comments, syntax-checks source files with whatever parsers are installed (`node`, `python3`, `ruby`, `gofmt`, `php`, `bash`, plus JSON), and warns about application source files outside the 50–150 line range. Errors are fixed before the skill reports; warnings are reviewed and either fixed or explained.
+
 ## Workflow
 
 The skill walks through a 6-step process with three interview pauses:
 
 1. **Parse arguments** — extract the `plugin:skill` identifier and optional project description
-2. **Analyze target skill** — read the skill's SKILL.md, reference files, and dispatched agent definitions to understand what inputs, signals, and environment the skill expects
+2. **Analyze target skill** — run `scripts/collect-target-inputs.sh` to resolve the skill's SKILL.md, reference files, and dispatched agent definitions, then read them to understand what inputs, signals, and environment the skill expects
 3. **Interview: Analysis and project shape** — present the skill's purpose, expected inputs, signal categories, environment requirements, and any existing scaffolds alongside the proposed tech stack and a kebab-case scaffold name with `-project` suffix; the user confirms or corrects all of it in one reply
 4. **Interview: Signals to plant** — suggest specific signals based on the skill analysis; the user approves, removes, modifies, or adds signals
 5. **Interview: File plan** — present a complete file plan with paths, descriptions, and signal assignments for each file
-6. **Generate scaffold** — create directories and write all files with realistic content
+6. **Generate scaffold** — create directories, write all files with realistic content, then run `scripts/validate-scaffold.sh` and fix every error it reports before reporting the result
 
 ## Skill Analysis
 
-In Step 2, the skill reads three categories of material from the target skill:
+In Step 2, the skill runs `scripts/collect-target-inputs.sh {plugin} {skill}` from the repository root. The script resolves the three categories of material below and reports each as a path, so the model reads exactly what exists rather than guessing at locations:
 
 ### SKILL.md
 
@@ -82,7 +84,7 @@ Files under `{plugin}/skills/{skill}/references/` contain templates, checklists,
 
 ### Agent definitions
 
-Agent definitions referenced by the skill (via `subagent_type` in `Agent` tool calls) describe specific analysis focuses — structural coupling, security vulnerabilities, concurrency patterns — that inform what signals should be planted. `subagent_type` values are namespaced `plugin:agent`, and the agent's plugin is often not the skill's own, so the skill resolves each one to `{agent-plugin}/agents/{agent}.md` at the repository root.
+Agent definitions referenced by the skill (via `subagent_type` in `Agent` tool calls) describe specific analysis focuses — structural coupling, security vulnerabilities, concurrency patterns — that inform what signals should be planted. `subagent_type` values are namespaced `plugin:agent`, and the agent's plugin is often not the skill's own, so the script resolves each one to `{agent-plugin}/agents/{agent}.md` at the repository root and reports it as `found` or `missing`.
 
 ### Graceful skip
 
