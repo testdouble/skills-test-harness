@@ -1,6 +1,7 @@
 {
   "name": "testdouble-harness",
   "private": true,
+  "packageManager": "bun@1.4.2",
   "workspaces": ["packages/*"],
   "scripts": {
     "test": "vitest run",

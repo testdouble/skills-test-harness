@@ -13,7 +13,7 @@
 
 - Root: repository root
 - Language: TypeScript (ESNext target, strict mode)
-- Package manager: Bun
+- Package manager: Bun 1.4.2 (pinned by `"packageManager"` in the root `package.json`)
 - Dependency manifest: `package.json`
 - Lock file: `bun.lock`
 
