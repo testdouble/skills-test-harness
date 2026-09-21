@@ -9,6 +9,6 @@
   },
   "devDependencies": {
     "@testdouble/test-fixtures": "workspace:*",
-    "bun-types": "latest"
+    "bun-types": "^1.4.2"
   }
 }

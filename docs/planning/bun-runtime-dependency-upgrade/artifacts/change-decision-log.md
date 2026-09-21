@@ -140,9 +140,11 @@ Cross-referencing invariants:
 
 - **Question:** After the direct dependencies move, which entries in the root `overrides` block are still needed, and
   at what floors?
-- **Decision:** The block reads `vite ^8.3.0`, `picomatch ^4.0.4`, `hono ^4.13.8`, `postcss ^8.5.23`. `postcss` is
-  raised to the first fixed version from the audit; `vite` and `hono` are raised to match their direct ranges in
-  `packages/web`; `picomatch` is untouched.
+- **Decision:** The block reads `vite ^8.3.0`, `picomatch ^4.0.7`, `hono ^4.13.8`, `postcss ^8.5.23`. `postcss` is
+  raised to the first fixed version from the audit; `vite`, `hono`, and `picomatch` are raised to match their direct
+  ranges in `packages/web`. Amended during the build (2026-09-21): the plan first left `picomatch` at `^4.0.4`, but
+  under the hand-edit-and-`bun install` mechanism the override kept the lockfile at 4.0.4 while `packages/web`
+  declared `^4.0.7`, and `bun outdated` still listed it; raising the override to `^4.0.7` let it resolve.
 - **Rationale:** The block is the repo's stated convention for security floors on transitive packages (commit
   `27c9454`, C-5). `postcss` is declared by no manifest and is the only place its floor — and, through it, the three
   high `nanoid` advisories — can be stated (C-2, C-27). `vite` is also what forces Vitest 5's auto-installed peer and
@@ -155,6 +157,8 @@ Cross-referencing invariants:
     `postcss`/`nanoid`.
   - Remove only the entries that duplicate direct ranges (`vite`, `hono`, `picomatch`) — rejected because the
     convention is "floors are explicit" (27c9454), and removing `vite` would leave Vitest 5's peer copy unpinned.
+  - Leave `picomatch` at `^4.0.4` (the plan's first form) — rejected during the build because an override range that
+    the current lockfile entry satisfies holds that entry in place regardless of the direct range.
 - **Revisit criterion:** `postcss` becomes a direct dependency, or Bun `catalog` replaces overrides as the floor
   mechanism.
 - **Dissent (if any):** None.

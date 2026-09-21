@@ -184,14 +184,15 @@ September with no commit ([C-9](artifacts/current-state-findings.md#c-9-typescri
 ```json
 "overrides": {
   "vite": "^8.3.0",
-  "picomatch": "^4.0.4",
+  "picomatch": "^4.0.7",
   "hono": "^4.13.8",
   "postcss": "^8.5.23"
 }
 ```
 
 It remains the place where transitive security floors are stated. `postcss` is transitive-only and carries the `nanoid`
-fix; `vite` and `hono` repeat the direct ranges in `packages/web`; `picomatch` is unchanged.
+fix; `vite`, `hono`, and `picomatch` repeat the direct ranges in `packages/web`. (`picomatch` was to stay at `^4.0.4`;
+during the build the override held the lockfile at 4.0.4 against the direct `^4.0.7`, so it was raised to match.)
 
 **Behavior.** Preserving. Every resolution already exceeds the floors; the audit is clean with either block
 ([C-31](artifacts/current-state-findings.md#c-31-the-whole-upgrade-was-dry-run-in-a-scratch-clone-under-bun-142-and-every-check-passes-including-the-audit)).

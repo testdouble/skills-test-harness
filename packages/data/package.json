@@ -4,10 +4,10 @@
   "private": true,
   "module": "index.ts",
   "dependencies": {
-    "@duckdb/node-api": "latest"
+    "@duckdb/node-api": "^1.5.5-r.5"
   },
   "devDependencies": {
     "@testdouble/test-fixtures": "workspace:*",
-    "bun-types": "^1.3.11"
+    "bun-types": "^1.4.2"
   }
 }

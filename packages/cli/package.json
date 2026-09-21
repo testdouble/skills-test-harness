@@ -11,12 +11,12 @@
     "@testdouble/harness-data": "workspace:*",
     "@testdouble/harness-evals": "workspace:*",
     "@testdouble/harness-execution": "workspace:*",
-    "cli-table3": "latest",
-    "yargs": "latest"
+    "cli-table3": "^0.6.5",
+    "yargs": "^18.2.0"
   },
   "devDependencies": {
     "@testdouble/test-fixtures": "workspace:*",
-    "@types/yargs": "latest",
-    "bun-types": "latest"
+    "@types/yargs": "^17.0.35",
+    "bun-types": "^1.4.2"
   }
 }
