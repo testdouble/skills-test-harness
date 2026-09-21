@@ -16,7 +16,7 @@
     "picomatch": "^4.0.7",
     "react": "^18",
     "react-dom": "^18",
-    "react-router-dom": "^6",
+    "react-router-dom": "^7.18.4",
     "yargs": "^18.2.0"
   },
   "devDependencies": {
