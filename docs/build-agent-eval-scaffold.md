@@ -55,15 +55,14 @@ The following are excluded from scaffolds:
 
 ## Workflow
 
-The skill walks through a 7-step process:
+The skill walks through a 6-step process with three interview pauses:
 
 1. **Parse arguments** — extract the `plugin:agent` identifier and optional project description
 2. **Analyze target agent** — read the agent's definition file to understand what inputs, signals, and environment the agent expects
-3. **Present analysis summary** — show agent purpose, expected inputs, signal categories, environment requirements, and any existing scaffolds
-4. **Interview: Technology and shape** — confirm the tech stack and derive a kebab-case scaffold name with `-project` suffix
-5. **Interview: Signals to plant** — suggest specific signals based on the agent analysis; the user approves, removes, modifies, or adds signals
-6. **Interview: File plan** — present a complete file plan with paths, descriptions, and signal assignments for each file
-7. **Generate scaffold** — create directories and write all files with realistic content
+3. **Interview: Analysis and project shape** — present the agent's purpose, expected inputs, signal categories, environment requirements, and any existing scaffolds alongside the proposed tech stack and a kebab-case scaffold name with `-project` suffix; the user confirms or corrects all of it in one reply
+4. **Interview: Signals to plant** — suggest specific signals based on the agent analysis; the user approves, removes, modifies, or adds signals
+5. **Interview: File plan** — present a complete file plan with paths, descriptions, and signal assignments for each file
+6. **Generate scaffold** — create directories and write all files with realistic content
 
 ## Agent Analysis
 

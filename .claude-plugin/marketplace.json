@@ -1,0 +1,28 @@
+{
+  "name": "skills-test-harness",
+  "description": "Plugins that ship with the skills-test-harness: eval-authoring skills that generate test scaffolds and eval suites for Claude Code skills and agents.",
+  "version": "1.0.0",
+  "owner": {
+    "name": "Test Double"
+  },
+  "plugins": [
+    {
+      "name": "eval-authoring",
+      "displayName": "Eval Authoring",
+      "source": "./eval-authoring",
+      "description": "Skills that author eval suites for the skills-test-harness. Home of build-skill-eval-scaffold and build-agent-eval-scaffold, which interview you and generate realistic project scaffolds for rubric (effectiveness) evaluation of a Claude Code skill or agent. Depends on nothing; run it from the harness repo where the target plugin:skill or plugin:agent lives.",
+      "version": "1.0.0",
+      "defaultEnabled": true,
+      "author": {
+        "name": "Test Double"
+      },
+      "homepage": "https://github.com/testdouble/skills-test-harness#eval-authoring-skills",
+      "repository": "https://github.com/testdouble/skills-test-harness",
+      "license": "MIT",
+      "keywords": ["evals", "testing", "scaffold", "rubric", "skills", "agents", "claude-code"],
+      "category": "developer-tools",
+      "tags": ["eval-authoring", "test-scaffolds", "llm-judge"],
+      "strict": true
+    }
+  ]
+}

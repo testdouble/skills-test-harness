@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "eval-authoring",
+  "displayName": "Eval Authoring",
+  "version": "1.0.0",
+  "description": "Skills that author eval suites for the skills-test-harness. Home of build-skill-eval-scaffold and build-agent-eval-scaffold, which interview you and generate realistic project scaffolds for rubric (effectiveness) evaluation of a Claude Code skill or agent. Depends on nothing; run it from the harness repo where the target plugin:skill or plugin:agent lives.",
+  "author": {
+    "name": "Test Double",
+    "url": "https://github.com/testdouble"
+  },
+  "homepage": "https://github.com/testdouble/skills-test-harness#eval-authoring-skills",
+  "repository": "https://github.com/testdouble/skills-test-harness",
+  "license": "MIT",
+  "keywords": ["evals", "testing", "scaffold", "rubric", "skills", "agents", "claude-code"]
+}

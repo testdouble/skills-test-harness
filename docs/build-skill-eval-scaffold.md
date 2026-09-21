@@ -55,15 +55,14 @@ The following are excluded from scaffolds:
 
 ## Workflow
 
-The skill walks through a 7-step process:
+The skill walks through a 6-step process with three interview pauses:
 
 1. **Parse arguments** — extract the `plugin:skill` identifier and optional project description
-2. **Analyze target skill** — read the skill's SKILL.md, reference files, and agent definitions to understand what inputs, signals, and environment the skill expects
-3. **Present analysis summary** — show skill purpose, expected inputs, signal categories, environment requirements, and any existing scaffolds
-4. **Interview: Technology and shape** — confirm the tech stack and derive a kebab-case scaffold name with `-project` suffix
-5. **Interview: Signals to plant** — suggest specific signals based on the skill analysis; the user approves, removes, modifies, or adds signals
-6. **Interview: File plan** — present a complete file plan with paths, descriptions, and signal assignments for each file
-7. **Generate scaffold** — create directories and write all files with realistic content
+2. **Analyze target skill** — read the skill's SKILL.md, reference files, and dispatched agent definitions to understand what inputs, signals, and environment the skill expects
+3. **Interview: Analysis and project shape** — present the skill's purpose, expected inputs, signal categories, environment requirements, and any existing scaffolds alongside the proposed tech stack and a kebab-case scaffold name with `-project` suffix; the user confirms or corrects all of it in one reply
+4. **Interview: Signals to plant** — suggest specific signals based on the skill analysis; the user approves, removes, modifies, or adds signals
+5. **Interview: File plan** — present a complete file plan with paths, descriptions, and signal assignments for each file
+6. **Generate scaffold** — create directories and write all files with realistic content
 
 ## Skill Analysis
 
@@ -83,7 +82,7 @@ Files under `{plugin}/skills/{skill}/references/` contain templates, checklists,
 
 ### Agent definitions
 
-Agent definitions referenced by the skill (via `subagent_type` in `Agent` tool calls) describe specific analysis focuses — structural coupling, security vulnerabilities, concurrency patterns — that inform what signals should be planted.
+Agent definitions referenced by the skill (via `subagent_type` in `Agent` tool calls) describe specific analysis focuses — structural coupling, security vulnerabilities, concurrency patterns — that inform what signals should be planted. `subagent_type` values are namespaced `plugin:agent`, and the agent's plugin is often not the skill's own, so the skill resolves each one to `{agent-plugin}/agents/{agent}.md` at the repository root.
 
 ### Graceful skip
 
