@@ -32,7 +32,7 @@ Key files:
 flowchart TB
     evals["evals/<br>eval-a/tests.json<br>eval-b/tests.json<br>..."]
 
-    cli["<b>@testdouble/skillwalker-cli</b><br>Thin Yargs wrapper — parses args, resolves paths, delegates<br>Commands: test-run, test-eval, scil, acil, update-analytics, shell, clean"]
+    cli["<b>@testdouble/skillwalker-cli</b><br>Thin Yargs wrapper — parses args, resolves paths, delegates<br>Commands: test-run, test-eval, scil, acil, update-analytics, sandbox"]
 
     exec["<b>@testdouble/skillwalker-execution</b><br>test-run pipeline (steps 1-10) · prompt runner<br>skill-call runner · temp plugin builder<br>test-eval pipeline (resolve, eval, write results)<br>SCIL/ACIL improvement loops (steps 1-10, iterative)<br>errors, path-config, metrics, output"]
 
@@ -78,7 +78,7 @@ flowchart LR
 
     cli --> exec
     cli -->|"update-analytics command"| data
-    cli -->|"shell, clean, sandbox-setup commands"| sandbox
+    cli -->|"sandbox setup/clean/shell sub-commands"| sandbox
 
     exec --> data
     exec --> evals
@@ -104,7 +104,7 @@ flowchart LR
 
 The command-line entry point. A thin Yargs wrapper that parses arguments, resolves paths from `process.cwd()`, and delegates all real work to `skillwalker-execution`. Compiled to a `./build/skillwalker` binary by `scripts/build.ts`.
 
-**Boundary:** Command parsing, path resolution from `process.cwd()`, and Yargs configuration live here. The CLI owns no pipeline logic, no test runners, no SCIL/ACIL steps — it calls `runEvals()`, `runTestEval()`, `runScilLoop()`, and `runAcilLoop()` from `skillwalker-execution` and passes path values as parameters. Direct package dependencies beyond `skillwalker-execution` exist only for commands that don't go through the execution layer: `sandbox-integration` (shell, clean, sandbox-setup) and `skillwalker-data` (update-analytics).
+**Boundary:** Command parsing, path resolution from `process.cwd()`, and Yargs configuration live here. The CLI owns no pipeline logic, no test runners, no SCIL/ACIL steps — it calls `runEvals()`, `runTestEval()`, `runScilLoop()`, and `runAcilLoop()` from `skillwalker-execution` and passes path values as parameters. Direct package dependencies beyond `skillwalker-execution` exist only for commands that don't go through the execution layer: `sandbox-integration` (the `sandbox` sub-commands) and `skillwalker-data` (update-analytics).
 
 **Commands:**
 
@@ -115,9 +115,9 @@ The command-line entry point. A thin Yargs wrapper that parses arguments, resolv
 | `scil` | Iterative skill-call description improvement loop | `runScilLoop()` |
 | `acil` | Iterative agent-call description improvement loop | `runAcilLoop()` |
 | `update-analytics` | Import JSONL output to Parquet via DuckDB | `skillwalker-data` directly |
-| `shell` | Open an interactive bash session in the Test Sandbox | `sandbox-integration` directly |
-| `clean` | Remove the Test Sandbox | `sandbox-integration` directly |
-| `sandbox-setup` | Create the Test Sandbox | `sandbox-integration` directly |
+| `sandbox setup` | Create the Test Sandbox | `sandbox-integration` directly |
+| `sandbox clean` | Remove the Test Sandbox | `sandbox-integration` directly |
+| `sandbox shell` | Open an interactive bash session in the Test Sandbox | `sandbox-integration` directly |
 
 **Internal structure:**
 
@@ -389,7 +389,7 @@ analytics/*.parquet ──▶ DuckDB SQL queries ──▶ Hono API ──▶ Re
 2. **Set the package name** to `@testdouble/{name}` in `package.json` with `"private": true`
 3. **Add workspace dependency** in consuming packages: `"@testdouble/{name}": "workspace:*"`
 4. **Follow the dependency rules** — packages may only depend downward in the layer hierarchy:
-   - CLI depends on execution, data (update-analytics), sandbox-integration (shell, clean, sandbox-setup)
+   - CLI depends on execution, data (update-analytics), sandbox-integration (the `sandbox` sub-commands)
    - Execution depends on data, evals, claude-integration, sandbox-integration
    - Evals depends on data, claude-integration
    - Claude-integration depends on sandbox-integration, bun-helpers
