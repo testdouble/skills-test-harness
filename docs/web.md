@@ -209,11 +209,11 @@ interface ScilSummaryRow {
 
 #### Server Startup and Asset Embedding
 
-The server entry (`packages/web/src/server/index.ts`) uses Yargs to parse `--port` and `--data-dir` CLI arguments. It registers six API routes and three static asset routes. The client build output (`dist/client/`) is embedded using Bun's `import ... with { type: 'file' }` syntax, which resolves to `$bunfs` paths in compiled standalone executables. A SPA fallback (`/*`) serves `index.html` for all unmatched paths, enabling client-side routing.
+The server entry (`packages/web/src/server/index.ts`) uses Yargs to parse `--port` and `--data-dir` CLI arguments. It registers the API routes, a `jsonErrorHandler` via `app.onError` so unexpected errors reach the client as JSON, and the static asset routes. The client build output (`dist/client/`) is embedded using Bun's `import ... with { type: 'file' }` syntax, which resolves to `$bunfs` paths in compiled standalone executables. A SPA fallback (`/*`) serves `index.html` for all unmatched paths, enabling client-side routing.
 
 #### Route Handler Pattern
 
-All three route modules follow the same pattern: receive a Hono `Context` and a `dataDir` string, call the corresponding `@testdouble/skillwalker-data` query function, and return the result via `c.json()`. Error handling distinguishes "not found" errors (returned as 404 JSON) from unexpected errors (re-thrown). The SCIL routes additionally handle missing Parquet files by returning empty results or 404.
+All three route modules follow the same pattern: receive a Hono `Context` and a `dataDir` string, call the corresponding `@testdouble/skillwalker-data` query function, and return the result via `c.json()`. Error handling distinguishes "not found" and `InvalidRunIdError` errors (returned as 404 JSON) from unexpected errors (re-thrown to `jsonErrorHandler`). Missing Parquet files need no route-level handling: the data layer returns empty results or throws "run not found".
 
 ```typescript
 // packages/web/src/server/routes/test-runs.ts — typical handler pattern
@@ -223,7 +223,7 @@ export async function getTestRunById(c: Context, dataDir: string): Promise<Respo
     const { summary, expectations, llmJudgeGroups, outputFiles } = await queryTestRunDetails(dataDir, runId)
     return c.json({ summary, expectations, llmJudgeGroups, outputFiles })
   } catch (err) {
-    if (err instanceof Error && err.message.startsWith('Test run not found:')) {
+    if (err instanceof InvalidRunIdError || (err instanceof Error && err.message.startsWith('Test run not found:'))) {
       return c.json({ error: 'Not found' }, 404)
     }
     throw err
@@ -402,16 +402,17 @@ flowchart TB
 |----------|---------------------|----------|
 | Test run not found | `404` `{ error: "Not found" }` | Error message starts with `"Test run not found:"` |
 | SCIL run not found | `404` `{ error: "Not found" }` | Error message starts with `"SCIL run not found:"` |
-| Missing Parquet file (SCIL history) | `200` `{ runs: [] }` | Error message contains `"No such file or directory"`, returns empty array |
-| Missing Parquet file (SCIL detail) | `404` `{ error: "Not found" }` | Error message contains `"No such file or directory"` |
-| Unexpected error | Re-thrown (500) | Non-matching errors propagate to Hono's default error handler |
-| Non-Error throwable | Re-thrown | String or other non-Error values bypass the `instanceof Error` check |
+| ACIL run not found | `404` `{ error: "Not found" }` | Error message starts with `"ACIL run not found:"` |
+| Malformed run ID | `404` `{ error: "Not found" }` | Detail routes catch `InvalidRunIdError` from the data layer |
+| No data (missing or empty data directory, or missing Parquet files) | `200` `{ runs: [] }` / `{ rows: [] }` for lists; `404` for details | The data layer returns empty results or throws "run not found"; routes do no file checks of their own |
+| Unexpected error | `500` `{ error: "Internal server error" }` | Non-matching errors are re-thrown to `jsonErrorHandler` (registered with `app.onError`), which logs them and returns JSON |
+| Non-Error throwable | `500` JSON | String or other non-Error values bypass the `instanceof Error` checks and reach `jsonErrorHandler` |
 
 ### Frontend
 | Scenario | Error Handling | Behavior |
 |----------|----------------|----------|
-| API fetch failure | Error state string | Displayed in a red-bordered error banner |
-| Empty data | Empty state message | Displayed as centered gray text with usage instructions |
+| API fetch failure | Error state string | Every page fetches through `fetchJson()` (`client/lib/fetch-json.ts`), which throws the server's `error` field for a non-OK response, or the status text when the body is not JSON. The message is displayed in a red-bordered error banner |
+| Empty data | Empty state message | Displayed as centered gray text with usage instructions on the History, SCIL History, ACIL History, and Analytics pages |
 | Loading | Loading state | Displays centered "Loading..." text |
 
 ## Configuration
@@ -425,8 +426,12 @@ flowchart TB
 
 ### Backend
 - `packages/web/src/server/routes/test-runs.test.ts` — Tests `getTestRuns` and `getTestRunById` with mocked `skillwalker-data` query functions
-- `packages/web/src/server/routes/scil.test.ts` — Tests `getScilHistory` and `getScilRunById` including missing Parquet file handling
+- `packages/web/src/server/routes/scil.test.ts` / `acil.test.ts` — Test the SCIL and ACIL history and detail handlers, including 404 for malformed run IDs
+- `packages/web/src/server/routes/error-handler.test.ts` — Tests that `jsonErrorHandler` logs the error and returns a JSON 500
 - `packages/web/src/server/routes/analytics.test.ts` — Tests `getPerTestAnalytics` including eval filter behavior
+
+### Frontend
+- `packages/web/src/client/lib/fetch-json.test.ts` — Tests `fetchJson` with OK, non-OK JSON, and non-OK plain-text responses, using `vi.stubGlobal('fetch', ...)`
 
 ### Test Patterns
 - All tests mock `@testdouble/skillwalker-data` at the module level using `vi.mock()` with inline factory functions
