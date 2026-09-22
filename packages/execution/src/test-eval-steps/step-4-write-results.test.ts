@@ -1,9 +1,9 @@
-import type { TestResultRecord } from '@testdouble/harness-data'
-import { appendTestResults } from '@testdouble/harness-data'
+import type { TestResultRecord } from '@testdouble/skillwalker-data'
+import { appendTestResults } from '@testdouble/skillwalker-data'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { writeResults } from './step-4-write-results.js'
 
-vi.mock('@testdouble/harness-data', () => ({
+vi.mock('@testdouble/skillwalker-data', () => ({
   appendTestResults: vi.fn(),
 }))
 

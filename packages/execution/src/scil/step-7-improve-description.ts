@@ -1,6 +1,6 @@
 import { runClaude } from '@testdouble/claude-integration'
-import type { Phase } from '@testdouble/harness-data'
-import { buildImprovementPrompt, getResultText, parseStreamJsonLines } from '@testdouble/harness-data'
+import type { Phase } from '@testdouble/skillwalker-data'
+import { buildImprovementPrompt, getResultText, parseStreamJsonLines } from '@testdouble/skillwalker-data'
 import type { IterationResult, QueryResult } from './types.js'
 
 const MAX_DESCRIPTION_LENGTH = 1024

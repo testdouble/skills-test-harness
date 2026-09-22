@@ -1,13 +1,13 @@
 {
-  "name": "@testdouble/harness-execution",
+  "name": "@testdouble/skillwalker-execution",
   "version": "0.1.0",
   "private": true,
   "module": "index.ts",
   "dependencies": {
     "@testdouble/claude-integration": "workspace:*",
     "@testdouble/sandbox-integration": "workspace:*",
-    "@testdouble/harness-data": "workspace:*",
-    "@testdouble/harness-evals": "workspace:*"
+    "@testdouble/skillwalker-data": "workspace:*",
+    "@testdouble/skillwalker-evals": "workspace:*"
   },
   "devDependencies": {
     "@testdouble/test-fixtures": "workspace:*",

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@testdouble/harness-execution', () => ({
+vi.mock('@testdouble/skillwalker-execution', () => ({
   runScilLoop: vi.fn().mockResolvedValue(undefined),
 }))
 vi.mock('../paths.js', () => ({
@@ -8,7 +8,7 @@ vi.mock('../paths.js', () => ({
   testsDir: '/mock/tests',
 }))
 
-import { runScilLoop } from '@testdouble/harness-execution'
+import { runScilLoop } from '@testdouble/skillwalker-execution'
 import { builder, command, describe as commandDescribe, handler } from './scil.js'
 
 beforeEach(() => {

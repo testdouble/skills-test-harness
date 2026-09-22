@@ -1,4 +1,4 @@
-import { queryPerTest } from '@testdouble/harness-data'
+import { queryPerTest } from '@testdouble/skillwalker-data'
 import type { Context } from 'hono'
 
 export async function getPerTestAnalytics(c: Context, dataDir: string): Promise<Response> {

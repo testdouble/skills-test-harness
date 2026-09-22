@@ -15,7 +15,7 @@ Skill effectiveness measures how well your skill performs its job — not whethe
 3. Run the test suite to produce skill output
 4. Evaluate the results with the LLM judge
 5. Import the results into the analytics database
-6. View the results in the harness-web dashboard
+6. View the results in the skillwalker-web dashboard
 
 ## Step 1: Create a project scaffold
 
@@ -72,7 +72,7 @@ For details on the skill's full workflow and criteria categories, see [Writing S
 Run all tests in your suite:
 
 ```bash
-./build/harness test-run --suite {skill-name}
+./build/skillwalker test-run --suite {skill-name}
 ```
 
 This runs your skill against the prompt and scaffold inside the Test Sandbox. The LLM judge does not run yet — it evaluates stored output in the next step.
@@ -80,13 +80,13 @@ This runs your skill against the prompt and scaffold inside the Test Sandbox. Th
 **Tip:** To run a single test in isolation (useful for debugging):
 
 ```bash
-./build/harness test-run --suite {skill-name} --test "Prompt: some test name"
+./build/skillwalker test-run --suite {skill-name} --test "Prompt: some test name"
 ```
 
 **Tip:** To see raw Claude output for troubleshooting:
 
 ```bash
-./build/harness test-run --suite {skill-name} --debug
+./build/skillwalker test-run --suite {skill-name} --debug
 ```
 
 For the full list of CLI flags, see [CLI](../cli.md).
@@ -96,7 +96,7 @@ For the full list of CLI flags, see [CLI](../cli.md).
 Run the evaluation pipeline to have the LLM judge score your skill's output against the rubric:
 
 ```bash
-./build/harness test-eval
+./build/skillwalker test-eval
 ```
 
 The `test-run` step captures Claude's output; `test-eval` scores it against your rubric. These are separate commands because the LLM judge consumes tokens — running a second Claude invocation to evaluate each test. Keeping them separate lets you run tests now and evaluate later when you have tokens to spare, or batch multiple test runs before evaluating them all at once.
@@ -110,17 +110,17 @@ For details on how the judge constructs its prompt, scores criteria, and handles
 Import your test run and evaluation results into the analytics database:
 
 ```bash
-./build/harness update-analytics-data
+./build/skillwalker update-analytics-data
 ```
 
 This is idempotent — runs already imported are skipped. For more detail on analytics data and CLI queries, see [Analytics](analytics.md).
 
 ## Step 6: View your results
 
-Launch the harness-web dashboard to inspect your test run and judge results:
+Launch the skillwalker-web dashboard to inspect your test run and judge results:
 
 ```bash
-./build/harness-web
+./build/skillwalker-web
 ```
 
 Open `http://localhost:3099` in your browser. Navigate to your test run to see per-criterion pass/fail results from the LLM judge, including the reasoning behind each score. For a full walkthrough of the dashboard, see [Viewing Results](viewing-results.md).

@@ -11,7 +11,7 @@
 
 ## Introduction
 
-This coding standard defines how Vitest mocks are declared, configured, cleaned up, and verified across the test harness monorepo.
+This coding standard defines how Vitest mocks are declared, configured, cleaned up, and verified across Skillwalker monorepo.
 
 ### Purpose
 
@@ -258,7 +258,7 @@ vi.mock('../test-runners/steps/step-1-resolve-paths.js', () => ({
 }))
 
 vi.mock('../lib/sandbox.js', () => ({
-  SANDBOX_NAME: 'claude-skills-harness',
+  SANDBOX_NAME: 'claude-skills-skillwalker',
   ensureSandboxExists: vi.fn(),
 }))
 ```

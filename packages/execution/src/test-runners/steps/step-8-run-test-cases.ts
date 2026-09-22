@@ -1,4 +1,4 @@
-import type { RunTotals, TestSuiteConfig } from '@testdouble/harness-data'
+import type { RunTotals, TestSuiteConfig } from '@testdouble/skillwalker-data'
 import { runAgentCallTests } from '../agent-call/index.js'
 import { runAgentPromptTests } from '../agent-prompt/index.js'
 import { runPromptTests } from '../prompt/index.js'

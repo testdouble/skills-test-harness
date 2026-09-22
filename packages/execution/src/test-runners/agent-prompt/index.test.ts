@@ -1,9 +1,9 @@
-import type { RunTotals, TestCase, TestSuiteConfig } from '@testdouble/harness-data'
+import type { RunTotals, TestCase, TestSuiteConfig } from '@testdouble/skillwalker-data'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { runAgentPromptTests, wrapWithDelegation } from './index.js'
 
-vi.mock('@testdouble/harness-data', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@testdouble/harness-data')>()
+vi.mock('@testdouble/skillwalker-data', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@testdouble/skillwalker-data')>()
   return {
     ...actual,
     resolvePromptPath: vi.fn((_dir: string, file: string) => `/mock/suite/${file}`),
@@ -38,7 +38,7 @@ vi.mock('../../lib/output.js', () => ({
 }))
 
 import { runClaude } from '@testdouble/claude-integration'
-import { readPromptFile } from '@testdouble/harness-data'
+import { readPromptFile } from '@testdouble/skillwalker-data'
 import { writeTestOutput } from '../../lib/output.js'
 
 const defaultTotals: RunTotals = { totalDurationMs: 0, totalInputTokens: 0, totalOutputTokens: 0, failures: 0 }
@@ -230,7 +230,7 @@ describe('runAgentPromptTests', () => {
     expect(runClaude).not.toHaveBeenCalled()
   })
 
-  it('throws HarnessError when prompt file is not found', async () => {
+  it('throws SkillwalkerError when prompt file is not found', async () => {
     vi.mocked(readPromptFile).mockRejectedValueOnce(new Error('ENOENT'))
     const test = makeAgentPromptTest()
 

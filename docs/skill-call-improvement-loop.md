@@ -20,11 +20,11 @@ At the end of every iteration, SCIL prints a progress summary. When the loop exi
 
 ## Prerequisites
 
-`scil` uses the same Test Sandbox as `test-run`. Build the harness and set up the sandbox before running:
+`scil` uses the same Test Sandbox as `test-run`. Build Skillwalker and set up the sandbox before running:
 
 ```bash
 make build
-./build/harness sandbox-setup
+./build/skillwalker sandbox-setup
 ```
 
 ## Test Suite Requirements
@@ -72,49 +72,49 @@ All commands are run from the `tests/` directory.
 **Basic run — infer skill from tests.json:**
 
 ```bash
-./build/harness scil --suite code-review
+./build/skillwalker scil --suite code-review
 ```
 
 **Specify the target skill explicitly:**
 
 ```bash
-./build/harness scil --suite code-review --skill r-and-d:code-review
+./build/skillwalker scil --suite code-review --skill r-and-d:code-review
 ```
 
 **Increase iterations:**
 
 ```bash
-./build/harness scil --suite code-review --max-iterations 10
+./build/skillwalker scil --suite code-review --max-iterations 10
 ```
 
 **Auto-apply the best description without prompting:**
 
 ```bash
-./build/harness scil --suite code-review --apply
+./build/skillwalker scil --suite code-review --apply
 ```
 
 **Hold out 40% of tests for validation:**
 
 ```bash
-./build/harness scil --suite code-review --holdout 0.4
+./build/skillwalker scil --suite code-review --holdout 0.4
 ```
 
 **Run containers in parallel:**
 
 ```bash
-./build/harness scil --suite code-review --concurrency 3
+./build/skillwalker scil --suite code-review --concurrency 3
 ```
 
 **Run each test multiple times and aggregate by majority vote:**
 
 ```bash
-./build/harness scil --suite code-review --runs-per-query 3
+./build/skillwalker scil --suite code-review --runs-per-query 3
 ```
 
 **Debug mode — dump raw stream-json to stdout:**
 
 ```bash
-./build/harness scil --suite code-review --debug
+./build/skillwalker scil --suite code-review --debug
 ```
 
 ## CLI Flags
@@ -222,7 +222,7 @@ Apply this description to SKILL.md? [y/N]
 - [Building SCIL Evals](scil-evals-guide.md) — step-by-step guide covering the full workflow from writing tests to running SCIL
 - [Test Suite Reference](test-suite-reference.md) — full tests.json field reference for `skill-call` type tests
 - [Writing Skill-Call Evals](write-scil-evals.md) — using the `/write-scil-evals` skill to generate test suites
-- [Test Harness README](../README.md) — prerequisites, setup, and running tests
+- [Skillwalker README](../README.md) — prerequisites, setup, and running tests
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Test Sandbox
 - [CLI Package](cli.md) — CLI package implementing the `scil` command and test-run pipeline
 - [Data Package](data.md) — Shared data layer providing SCIL train/test splitting, prompt building, and frontmatter manipulation

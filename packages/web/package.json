@@ -1,17 +1,17 @@
 {
-  "name": "@testdouble/harness-web",
+  "name": "@testdouble/skillwalker-web",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "bin": {
-    "harness-web": "./src/server/index.ts"
+    "skillwalker-web": "./src/server/index.ts"
   },
   "scripts": {
     "build": "vite build",
     "dev": "vite"
   },
   "dependencies": {
-    "@testdouble/harness-data": "workspace:*",
+    "@testdouble/skillwalker-data": "workspace:*",
     "hono": "^4.13.8",
     "marked": "^18.0.13",
     "picomatch": "^4.0.7",

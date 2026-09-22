@@ -1,10 +1,10 @@
-# Test Harness Architecture
+# Skillwalker Architecture
 
-> **Tier 5 · Contributor reference.** Internal documentation for the harness monorepo as a whole — package boundaries, the dependency graph, and end-to-end data flow. If you're a user looking to run an evaluation, see [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md).
+> **Tier 5 · Contributor reference.** Internal documentation for the Skillwalker monorepo as a whole — package boundaries, the dependency graph, and end-to-end data flow. If you're a user looking to run an evaluation, see [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md).
 
-This page maps the whole harness so you can locate the package and module that owns a change. It covers the nine workspace packages and their layering, the package dependency rules you must not violate, the four-stage data flow (execution → evaluation → analytics → dashboard), and the steps to add a new package.
+This page maps the whole Skillwalker so you can locate the package and module that owns a change. It covers the nine workspace packages and their layering, the package dependency rules you must not violate, the four-stage data flow (execution → evaluation → analytics → dashboard), and the steps to add a new package.
 
-The test harness is a monorepo workspace that executes AI skill evaluations inside Test Sandboxes, stores results as JSONL/Parquet, and serves a web dashboard for analysis.
+Skillwalker is a monorepo workspace that executes AI skill evaluations inside Test Sandboxes, stores results as JSONL/Parquet, and serves a web dashboard for analysis.
 
 - **Last Updated:** 2026-05-15
 - **Authors:**
@@ -14,137 +14,97 @@ The test harness is a monorepo workspace that executes AI skill evaluations insi
 
 - Nine workspace packages under `packages/` form a layered architecture: CLI (thin Yargs wrapper), execution orchestration, shared data layer, evaluation logic, Claude CLI integration, Test Sandbox integration, web dashboard, cross-runtime utilities, and test fixtures
 - Test suites defined in `test-suites/` drive the system — each suite contains a `tests.json` config, prompt files, optional rubrics, and optional scaffolds
-- Data flows through three stages: **execution** (execution package runs Claude in Docker via CLI commands, writes JSONL to `output/`), **evaluation** (execution package scores results via harness-evals, appends to JSONL), and **analysis** (DuckDB imports JSONL to Parquet in `analytics/`, web serves queries over it)
-- All Claude invocations happen inside a named Test Sandbox (`claude-skills-harness`), providing filesystem isolation and reproducibility
+- Data flows through three stages: **execution** (execution package runs Claude in Docker via CLI commands, writes JSONL to `output/`), **evaluation** (execution package scores results via skillwalker-evals, appends to JSONL), and **analysis** (DuckDB imports JSONL to Parquet in `analytics/`, web serves queries over it)
+- All Claude invocations happen inside a named Test Sandbox (`claude-skills-skillwalker`), providing filesystem isolation and reproducibility
 
 Key files:
-- `packages/cli/index.ts` — CLI entry point (compiled to `./build/harness` binary)
+- `packages/cli/index.ts` — CLI entry point (compiled to `./build/skillwalker` binary)
 - `packages/execution/index.ts` — Execution orchestration (test-run, test-eval, SCIL/ACIL pipelines)
 - `packages/data/index.ts` — Shared data layer (types, config parsing, JSONL I/O, DuckDB analytics)
 - `packages/evals/index.ts` — Evaluation logic (boolean evals + LLM judge)
 - `packages/claude-integration/index.ts` — Claude CLI execution API (options, plugin dirs, error handling)
 - `packages/sandbox-integration/index.ts` — Test Sandbox execution API
-- `packages/web/src/server/index.ts` — Web dashboard server (compiled to `./build/harness-web` binary)
+- `packages/web/src/server/index.ts` — Web dashboard server (compiled to `./build/skillwalker-web` binary)
 
 ## Architecture
 
-```
-                              test-suites/
-                              +-- suite-a/tests.json
-                              +-- suite-b/tests.json
-                              +-- ...
-                                    |
-                                    v
-+--------------------------------------------------------------------------+
-|                        @testdouble/harness-cli                           |
-|                                                                          |
-|  Thin Yargs wrapper — parses args, resolves paths, delegates             |
-|  Commands: test-run, test-eval, scil, acil, update-analytics, shell,     |
-|  clean                                                                   |
-+----+--------------------+---------------------+--------------------------+
-     |                    |                     |
-     v                    v                     v
-  runTestSuite()     runTestEval()        runScilLoop()  runAcilLoop()
-     |                    |                     |              |
-+----+--------------------+---------------------+--------------+-----------+
-|                   @testdouble/harness-execution                          |
-|                                                                          |
-|  test-run pipeline    test-eval pipeline    SCIL/ACIL improvement loops  |
-|  (steps 1-10)         (resolve, eval,       (steps 1-10, iterative)      |
-|  prompt runner         write results)                                    |
-|  skill-call runner                          errors, path-config,         |
-|  temp plugin builder                        metrics, output              |
-|                                                                          |
-+------+---------------------+------------------------+--------------------+
-       |                     |                        |
-       v                     v                        v
-+------------------+   +------------------+  +------------------------------+
-| harness-evals    |   | claude-          |  | harness-data                 |
-|                  |   | integration      |  |                              |
-| boolean evals    |   |                  |  | types, config, stream-       |
-| LLM judge        |+->| runClaude()      |  | parser, JSONL I/O,           |
-| rubric parser    |   | resolvePluginDirs|  | analytics, frontmatter,      |
-|                  |   | ClaudeError      |  | SCIL/ACIL split/prompt       |
-+------------------+   +--------+---------+  +--------------+---------------+
-                               |                           |
-                               v                           |
-                      +------------------+                 |
-                      | docker-          |                 |
-                      | integration      |                 |
-                      |                  |                 |
-                      | execInSandbox()  |                 |
-                      | ensureSandbox()  |                 |
-                      | lifecycle mgmt   |                 |
-                      +--------+---------+                 |
-                               |                           |
-                               v                           |
-                      +------------------+                 |
-                      | Test Sandbox   |                 |
-                      | (Claude)         |                 |
-                      +------------------+                 |
-                                                           |
-          +------------------------------------------------+
-          |
-          v
-   output/{runId}/                     analytics/
-   +-- test-config.jsonl    --DuckDB-->  test-config.parquet
-   +-- test-run.jsonl       --import-->  test-run.parquet
-   +-- test-results.jsonl   ---------->  test-results.parquet
-   +-- output-files.jsonl   ---------->  output-files.parquet
-   +-- scil-iteration.jsonl ---------->  scil-iteration.parquet
-   +-- scil-summary.json    ---------->  scil-summary.parquet
-   +-- acil-iteration.jsonl ---------->  acil-iteration.parquet
-   +-- acil-summary.json    ---------->  acil-summary.parquet
-          |
-          v
-+--------------------------------------------------------------+
-| @testdouble/harness-web                                      |
-|                                                              |
-| Server (Hono)                Client (React SPA)              |
-| +-- /api/test-runs           +-- TestRunHistory              |
-| +-- /api/test-runs/:id       +-- TestRunDetail               |
-| +-- /api/analytics/per-test  +-- PerTestAnalytics            |
-| +-- /api/scil                +-- ScilHistory                 |
-| +-- /api/scil/:id            +-- ScilDetail                  |
-| +-- /api/acil                +-- AcilHistory                 |
-| +-- /api/acil/:id            +-- AcilDetail                  |
-|                                                              |
-| Queries harness-data (DuckDB over Parquet)                   |
-+--------------------------------------------------------------+
+```mermaid
+flowchart TB
+    suites["test-suites/<br>suite-a/tests.json<br>suite-b/tests.json<br>..."]
+
+    cli["<b>@testdouble/skillwalker-cli</b><br>Thin Yargs wrapper — parses args, resolves paths, delegates<br>Commands: test-run, test-eval, scil, acil, update-analytics, shell, clean"]
+
+    exec["<b>@testdouble/skillwalker-execution</b><br>test-run pipeline (steps 1-10) · prompt runner<br>skill-call runner · temp plugin builder<br>test-eval pipeline (resolve, eval, write results)<br>SCIL/ACIL improvement loops (steps 1-10, iterative)<br>errors, path-config, metrics, output"]
+
+    evals["<b>skillwalker-evals</b><br>boolean evals<br>LLM judge<br>rubric parser"]
+    claude["<b>claude-integration</b><br>runClaude()<br>resolvePluginDirs()<br>ClaudeError"]
+    data["<b>skillwalker-data</b><br>types, config, stream-parser<br>JSONL I/O, analytics, frontmatter<br>SCIL/ACIL split/prompt"]
+
+    sandboxPkg["<b>sandbox-integration</b><br>execInSandbox()<br>ensureSandbox()<br>lifecycle mgmt"]
+    sandbox["Test Sandbox<br>(Claude)"]
+
+    output["<b>output/runId/</b><br>test-config.jsonl · test-run.jsonl<br>test-results.jsonl · output-files.jsonl<br>scil-iteration.jsonl · scil-summary.json<br>acil-iteration.jsonl · acil-summary.json"]
+    analytics["<b>analytics/</b><br>one Parquet table per JSONL stream"]
+
+    web["<b>@testdouble/skillwalker-web</b><br>Server (Hono): /api/test-runs · /api/test-runs/:id<br>/api/analytics/per-test · /api/scil · /api/acil<br>Client (React SPA): TestRunHistory · TestRunDetail<br>PerTestAnalytics · ScilHistory · ScilDetail · AcilHistory · AcilDetail"]
+
+    suites --> cli
+    cli -->|"runTestSuite() · runTestEval()<br>runScilLoop() · runAcilLoop()"| exec
+    exec --> evals
+    exec --> claude
+    exec --> data
+    evals --> claude
+    claude --> sandboxPkg
+    sandboxPkg --> sandbox
+    data --> output
+    output -->|"DuckDB import"| analytics
+    analytics --> web
+    web -.->|"queries via skillwalker-data"| data
 ```
 
 ### Dependency Graph (packages only)
 
-```
-harness-cli ────────▶ harness-execution
-            ────────▶ harness-data        (update-analytics command)
-            ────────▶ sandbox-integration  (shell, clean, sandbox-setup commands)
+```mermaid
+flowchart LR
+    cli["skillwalker-cli"]
+    exec["skillwalker-execution"]
+    data["skillwalker-data"]
+    evals["skillwalker-evals"]
+    claude["claude-integration"]
+    sandbox["sandbox-integration"]
+    helpers["bun-helpers"]
+    web["skillwalker-web"]
+    fixtures["test-fixtures"]
 
-harness-execution ──▶ harness-data
-                  ──▶ harness-evals
-                  ──▶ claude-integration
-                  ──▶ sandbox-integration
+    cli --> exec
+    cli -->|"update-analytics command"| data
+    cli -->|"shell, clean, sandbox-setup commands"| sandbox
 
-harness-evals ──────▶ harness-data
-              ──────▶ claude-integration
+    exec --> data
+    exec --> evals
+    exec --> claude
+    exec --> sandbox
 
-claude-integration ─▶ sandbox-integration
-                   ─▶ bun-helpers
+    evals --> data
+    evals --> claude
 
-sandbox-integration ─▶ bun-helpers
+    claude --> sandbox
+    claude --> helpers
 
-harness-web ────────▶ harness-data
+    sandbox --> helpers
 
-test-fixtures ──────▶ bun-helpers    (devDependency of cli, execution, data, evals)
+    web --> data
+
+    fixtures -.->|"devDependency of cli, execution, data, evals"| helpers
 ```
 
 ## Packages
 
-### @testdouble/harness-cli (`packages/cli/`)
+### @testdouble/skillwalker-cli (`packages/cli/`)
 
-The command-line entry point. A thin Yargs wrapper that parses arguments, resolves paths from `process.cwd()`, and delegates all real work to `harness-execution`. Compiled to a `./build/harness` binary by `scripts/build.ts`.
+The command-line entry point. A thin Yargs wrapper that parses arguments, resolves paths from `process.cwd()`, and delegates all real work to `skillwalker-execution`. Compiled to a `./build/skillwalker` binary by `scripts/build.ts`.
 
-**Boundary:** Command parsing, path resolution from `process.cwd()`, and Yargs configuration live here. The CLI owns no pipeline logic, no test runners, no SCIL/ACIL steps — it calls `runTestSuite()`, `runTestEval()`, `runScilLoop()`, and `runAcilLoop()` from `harness-execution` and passes path values as parameters. Direct package dependencies beyond `harness-execution` exist only for commands that don't go through the execution layer: `sandbox-integration` (shell, clean, sandbox-setup) and `harness-data` (update-analytics).
+**Boundary:** Command parsing, path resolution from `process.cwd()`, and Yargs configuration live here. The CLI owns no pipeline logic, no test runners, no SCIL/ACIL steps — it calls `runTestSuite()`, `runTestEval()`, `runScilLoop()`, and `runAcilLoop()` from `skillwalker-execution` and passes path values as parameters. Direct package dependencies beyond `skillwalker-execution` exist only for commands that don't go through the execution layer: `sandbox-integration` (shell, clean, sandbox-setup) and `skillwalker-data` (update-analytics).
 
 **Commands:**
 
@@ -154,7 +114,7 @@ The command-line entry point. A thin Yargs wrapper that parses arguments, resolv
 | `test-eval` | Evaluate stored run output against expectations | `runTestEval()` |
 | `scil` | Iterative skill-call description improvement loop | `runScilLoop()` |
 | `acil` | Iterative agent-call description improvement loop | `runAcilLoop()` |
-| `update-analytics` | Import JSONL output to Parquet via DuckDB | `harness-data` directly |
+| `update-analytics` | Import JSONL output to Parquet via DuckDB | `skillwalker-data` directly |
 | `shell` | Open an interactive bash session in the Test Sandbox | `sandbox-integration` directly |
 | `clean` | Remove the Test Sandbox | `sandbox-integration` directly |
 | `sandbox-setup` | Create the Test Sandbox | `sandbox-integration` directly |
@@ -162,13 +122,13 @@ The command-line entry point. A thin Yargs wrapper that parses arguments, resolv
 **Internal structure:**
 
 - `src/commands/` — One file per Yargs command (thin handlers)
-- `src/paths.ts` — Singleton path resolution via `createPathConfig(process.cwd())` from `harness-execution`
+- `src/paths.ts` — Singleton path resolution via `createPathConfig(process.cwd())` from `skillwalker-execution`
 
-### @testdouble/harness-execution (`packages/execution/`)
+### @testdouble/skillwalker-execution (`packages/execution/`)
 
 The execution orchestration layer. Owns all test execution pipelines, the SCIL/ACIL improvement loops, evaluation orchestration, error hierarchy, and path config. Extracted from the CLI to enforce a clean separation between argument parsing and execution logic.
 
-**Boundary:** All pipeline orchestration, step sequencing, test runner dispatch, SCIL/ACIL loop iteration, evaluation result processing, and error hierarchy lives here. The execution package never calls `process.cwd()` — all filesystem paths arrive as explicit function parameters. It coordinates the lower-level packages: `harness-data` for types and I/O, `harness-evals` for evaluation logic, `claude-integration` for running Claude, and `sandbox-integration` for sandbox management.
+**Boundary:** All pipeline orchestration, step sequencing, test runner dispatch, SCIL/ACIL loop iteration, evaluation result processing, and error hierarchy lives here. The execution package never calls `process.cwd()` — all filesystem paths arrive as explicit function parameters. It coordinates the lower-level packages: `skillwalker-data` for types and I/O, `skillwalker-evals` for evaluation logic, `claude-integration` for running Claude, and `sandbox-integration` for sandbox management.
 
 **Key exports:**
 
@@ -178,10 +138,10 @@ The execution orchestration layer. Owns all test execution pipelines, the SCIL/A
 | `runTestEval(opts)` | Orchestrate the test evaluation pipeline |
 | `runScilLoop(config)` | Orchestrate the iterative SCIL improvement loop |
 | `runAcilLoop(config)` | Orchestrate the iterative ACIL improvement loop |
-| `HarnessError`, `ConfigNotFoundError`, `RunNotFoundError` | Error hierarchy |
+| `SkillwalkerError`, `ConfigNotFoundError`, `RunNotFoundError` | Error hierarchy |
 | `createPathConfig(rootDir)` | Derive all path constants from a root directory |
 | `exitWithResult(failures)` | Exit process with 0 or 1 based on failure count |
-| `getReEvaluatedRuns`, `markAsReEvaluated`, `clearReEvaluatedRuns` | Re-eval tracking (delegates to harness-data) |
+| `getReEvaluatedRuns`, `markAsReEvaluated`, `clearReEvaluatedRuns` | Re-eval tracking (delegates to skillwalker-data) |
 
 **Internal structure:**
 
@@ -195,7 +155,7 @@ The execution orchestration layer. Owns all test execution pipelines, the SCIL/A
 - `src/test-eval-steps/` — Steps for the eval pipeline
 - `src/lib/` — Errors, path-config, metrics accumulation, output writing
 
-### @testdouble/harness-data (`packages/data/`)
+### @testdouble/skillwalker-data (`packages/data/`)
 
 The shared data layer. Owns all type definitions, configuration parsing, serialization formats, DuckDB queries, and domain logic that is not evaluation-specific.
 
@@ -220,11 +180,11 @@ The shared data layer. Owns all type definitions, configuration parsing, seriali
 | `phase.ts` | Phase assignment and phase-specific prompt instructions for divergent-convergent iteration |
 | `re-eval-marker.ts` | Tracks re-evaluated run IDs for Parquet upsert |
 
-### @testdouble/harness-evals (`packages/evals/`)
+### @testdouble/skillwalker-evals (`packages/evals/`)
 
 The evaluation engine. Applies expectations to stored test output and produces pass/fail results.
 
-**Boundary:** All evaluation logic — comparing Claude's output against expected outcomes — lives here. This includes both deterministic boolean evaluations and non-deterministic LLM-judge evaluations. The evals package reads test output (via `harness-data`) and invokes Claude for LLM judging (via `claude-integration`), but never writes JSONL directly — it returns typed `EvalResult` objects for the CLI to persist.
+**Boundary:** All evaluation logic — comparing Claude's output against expected outcomes — lives here. This includes both deterministic boolean evaluations and non-deterministic LLM-judge evaluations. The evals package reads test output (via `skillwalker-data`) and invokes Claude for LLM judging (via `claude-integration`), but never writes JSONL directly — it returns typed `EvalResult` objects for the CLI to persist.
 
 **Modules:**
 
@@ -270,16 +230,16 @@ The sandbox execution layer. Manages Test Sandbox lifecycle and runs commands in
 | `createSandbox(repoRoot)` | Create a new Test Sandbox with repo mount |
 | `removeSandbox()` | Remove the Test Sandbox |
 | `openShell()` | Open interactive bash in sandbox |
-| `SANDBOX_NAME` | `'claude-skills-harness'` constant |
+| `SANDBOX_NAME` | `'claude-skills-skillwalker'` constant |
 | `SandboxError` | Error class with `exitCode` field |
 
 The `sandbox-run.sh` script runs inside the container: if a scaffold path is provided, it copies the scaffold to a temp directory, initializes a git repo, then `exec`s Claude with the remaining args.
 
-### @testdouble/harness-web (`packages/web/`)
+### @testdouble/skillwalker-web (`packages/web/`)
 
-The dashboard layer. A Hono HTTP server with an embedded React SPA for viewing test results and analytics. Compiled to a `./build/harness-web` binary.
+The dashboard layer. A Hono HTTP server with an embedded React SPA for viewing test results and analytics. Compiled to a `./build/skillwalker-web` binary.
 
-**Boundary:** All HTTP routing, API response formatting, and UI rendering lives here. The web package is a pure read-only adapter — it queries `harness-data` for all data and never writes to JSONL, Parquet, or the filesystem. It has zero direct DuckDB or evaluation logic.
+**Boundary:** All HTTP routing, API response formatting, and UI rendering lives here. The web package is a pure read-only adapter — it queries `skillwalker-data` for all data and never writes to JSONL, Parquet, or the filesystem. It has zero direct DuckDB or evaluation logic.
 
 **Server routes:**
 
@@ -340,56 +300,84 @@ Shared test data for integration and unit tests across all packages.
 
 ## Data Flow
 
-### Stage 1: Test Execution (`harness test-run`)
+### Stage 1: Test Execution (`skillwalker test-run`)
 
-```
-tests.json ──▶ execution reads config ──▶ For each test case:
-  │
-  ├── prompt type:  read prompt file, run Claude in sandbox with full plugins
-  │
-  └── skill-call type:  build stripped temp plugin, run Claude with only that plugin
-  │
-  ▼
-Claude output (stream-JSON stdout) ──▶ parse events ──▶ extract metrics
-  │
-  ▼
-Write to output/{runId}/
-  ├── test-config.jsonl  (what was tested)
-  ├── test-run.jsonl     (Claude's raw output events)
-  └── output-files.jsonl (files written by the skill/agent in the sandbox)
-```
+```mermaid
+flowchart TB
+    config["tests.json"]
+    read["execution reads config"]
+    kind{"test type"}
+    prompt["<b>prompt</b><br>read prompt file, run Claude<br>in sandbox with full plugins"]
+    skillcall["<b>skill-call</b><br>build stripped temp plugin,<br>run Claude with only that plugin"]
+    out["Claude output<br>(stream-JSON stdout)"]
+    parse["parse events"]
+    metrics["extract metrics"]
+    write["<b>Write to output/runId/</b><br>test-config.jsonl — what was tested<br>test-run.jsonl — Claude's raw output events<br>output-files.jsonl — files written by the skill/agent in the sandbox"]
 
-### Stage 2: Evaluation (`harness test-eval`)
-
-```
-output/{runId}/ ──▶ Read test-config.jsonl + test-run.jsonl
-  │
-  ▼
-For each test case, apply expectations:
-  ├── result-contains:        substring match on result text
-  ├── result-does-not-contain: inverse substring match
-  ├── skill-call:             check if skill was invoked in events
-  └── llm-judge:              run Claude as judge with rubric criteria
-  │
-  ▼
-Write to output/{runId}/test-results.jsonl
+    config --> read --> kind
+    kind --> prompt --> out
+    kind --> skillcall --> out
+    out --> parse --> metrics --> write
 ```
 
-### Stage 3: Analytics (`harness update-analytics`)
+### Stage 2: Evaluation (`skillwalker test-eval`)
 
-```
-output/*/              analytics/
-  ├── test-config.jsonl  ──DuckDB──▶  test-config.parquet
-  ├── test-run.jsonl     ──import──▶  test-run.parquet
-  ├── test-results.jsonl ─────────▶  test-results.parquet
-  ├── output-files.jsonl ─────────▶  output-files.parquet
-  ├── scil-iteration.jsonl────────▶  scil-iteration.parquet
-  ├── scil-summary.json  ─────────▶  scil-summary.parquet
-  ├── acil-iteration.jsonl────────▶  acil-iteration.parquet
-  └── acil-summary.json  ─────────▶  acil-summary.parquet
+```mermaid
+flowchart TB
+    src["<b>output/runId/</b><br>test-config.jsonl + test-run.jsonl"]
+    apply["For each test case, apply expectations"]
+    a["<b>result-contains</b><br>substring match on result text"]
+    b["<b>result-does-not-contain</b><br>inverse substring match"]
+    c["<b>skill-call</b><br>check if skill was invoked in events"]
+    d["<b>llm-judge</b><br>run Claude as judge with rubric criteria"]
+    out["output/runId/test-results.jsonl"]
+
+    src --> apply
+    apply --> a --> out
+    apply --> b --> out
+    apply --> c --> out
+    apply --> d --> out
 ```
 
-### Stage 4: Dashboard (`harness-web`)
+### Stage 3: Analytics (`skillwalker update-analytics`)
+
+```mermaid
+flowchart LR
+    subgraph source["output/*/"]
+        direction TB
+        s1["test-config.jsonl"]
+        s2["test-run.jsonl"]
+        s3["test-results.jsonl"]
+        s4["output-files.jsonl"]
+        s5["scil-iteration.jsonl"]
+        s6["scil-summary.json"]
+        s7["acil-iteration.jsonl"]
+        s8["acil-summary.json"]
+    end
+
+    subgraph dest["analytics/"]
+        direction TB
+        p1["test-config.parquet"]
+        p2["test-run.parquet"]
+        p3["test-results.parquet"]
+        p4["output-files.parquet"]
+        p5["scil-iteration.parquet"]
+        p6["scil-summary.parquet"]
+        p7["acil-iteration.parquet"]
+        p8["acil-summary.parquet"]
+    end
+
+    s1 -->|"DuckDB import"| p1
+    s2 --> p2
+    s3 --> p3
+    s4 --> p4
+    s5 --> p5
+    s6 --> p6
+    s7 --> p7
+    s8 --> p8
+```
+
+### Stage 4: Dashboard (`skillwalker-web`)
 
 ```
 analytics/*.parquet ──▶ DuckDB SQL queries ──▶ Hono API ──▶ React SPA

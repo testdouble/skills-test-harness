@@ -73,7 +73,7 @@ describe('resolveRelativePath', () => {
 
     const originalExecPath = process.execPath
     Object.defineProperty(process, 'execPath', {
-      value: path.join(tmpDir, 'harness'),
+      value: path.join(tmpDir, 'skillwalker'),
       writable: true,
       configurable: true,
     })
@@ -101,7 +101,7 @@ describe('resolveRelativePath', () => {
   it('throws when resolved path does not exist in compiled mode', async () => {
     const originalExecPath = process.execPath
     Object.defineProperty(process, 'execPath', {
-      value: path.join(tmpDir, 'harness'),
+      value: path.join(tmpDir, 'skillwalker'),
       writable: true,
       configurable: true,
     })

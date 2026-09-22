@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "testdouble-harness",
+      "name": "testdouble-skillwalker",
       "devDependencies": {
         "@biomejs/biome": "^2.5.14",
         "typescript": "^7.0.2",
@@ -29,17 +29,17 @@
       },
     },
     "packages/cli": {
-      "name": "@testdouble/harness-cli",
+      "name": "@testdouble/skillwalker-cli",
       "version": "0.1.0",
       "bin": {
-        "harness": "./index.ts",
+        "skillwalker": "./index.ts",
       },
       "dependencies": {
         "@testdouble/claude-integration": "workspace:*",
-        "@testdouble/harness-data": "workspace:*",
-        "@testdouble/harness-evals": "workspace:*",
-        "@testdouble/harness-execution": "workspace:*",
         "@testdouble/sandbox-integration": "workspace:*",
+        "@testdouble/skillwalker-data": "workspace:*",
+        "@testdouble/skillwalker-evals": "workspace:*",
+        "@testdouble/skillwalker-execution": "workspace:*",
         "cli-table3": "^0.6.5",
         "yargs": "^18.2.0",
       },
@@ -50,7 +50,7 @@
       },
     },
     "packages/data": {
-      "name": "@testdouble/harness-data",
+      "name": "@testdouble/skillwalker-data",
       "version": "0.1.0",
       "dependencies": {
         "@duckdb/node-api": "^1.5.5-r.5",
@@ -61,11 +61,11 @@
       },
     },
     "packages/evals": {
-      "name": "@testdouble/harness-evals",
+      "name": "@testdouble/skillwalker-evals",
       "version": "0.1.0",
       "dependencies": {
         "@testdouble/claude-integration": "workspace:*",
-        "@testdouble/harness-data": "workspace:*",
+        "@testdouble/skillwalker-data": "workspace:*",
       },
       "devDependencies": {
         "@testdouble/test-fixtures": "workspace:*",
@@ -73,13 +73,13 @@
       },
     },
     "packages/execution": {
-      "name": "@testdouble/harness-execution",
+      "name": "@testdouble/skillwalker-execution",
       "version": "0.1.0",
       "dependencies": {
         "@testdouble/claude-integration": "workspace:*",
-        "@testdouble/harness-data": "workspace:*",
-        "@testdouble/harness-evals": "workspace:*",
         "@testdouble/sandbox-integration": "workspace:*",
+        "@testdouble/skillwalker-data": "workspace:*",
+        "@testdouble/skillwalker-evals": "workspace:*",
       },
       "devDependencies": {
         "@testdouble/test-fixtures": "workspace:*",
@@ -100,13 +100,13 @@
       },
     },
     "packages/web": {
-      "name": "@testdouble/harness-web",
+      "name": "@testdouble/skillwalker-web",
       "version": "0.1.0",
       "bin": {
-        "harness-web": "./src/server/index.ts",
+        "skillwalker-web": "./src/server/index.ts",
       },
       "dependencies": {
-        "@testdouble/harness-data": "workspace:*",
+        "@testdouble/skillwalker-data": "workspace:*",
         "hono": "^4.13.8",
         "marked": "^18.0.13",
         "picomatch": "^4.0.7",
@@ -252,17 +252,17 @@
 
     "@testdouble/claude-integration": ["@testdouble/claude-integration@workspace:packages/claude-integration"],
 
-    "@testdouble/harness-cli": ["@testdouble/harness-cli@workspace:packages/cli"],
-
-    "@testdouble/harness-data": ["@testdouble/harness-data@workspace:packages/data"],
-
-    "@testdouble/harness-evals": ["@testdouble/harness-evals@workspace:packages/evals"],
-
-    "@testdouble/harness-execution": ["@testdouble/harness-execution@workspace:packages/execution"],
-
-    "@testdouble/harness-web": ["@testdouble/harness-web@workspace:packages/web"],
-
     "@testdouble/sandbox-integration": ["@testdouble/sandbox-integration@workspace:packages/sandbox-integration"],
+
+    "@testdouble/skillwalker-cli": ["@testdouble/skillwalker-cli@workspace:packages/cli"],
+
+    "@testdouble/skillwalker-data": ["@testdouble/skillwalker-data@workspace:packages/data"],
+
+    "@testdouble/skillwalker-evals": ["@testdouble/skillwalker-evals@workspace:packages/evals"],
+
+    "@testdouble/skillwalker-execution": ["@testdouble/skillwalker-execution@workspace:packages/execution"],
+
+    "@testdouble/skillwalker-web": ["@testdouble/skillwalker-web@workspace:packages/web"],
 
     "@testdouble/test-fixtures": ["@testdouble/test-fixtures@workspace:packages/test-fixtures"],
 

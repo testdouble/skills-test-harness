@@ -1,6 +1,6 @@
 import { readdir, readFile } from 'node:fs/promises'
 import path from 'node:path'
-import type { AssistantEvent, StreamJsonEvent, UserEvent } from '@testdouble/harness-data'
+import type { AssistantEvent, StreamJsonEvent, UserEvent } from '@testdouble/skillwalker-data'
 import type { RubricSection } from './rubric-parser.js'
 
 const MAX_FILE_SIZE = 5 * 1024

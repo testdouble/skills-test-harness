@@ -1,6 +1,6 @@
 # @testdouble/bun-helpers
 
-> **Tier 5 · Contributor reference.** Internal documentation for the `packages/bun-helpers` package; there is no user-facing equivalent. If you arrived here as a user, start at the [Test Harness README](../README.md).
+> **Tier 5 · Contributor reference.** Internal documentation for the `packages/bun-helpers` package; there is no user-facing equivalent. If you arrived here as a user, start at the [Skillwalker README](../README.md).
 
 Change this package when you need cross-runtime path resolution — locating a sibling file (script, config, template) that must resolve correctly under the Bun runtime, the Vitest/Node test runner, and Bun compiled binaries alike. It encapsulates the `import.meta.dir` / `import.meta.dirname` / `import.meta.url` fallback chain so consumers don't reimplement it.
 
@@ -23,30 +23,36 @@ Key files:
 
 ## Architecture
 
-```
-  Calling module passes import.meta
-            │
-            ▼
-  ┌─────────────────────┐
-  │    currentDir(meta)  │
-  │                      │
-  │  meta.dir            │──▶ Bun source mode
-  │    ?? meta.dirname   │──▶ Vitest/Node mode
-  │    ?? URL fallback   │──▶ Universal fallback
-  └──────────┬──────────┘
-             │
-             ▼
-  ┌──────────────────────────────┐
-  │  resolveRelativePath(meta,   │
-  │    sourcePath, compiledPath) │
-  │                              │
-  │  dir includes "$bunfs"?      │
-  │    YES ──▶ resolve compiledPath relative to process.execPath dir
-  │    NO  ──▶ resolve sourcePath relative to currentDir
-  │                              │
-  │  Throws if resolved path     │
-  │  does not exist on disk      │
-  └──────────────────────────────┘
+```mermaid
+flowchart TB
+    caller["Calling module passes import.meta"]
+
+    current["<b>currentDir(meta)</b>"]
+    bun["meta.dir<br><i>Bun source mode</i>"]
+    node["meta.dirname<br><i>Vitest/Node mode</i>"]
+    url["URL fallback<br><i>universal fallback</i>"]
+
+    resolve["<b>resolveRelativePath(meta, sourcePath, compiledPath)</b>"]
+    bunfs{"dir includes<br>$bunfs?"}
+    compiled["resolve compiledPath relative<br>to the process.execPath directory"]
+    source["resolve sourcePath relative<br>to currentDir"]
+    check{"resolved path<br>exists on disk?"}
+    ok["return the resolved path"]
+    err["throw"]
+
+    caller --> current
+    current --> bun
+    bun -->|"undefined"| node
+    node -->|"undefined"| url
+
+    current --> resolve
+    resolve --> bunfs
+    bunfs -->|"yes"| compiled
+    bunfs -->|"no"| source
+    compiled --> check
+    source --> check
+    check -->|"yes"| ok
+    check -->|"no"| err
 ```
 
 ## Key Files
@@ -170,11 +176,11 @@ The compiled binary tests temporarily override `process.execPath` using `Object.
 ## Related References
 
 - [Cross-Runtime Meta Property Resolution](./coding-standards/cross-runtime-meta-resolution.md) - Coding standard that defines the fallback chain pattern and recommends using this package
-- [Test Harness Architecture](./test-harness-architecture.md) - System architecture showing bun-helpers in the dependency graph
+- [Skillwalker Architecture](./skillwalker-architecture.md) - System architecture showing bun-helpers in the dependency graph
 - [ESM Import Conventions](./coding-standards/esm-import-conventions.md) - Import conventions including `.js` extensions in relative imports
 - [Project Discovery](./project-discovery.md) - Workspace package layout and Bun runtime details
 
 ---
 
-**Next:** [Test Harness Architecture](./test-harness-architecture.md) — where this package sits in the dependency graph and which packages consume it.
+**Next:** [Skillwalker Architecture](./skillwalker-architecture.md) — where this package sits in the dependency graph and which packages consume it.
 **Related:** [Claude Integration](./claude-integration.md) — a consumer that uses `resolveRelativePath` to locate `sandbox-run.sh` across runtimes.

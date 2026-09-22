@@ -36,7 +36,7 @@ vi.mock('./step-10-print-report.js', () => ({
 vi.mock('@testdouble/sandbox-integration', () => ({
   ensureSandboxExists: vi.fn(),
 }))
-vi.mock('@testdouble/harness-data', () => ({
+vi.mock('@testdouble/skillwalker-data', () => ({
   getPhase: vi.fn().mockReturnValue('explore'),
 }))
 vi.mock('../test-runners/steps/step-4-generate-run-id.js', () => ({
@@ -48,7 +48,7 @@ vi.mock('node:readline/promises', () => ({
 
 import { createInterface } from 'node:readline/promises'
 import { ensureSandboxExists } from '@testdouble/sandbox-integration'
-import { getPhase } from '@testdouble/harness-data'
+import { getPhase } from '@testdouble/skillwalker-data'
 import { generateRunId } from '../test-runners/steps/step-4-generate-run-id.js'
 import { runScilLoop } from './loop.js'
 import { resolveAndLoad } from './step-1-resolve-and-load.js'

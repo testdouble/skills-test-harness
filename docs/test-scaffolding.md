@@ -2,7 +2,7 @@
 
 > **Tier 2 · Skill and agent authors.** Explains what scaffolds are and how to create and wire one into a test suite. Assumes you have a working test suite — see [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md) if you don't.
 
-Add a `scaffold` field to a test to give your skill a realistic project to work against — source files to review, configs to discover, docs to enhance. This page first explains the concept (what scaffolds are and how the harness applies them), then the task (how to configure and create one).
+Add a `scaffold` field to a test to give your skill a realistic project to work against — source files to review, configs to discover, docs to enhance. This page first explains the concept (what scaffolds are and how Skillwalker applies them), then the task (how to configure and create one).
 
 ## Concept: What Scaffolds Are
 
@@ -10,7 +10,7 @@ Scaffolds provide a pre-built project structure that Claude Code runs against in
 
 ### How Scaffolding Works
 
-When a test case includes a `scaffold` field, the harness passes the scaffold path to the sandbox run script. The script copies the scaffold into a temporary working directory and initializes a git repository before Claude Code starts.
+When a test case includes a `scaffold` field, Skillwalker passes the scaffold path to the sandbox run script. The script copies the scaffold into a temporary working directory and initializes a git repository before Claude Code starts.
 
 ```
 tests/test-suites/code-review/
@@ -26,61 +26,54 @@ tests/test-suites/code-review/
 
 #### Lifecycle
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│ 1. Config Validation                                            │
-│                                                                 │
-│    Read tests.json                                              │
-│         │                                                       │
-│         ▼                                                       │
-│    For each test with a scaffold field:                          │
-│         │                                                       │
-│         ▼                                                       │
-│    Check scaffolds/{name}/ exists ── missing? ──▶ exit with     │
-│         │                                        error message  │
-│         ▼                                                       │
-│    Validation passes                                            │
-└─────────────────────────────────────────────────────────────────┘
-                          │
-                          ▼
-┌─────────────────────────────────────────────────────────────────┐
-│ 2. Sandbox Execution (per test)                                 │
-│                                                                 │
-│    sbx exec claude-skills-harness                    │
-│      sandbox-run.sh {scaffold-path} {claude-args}               │
-│         │                                                       │
-│         ▼                                                       │
-│  ┌────────────────────────────────────────────────────────┐     │
-│  │ sandbox-run.sh                                         │     │
-│  │                                                        │     │
-│  │  1. Copy scaffold into a temp directory                │     │
-│  │                                                        │     │
-│  │  2. git init -b main                                   │     │
-│  │     git add -A                                         │     │
-│  │     git commit -m "Initial commit"                     │     │
-│  │                                                        │     │
-│  │  3. exec claude "$@"                                   │     │
-│  └────────────────────────────────────────────────────────┘     │
-│         │                                                       │
-│         ▼                                                       │
-│    Claude Code runs in the temp directory with:                 │
-│      - Scaffold files committed to git                          │
-│      - Plugins available from the repo workspace                │
-│      - Full git history available (one initial commit)          │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph stage1["1. Config Validation"]
+        direction TB
+        read["Read tests.json"]
+        each["For each test with a scaffold field"]
+        check{"scaffolds/name/<br>exists?"}
+        fail["Exit with error message"]
+        pass["Validation passes"]
+
+        read --> each --> check
+        check -->|"no"| fail
+        check -->|"yes"| pass
+    end
+
+    subgraph stage2["2. Sandbox Execution (per test)"]
+        direction TB
+        exec["sbx exec claude-skills-skillwalker<br>sandbox-run.sh scaffold-path claude-args"]
+
+        subgraph runsh["sandbox-run.sh"]
+            direction TB
+            copy["1. Copy scaffold into a temp directory"]
+            git["2. git init -b main<br>git add -A<br>git commit -m 'Initial commit'"]
+            claude["3. exec claude &quot;$@&quot;"]
+
+            copy --> git --> claude
+        end
+
+        result["<b>Claude Code runs in the temp directory with:</b><br>Scaffold files committed to git<br>Plugins available from the repo workspace<br>Full git history available (one initial commit)"]
+
+        exec --> runsh
+        claude --> result
+    end
+
+    pass --> exec
 ```
 
 #### Step-by-Step
 
-1. **Config validation** — The harness reads `tests.json` and verifies that every test's `scaffold` field points to an existing directory under `scaffolds/`. Missing scaffolds cause an immediate exit with a clear error message.
+1. **Config validation** — Skillwalker reads `tests.json` and verifies that every test's `scaffold` field points to an existing directory under `scaffolds/`. Missing scaffolds cause an immediate exit with a clear error message.
 
-2. **Sandbox exec** — For each test with a scaffold, the harness passes the full scaffold path to `sandbox-run.sh` via `sbx exec`.
+2. **Sandbox exec** — For each test with a scaffold, Skillwalker passes the full scaffold path to `sandbox-run.sh` via `sbx exec`.
 
 3. **Script copies scaffold** — Inside the sandbox, `sandbox-run.sh` copies the scaffold contents into a temporary working directory and changes into it.
 
 4. **Git initialization** — The script initializes a fresh git repository on the `main` branch, stages all files, and creates an initial commit. This gives skills access to git history and diff capabilities.
 
-5. **Claude Code starts** — The script hands off to `claude` with whatever flags the harness passed (model, plugins, prompt, etc.). Claude Code's working directory contains the scaffold files with a clean git history.
+5. **Claude Code starts** — The script hands off to `claude` with whatever flags Skillwalker passed (model, plugins, prompt, etc.). Claude Code's working directory contains the scaffold files with a clean git history.
 
 ## Task: Create and Use a Scaffold
 

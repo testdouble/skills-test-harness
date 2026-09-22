@@ -31,7 +31,7 @@ Read the `target-file`, every reference file, and every agent marked `found`. Bu
 
 ## Step 2: Validate the suite structurally
 
-Run `${CLAUDE_SKILL_DIR}/scripts/validate-suite.sh {suite-dir}`. It re-checks what the harness checks at load time and prints one finding per line between `findings-start` and `findings-end`. Every finding goes into the report's first section as-is; a structural error stops the harness before any drift matters.
+Run `${CLAUDE_SKILL_DIR}/scripts/validate-suite.sh {suite-dir}`. It re-checks what Skillwalker checks at load time and prints one finding per line between `findings-start` and `findings-end`. Every finding goes into the report's first section as-is; a structural error stops Skillwalker before any drift matters.
 
 ## Step 3: Read the suite
 

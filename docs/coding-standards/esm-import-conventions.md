@@ -11,15 +11,15 @@
 
 ## Introduction
 
-This coding standard defines how ESM imports and exports are written across the test harness monorepo. It covers relative import extensions, Node.js built-in prefixes, workspace package references, type-only imports, and type re-exports.
+This coding standard defines how ESM imports and exports are written across Skillwalker monorepo. It covers relative import extensions, Node.js built-in prefixes, workspace package references, type-only imports, and type re-exports.
 
 ### Purpose
 
-The harness runs on Bun with ESNext module resolution. Bun's ESM loader requires `.js` extensions on relative imports even though source files are `.ts`. Without consistent conventions, imports fail at runtime or produce confusing errors. Separating type-only imports ensures clean compile-time erasure and avoids pulling runtime dependencies into type-only consumers.
+Skillwalker runs on Bun with ESNext module resolution. Bun's ESM loader requires `.js` extensions on relative imports even though source files are `.ts`. Without consistent conventions, imports fail at runtime or produce confusing errors. Separating type-only imports ensures clean compile-time erasure and avoids pulling runtime dependencies into type-only consumers.
 
 ### Scope
 
-All TypeScript source and test files under `packages/*/src/` in the test harness monorepo.
+All TypeScript source and test files under `packages/*/src/` in Skillwalker monorepo.
 
 ## Background
 
@@ -27,7 +27,7 @@ Bun's module resolution follows the Node.js ESM spec, which requires fully-speci
 
 The Node.js `node:` protocol prefix was introduced in Node 14.18 and is supported by Bun. It disambiguates built-in modules from npm packages with the same name (e.g., a hypothetical `fs` package on npm) and makes the import's origin immediately clear to readers.
 
-The monorepo uses Bun workspaces with scoped package names (`@testdouble/harness-data`, `@testdouble/harness-cli`, etc.). Cross-package imports use these package names rather than relative paths so that Bun's workspace resolution handles version alignment and so imports remain stable when internal directory structures change.
+The monorepo uses Bun workspaces with scoped package names (`@testdouble/skillwalker-data`, `@testdouble/skillwalker-cli`, etc.). Cross-package imports use these package names rather than relative paths so that Bun's workspace resolution handles version alignment and so imports remain stable when internal directory structures change.
 
 ## Coding Standard
 
@@ -96,16 +96,16 @@ import path from 'path'
 
 ### Use Workspace Package Names for Cross-Package Imports
 
-Cross-package imports use the workspace package name (e.g., `@testdouble/harness-data`), not relative paths that reach into sibling package directories. Bun workspace resolution ensures the correct version is used, and imports remain stable if internal directory structures change.
+Cross-package imports use the workspace package name (e.g., `@testdouble/skillwalker-data`), not relative paths that reach into sibling package directories. Bun workspace resolution ensures the correct version is used, and imports remain stable if internal directory structures change.
 
 **Correct usage:**
 
 ```typescript
 // Import types from a workspace package
-import type { ParsedRunMetrics, RunTotals } from '@testdouble/harness-data'
+import type { ParsedRunMetrics, RunTotals } from '@testdouble/skillwalker-data'
 
 // Import functions from a workspace package
-import { buildClaudePluginFlags } from '@testdouble/harness-data'
+import { buildClaudePluginFlags } from '@testdouble/skillwalker-data'
 
 // Import from test fixtures package
 import { loadFixtures } from '@testdouble/test-fixtures'
@@ -118,11 +118,11 @@ import { loadFixtures } from '@testdouble/test-fixtures'
 import type { RunTotals } from '../../data/src/types'
 
 // Using a bare path that doesn't match the package name
-import { buildClaudePluginFlags } from 'harness-data'
+import { buildClaudePluginFlags } from 'skillwalker-data'
 ```
 
 **Project references:**
-- `packages/cli/src/lib/metrics.ts` — `import type { ParsedRunMetrics, RunTotals } from '@testdouble/harness-data'`
+- `packages/cli/src/lib/metrics.ts` — `import type { ParsedRunMetrics, RunTotals } from '@testdouble/skillwalker-data'`
 - `packages/data/src/analytics.integration.test.ts` — `import { loadFixtures } from '@testdouble/test-fixtures'`
 
 ### Use import type for Type-Only Imports
@@ -133,7 +133,7 @@ When importing only types (interfaces, type aliases, or types used solely in typ
 
 ```typescript
 // All imports are types — use import type
-import type { ParsedRunMetrics, RunTotals } from '@testdouble/harness-data'
+import type { ParsedRunMetrics, RunTotals } from '@testdouble/skillwalker-data'
 import type { TestSuiteConfig } from './types.js'
 ```
 
@@ -145,14 +145,14 @@ import { TestSuiteConfig } from './types.js'
 
 // Mixing types and values in one import when types could be separated
 // (acceptable when unavoidable, but prefer separate import type when all are types)
-import { RunTotals, accumulateTotals } from '@testdouble/harness-data'
+import { RunTotals, accumulateTotals } from '@testdouble/skillwalker-data'
 // ↑ If RunTotals is only used as a type, split it out:
-import type { RunTotals } from '@testdouble/harness-data'
-import { accumulateTotals } from '@testdouble/harness-data'
+import type { RunTotals } from '@testdouble/skillwalker-data'
+import { accumulateTotals } from '@testdouble/skillwalker-data'
 ```
 
 **Project references:**
-- `packages/cli/src/lib/metrics.ts` — `import type { ParsedRunMetrics, RunTotals } from '@testdouble/harness-data'`
+- `packages/cli/src/lib/metrics.ts` — `import type { ParsedRunMetrics, RunTotals } from '@testdouble/skillwalker-data'`
 - `packages/data/src/config.test.ts` — `import type { TestSuiteConfig } from './types.js'`
 
 ### Use export type for Type Re-Exports
@@ -162,7 +162,7 @@ When a module re-exports types from its dependencies, use `export type` to make 
 **Correct usage:**
 
 ```typescript
-import type { ParsedRunMetrics, RunTotals } from '@testdouble/harness-data'
+import type { ParsedRunMetrics, RunTotals } from '@testdouble/skillwalker-data'
 
 // Re-export the type so consumers of this module can access it
 export type { RunTotals }
@@ -175,14 +175,14 @@ export function accumulateTotals(totals: RunTotals, metrics: ParsedRunMetrics): 
 **What to avoid:**
 
 ```typescript
-import type { ParsedRunMetrics, RunTotals } from '@testdouble/harness-data'
+import type { ParsedRunMetrics, RunTotals } from '@testdouble/skillwalker-data'
 
 // Regular export of a type-only import — may cause runtime errors or confuse bundlers
 export { RunTotals }
 ```
 
 **Project references:**
-- `packages/cli/src/lib/metrics.ts` — `export type { RunTotals }` re-exports the type from `@testdouble/harness-data`
+- `packages/cli/src/lib/metrics.ts` — `export type { RunTotals }` re-exports the type from `@testdouble/skillwalker-data`
 
 ## Additional Resources
 

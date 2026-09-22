@@ -5,7 +5,7 @@ index 62f91da..0863685 100644
 @@ -16,19 +16,9 @@ build:
  	bun install
  	cd packages/web && bun run build
- 	cd packages/web && bun build ./src/server/index.ts --compile --outfile $(TESTS_DIR)/harness-web \
+ 	cd packages/web && bun build ./src/server/index.ts --compile --outfile $(TESTS_DIR)/skillwalker-web \
 -		--external '@duckdb/node-bindings-linux-x64' \
 -		--external '@duckdb/node-bindings-linux-arm64' \
 -		--external '@duckdb/node-bindings-darwin-x64' \
@@ -13,7 +13,7 @@ index 62f91da..0863685 100644
 -		--external '@duckdb/node-bindings-win32-arm64' \
 -		--external '@duckdb/node-bindings-win32-x64'
 +		--external '@duckdb/node-bindings-*'
- 	cd packages/cli && bun build ./index.ts --compile --outfile $(TESTS_DIR)/harness \
+ 	cd packages/cli && bun build ./index.ts --compile --outfile $(TESTS_DIR)/skillwalker \
 -		--external '@duckdb/node-bindings-linux-x64' \
 -		--external '@duckdb/node-bindings-linux-arm64' \
 -		--external '@duckdb/node-bindings-darwin-x64' \
@@ -50,7 +50,7 @@ index 98efab6..d9ce801 100644
 +++ b/package.json
 @@ -1,7 +1,10 @@
  {
-   "name": "testdouble-harness",
+   "name": "testdouble-skillwalker",
    "private": true,
 -  "workspaces": ["packages/*"],
 +  "packageManager": "bun@1.4.2",
@@ -101,9 +101,9 @@ index e73870a..3043c22 100644
 --- a/packages/cli/package.json
 +++ b/packages/cli/package.json
 @@ -11,12 +11,12 @@
-     "@testdouble/harness-data": "workspace:*",
-     "@testdouble/harness-evals": "workspace:*",
-     "@testdouble/harness-execution": "workspace:*",
+     "@testdouble/skillwalker-data": "workspace:*",
+     "@testdouble/skillwalker-evals": "workspace:*",
+     "@testdouble/skillwalker-execution": "workspace:*",
 -    "cli-table3": "latest",
 -    "yargs": "latest"
 +    "cli-table3": "^0.6.5",
@@ -177,7 +177,7 @@ index 06e293e..9075233 100644
 @@ -11,22 +11,22 @@
    },
    "dependencies": {
-     "@testdouble/harness-data": "workspace:*",
+     "@testdouble/skillwalker-data": "workspace:*",
 -    "hono": "latest",
 -    "marked": "^15",
 -    "picomatch": "^4.0.4",

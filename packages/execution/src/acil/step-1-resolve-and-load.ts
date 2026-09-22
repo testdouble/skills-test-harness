@@ -1,8 +1,8 @@
 import { existsSync } from 'node:fs'
 import path from 'node:path'
-import type { TestCase } from '@testdouble/harness-data'
-import { readTestSuiteConfig, TEST_CONFIG_FILENAME } from '@testdouble/harness-data'
-import { HarnessError } from '../lib/errors.js'
+import type { TestCase } from '@testdouble/skillwalker-data'
+import { readTestSuiteConfig, TEST_CONFIG_FILENAME } from '@testdouble/skillwalker-data'
+import { SkillwalkerError } from '../lib/errors.js'
 
 export interface ResolvedAgentAndTests {
   agentFile: string
@@ -26,7 +26,7 @@ export async function resolveAndLoad(
   if (agent) {
     // Validate agent identifier format (must be plugin:agent)
     if (!/^[a-z0-9-]+:[a-z0-9-]+$/.test(agent)) {
-      throw new HarnessError(`Invalid agent identifier "${agent}". Expected format: plugin-name:agent-name`)
+      throw new SkillwalkerError(`Invalid agent identifier "${agent}". Expected format: plugin-name:agent-name`)
     }
 
     // Validate agent .md exists
@@ -36,11 +36,11 @@ export async function resolveAndLoad(
     // Guard against path traversal
     const resolved = path.resolve(agentMdPath)
     if (!resolved.startsWith(path.resolve(repoRoot) + path.sep)) {
-      throw new HarnessError(`Agent path "${resolved}" escapes repository root`)
+      throw new SkillwalkerError(`Agent path "${resolved}" escapes repository root`)
     }
 
     if (!existsSync(agentMdPath)) {
-      throw new HarnessError(`Agent .md not found: ${agentMdPath}`)
+      throw new SkillwalkerError(`Agent .md not found: ${agentMdPath}`)
     }
 
     // Filter tests to those targeting this agent
@@ -52,7 +52,7 @@ export async function resolveAndLoad(
     })
 
     if (filtered.length === 0) {
-      throw new HarnessError(`No agent-call tests found for agent "${agent}" in suite "${suite}"`)
+      throw new SkillwalkerError(`No agent-call tests found for agent "${agent}" in suite "${suite}"`)
     }
 
     return { agentFile: agent, agentMdPath, tests: filtered }
@@ -69,18 +69,18 @@ export async function resolveAndLoad(
   }
 
   if (agentFiles.size === 0) {
-    throw new HarnessError(`No agent-call tests found in suite "${suite}"`)
+    throw new SkillwalkerError(`No agent-call tests found in suite "${suite}"`)
   }
 
   if (agentFiles.size > 1) {
     const options = Array.from(agentFiles).join(', ')
-    throw new HarnessError(`Multiple agents found in suite "${suite}": ${options}. Use --agent to specify one.`)
+    throw new SkillwalkerError(`Multiple agents found in suite "${suite}": ${options}. Use --agent to specify one.`)
   }
 
   const inferredAgent = Array.from(agentFiles)[0]
 
   if (!/^[a-z0-9-]+:[a-z0-9-]+$/.test(inferredAgent)) {
-    throw new HarnessError(
+    throw new SkillwalkerError(
       `Invalid agent identifier "${inferredAgent}" inferred from test expectations. Expected format: plugin-name:agent-name`,
     )
   }
@@ -90,11 +90,11 @@ export async function resolveAndLoad(
 
   const resolved = path.resolve(agentMdPath)
   if (!resolved.startsWith(path.resolve(repoRoot) + path.sep)) {
-    throw new HarnessError(`Agent path "${resolved}" escapes repository root`)
+    throw new SkillwalkerError(`Agent path "${resolved}" escapes repository root`)
   }
 
   if (!existsSync(agentMdPath)) {
-    throw new HarnessError(`Agent .md not found: ${agentMdPath}`)
+    throw new SkillwalkerError(`Agent .md not found: ${agentMdPath}`)
   }
 
   return { agentFile: inferredAgent, agentMdPath, tests: agentCallTests }

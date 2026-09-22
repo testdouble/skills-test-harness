@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@testdouble/harness-data', () => ({
+vi.mock('@testdouble/skillwalker-data', () => ({
   queryScilHistory: vi.fn(),
   queryScilRunDetails: vi.fn(),
 }))
 
-import { queryScilHistory, queryScilRunDetails } from '@testdouble/harness-data'
+import { queryScilHistory, queryScilRunDetails } from '@testdouble/skillwalker-data'
 import { getScilHistory, getScilRunById } from './scil.js'
 
 function makeMockContext(overrides?: { param?: Record<string, string> }) {

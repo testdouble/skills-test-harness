@@ -16,7 +16,7 @@ Use this skill when you need to:
 
 - You need prompt-type or rubric (effectiveness) tests — this skill produces **skill-call tests only**. Use `/write-skill-eval-rubric` for quality rubrics.
 - You're testing an agent rather than a skill — use `/write-acil-evals` instead.
-- You want to run the harness or improve a description — this skill scaffolds tests but does not run them or invoke SCIL.
+- You want to run Skillwalker or improve a description — this skill scaffolds tests but does not run them or invoke SCIL.
 
 ## Usage
 
@@ -70,7 +70,7 @@ The skill walks through an 8-step process with two pauses for the user: one to c
 5. **Assign scaffolds** — flagged prompts get `scaffold` set when the named scaffold exists; otherwise the gap is reported with the `/build-skill-eval-scaffold … --for trigger` command that builds it
 6. **Generate test configuration** — tests.json entries and prompt files with auto-generated names
 7. **Present summary and confirm** — everything that will be written, plus scaffold assignments and gaps
-8. **Write and validate** — create or update the suite, then run `scripts/validate-suite.sh`, which re-checks what the harness checks at load time, and fix every finding before reporting
+8. **Write and validate** — create or update the suite, then run `scripts/validate-suite.sh`, which re-checks what Skillwalker checks at load time, and fix every finding before reporting
 ## Prompt Categories
 
 ### Positive triggers (3-5 required)
@@ -109,12 +109,12 @@ After generating the test suite, you can:
 
 1. **Run the tests** to check trigger accuracy:
    ```bash
-   ./build/harness test-run --suite {skill-name}
+   ./build/skillwalker test-run --suite {skill-name}
    ```
 
 2. **Evaluate results**:
    ```bash
-   ./build/harness test-eval
+   ./build/skillwalker test-eval
    ```
 
 3. **Run SCIL** to iteratively improve the skill's trigger description based on eval results. See [Skill Call Improvement Loop](skill-call-improvement-loop.md).
@@ -126,7 +126,7 @@ After generating the test suite, you can:
 - [Skill Call Improvement Loop](skill-call-improvement-loop.md) — SCIL mechanics: holdout splits, scoring, improvement prompt, CLI flags
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Test Sandbox
 - [Script Extraction](script-extraction.md) — the `/script-extraction` skill: hardening skills by extracting mechanical steps into scripts
-- [Test Harness README](../README.md) — prerequisites, setup, and running tests
+- [Skillwalker README](../README.md) — prerequisites, setup, and running tests
 - [Writing Agent-Call Evals](write-acil-evals.md) — parallel skill for agent-call test suites
 
 ---

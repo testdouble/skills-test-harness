@@ -1,6 +1,6 @@
 import path from 'node:path'
 import { extractOutputFiles, runClaude } from '@testdouble/claude-integration'
-import type { ParsedRunMetrics, RunTotals, TestCase, TestSuiteConfig } from '@testdouble/harness-data'
+import type { ParsedRunMetrics, RunTotals, TestCase, TestSuiteConfig } from '@testdouble/skillwalker-data'
 import {
   appendOutputFiles,
   buildTestCaseId,
@@ -8,8 +8,8 @@ import {
   parseStreamJsonLines,
   readPromptFile,
   resolvePromptPath,
-} from '@testdouble/harness-data'
-import { HarnessError } from '../../lib/errors.js'
+} from '@testdouble/skillwalker-data'
+import { SkillwalkerError } from '../../lib/errors.js'
 import { accumulateTotals } from '../../lib/metrics.js'
 import { writeTestOutput } from '../../lib/output.js'
 
@@ -28,7 +28,7 @@ function printTestConfig(test: TestCase, plugins: string[]): void {
 async function resolveAndReadPrompt(testSuiteDir: string, test: TestCase): Promise<string> {
   const promptPath = resolvePromptPath(testSuiteDir, test.promptFile)
   const promptContent = await readPromptFile(promptPath).catch(() => {
-    throw new HarnessError(`Prompt file not found: ${promptPath}`)
+    throw new SkillwalkerError(`Prompt file not found: ${promptPath}`)
   })
   return promptContent
 }

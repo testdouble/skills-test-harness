@@ -32,7 +32,7 @@ export function AcilHistory(): JSX.Element {
   if (!runs || runs.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 text-[#4f4f4f]">
-        No ACIL runs found. Run ACIL with: harness acil --suite &lt;name&gt;
+        No ACIL runs found. Run ACIL with: skillwalker acil --suite &lt;name&gt;
       </div>
     )
   }

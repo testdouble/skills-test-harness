@@ -1,4 +1,4 @@
-export type { AcilIterationResult, AcilQueryResult, AcilTestCase } from '@testdouble/harness-data'
+export type { AcilIterationResult, AcilQueryResult, AcilTestCase } from '@testdouble/skillwalker-data'
 
 export interface AcilConfig {
   suite: string

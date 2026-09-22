@@ -1,4 +1,4 @@
-import type { TestConfigRecord } from '@testdouble/harness-data'
+import type { TestConfigRecord } from '@testdouble/skillwalker-data'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { evaluateLlmJudge } from './llm-judge-eval.js'
 
@@ -6,7 +6,7 @@ vi.mock('node:fs/promises', () => ({
   readFile: vi.fn(),
 }))
 
-vi.mock('@testdouble/harness-data', () => ({
+vi.mock('@testdouble/skillwalker-data', () => ({
   buildTestCaseId: vi.fn((suite: string, name: string) => `${suite}-${name}`),
   getResultText: vi.fn(),
   parseStreamJsonLines: vi.fn(),
@@ -26,7 +26,7 @@ vi.mock('./llm-judge-prompt.js', () => ({
 }))
 
 const { readFile } = await import('node:fs/promises')
-const { getResultText, parseStreamJsonLines, readJsonlFile } = await import('@testdouble/harness-data')
+const { getResultText, parseStreamJsonLines, readJsonlFile } = await import('@testdouble/skillwalker-data')
 const { runClaude } = await import('@testdouble/claude-integration')
 const { parseRubricSections } = await import('./rubric-parser.js')
 const { buildJudgePrompt } = await import('./llm-judge-prompt.js')

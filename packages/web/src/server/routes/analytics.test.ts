@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@testdouble/harness-data', () => ({
+vi.mock('@testdouble/skillwalker-data', () => ({
   queryPerTest: vi.fn(),
 }))
 
-import { queryPerTest } from '@testdouble/harness-data'
+import { queryPerTest } from '@testdouble/skillwalker-data'
 import { getPerTestAnalytics } from './analytics.js'
 
 function makeMockContext(query?: Record<string, string | undefined>) {

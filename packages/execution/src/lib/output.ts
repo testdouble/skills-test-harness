@@ -1,5 +1,5 @@
-import type { StreamJsonEvent, TestCase } from '@testdouble/harness-data'
-import { appendTestConfig, appendTestRun, buildTestCaseId, ensureOutputDir } from '@testdouble/harness-data'
+import type { StreamJsonEvent, TestCase } from '@testdouble/skillwalker-data'
+import { appendTestConfig, appendTestRun, buildTestCaseId, ensureOutputDir } from '@testdouble/skillwalker-data'
 
 export async function writeTestOutput(
   runDir: string,

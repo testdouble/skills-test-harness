@@ -20,7 +20,7 @@ import type {
 
 /** Create a unique temp directory for one test. */
 export async function makeTmpDir(): Promise<string> {
-  return mkdtemp(path.join(tmpdir(), 'harness-test-'))
+  return mkdtemp(path.join(tmpdir(), 'skillwalker-test-'))
 }
 
 /** Write an array of objects as newline-delimited JSON. */

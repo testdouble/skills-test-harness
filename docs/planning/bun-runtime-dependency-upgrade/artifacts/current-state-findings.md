@@ -31,8 +31,8 @@ mutable state.
 - **Stack:** TypeScript (ESNext, strict) on the Bun runtime; Bun workspaces monorepo with 9 packages under
   `packages/*`; Vitest 4 for tests (three configs); Biome 2 for lint/format; Vite 8 + `@vitejs/plugin-react` 6 +
   Tailwind v4 (`@tailwindcss/vite`) for the React 18 SPA; Hono 4 server on `Bun.serve`; DuckDB via
-  `@duckdb/node-api` with per-platform native bindings; `bun build --compile` produces two binaries (`harness`,
-  `harness-web`); GitHub Actions CI with 7 jobs.
+  `@duckdb/node-api` with per-platform native bindings; `bun build --compile` produces two binaries (`skillwalker`,
+  `skillwalker-web`); GitHub Actions CI with 7 jobs.
 - **Conventions source:** `CLAUDE.md` (`## Project Discovery` → `docs/project-discovery.md`, last updated 2026-04-16)
   and 14 coding standards under `docs/coding-standards/`.
 - **ADRs found:** `docs/adrs/20260326084800-skip-permissions-in-test-sandbox.md` (proposed; sandbox permission
@@ -131,9 +131,9 @@ mutable state.
   bun run typecheck       → exit 0 (8 packages, tsc 5.9.3 from /opt/homebrew/bin — see C-9)
   bun run vitest run      → 73 files, 934 tests passed, 2.27s
   bun run test:integration→ 1 file, 64 tests passed, 1.99s
-  make build              → OK; ./harness 61.7 MB, ./harness-web 62.1 MB, libduckdb.dylib 112 MB copied
-  ./harness --help        → prints the 8 commands
-  ./harness update-analytics-data → exit 0 ("no data found for: …" for every table)
+  make build              → OK; ./skillwalker 61.7 MB, ./skillwalker-web 62.1 MB, libduckdb.dylib 112 MB copied
+  ./skillwalker --help        → prints the 8 commands
+  ./skillwalker update-analytics-data → exit 0 ("no data found for: …" for every table)
   ```
   After `make build`: `node_modules/@duckdb/node-bindings-darwin-arm64 ->
   node_modules/.bun/@duckdb+node-bindings-darwin-arm64@1.5.2-r.1/node_modules/@duckdb/node-bindings-darwin-arm64`.
@@ -364,8 +364,8 @@ mutable state.
   `packages/data/src/jsonl-reader.test.ts:12-18` (`Bun` stubs).
 - **Evidence:**
   ```ts
-  const { HarnessError } = vi.hoisted(() => { class HarnessError extends Error { ... } return { HarnessError } })
-  vi.mock('@testdouble/harness-execution', () => ({ HarnessError, runAcilLoop: vi.fn().mockResolvedValue(undefined) }))
+  const { SkillwalkerError } = vi.hoisted(() => { class SkillwalkerError extends Error { ... } return { SkillwalkerError } })
+  vi.mock('@testdouble/skillwalker-execution', () => ({ SkillwalkerError, runAcilLoop: vi.fn().mockResolvedValue(undefined) }))
   beforeEach(() => { vi.stubGlobal('Bun', { file: vi.fn() }) })
   afterEach(() => { vi.unstubAllGlobals() })
   ```
@@ -421,15 +421,15 @@ mutable state.
 
 ### C-17: Two yargs bootstraps with different argv sources and parse calls
 
-- **Claim:** `harness-web` uses `yargs(hideBin(Bun.argv))…parse()`; `harness` uses
-  `yargs(hideBin(process.argv))…parseAsync()` inside a `try/catch` that handles only `HarnessError`.
+- **Claim:** `skillwalker-web` uses `yargs(hideBin(Bun.argv))…parse()`; `skillwalker` uses
+  `yargs(hideBin(process.argv))…parseAsync()` inside a `try/catch` that handles only `SkillwalkerError`.
 - **Location:** `packages/web/src/server/index.ts:3-4,20-34`; `packages/cli/index.ts:1-25`.
 - **Evidence:**
   ```ts
-  const argv = await yargs(hideBin(Bun.argv)).scriptName('harness-web').option('port', {...}).option('data-dir', {...}).strict().showHelpOnFail(true).parse()
+  const argv = await yargs(hideBin(Bun.argv)).scriptName('skillwalker-web').option('port', {...}).option('data-dir', {...}).strict().showHelpOnFail(true).parse()
   ```
   ```ts
-  await yargs(hideBin(process.argv)).scriptName('harness').command(await import('./src/commands/test-run.js'))….demandCommand(1).strict().showHelpOnFail(true).parseAsync()
+  await yargs(hideBin(process.argv)).scriptName('skillwalker').command(await import('./src/commands/test-run.js'))….demandCommand(1).strict().showHelpOnFail(true).parseAsync()
   ```
 - **Raised by:** structural-analyst S17.
 - **Confidence:** Verified.
@@ -440,7 +440,7 @@ mutable state.
 - **Claim:** `@duckdb/node-bindings/duckdb.js` does `module.exports = getNativeNodeBinding(...)` at module top
   level and `@duckdb/node-api/lib/duckdb.js:18` requires it at top level. `packages/cli/index.ts` imports all 8
   command modules before parsing, and the import graph reaches `@duckdb/node-api` through
-  `@testdouble/harness-execution` → `re-eval-marker.ts` → `@testdouble/harness-data` → `analytics.ts:1`. Query
+  `@testdouble/skillwalker-execution` → `re-eval-marker.ts` → `@testdouble/skillwalker-data` → `analytics.ts:1`. Query
   results are read with `getRowObjects() as unknown as <Shape>[]` (≥8 sites), and `convertBigInts` recognises list
   and struct values by `constructor.name`.
 - **Location:** `node_modules/.bun/@duckdb+node-bindings@1.5.2-r.1/…/duckdb.js:1-30`;
@@ -551,9 +551,9 @@ mutable state.
 ### C-23: JSON-line parsing and error typing are inconsistent across the pipeline
 
 - **Claim:** `parseStreamJsonLines` and `readJsonlFile` call `JSON.parse` per line with no try/catch (an uncaught
-  `SyntaxError` reaches `packages/cli/index.ts`'s catch, which rethrows anything that is not a `HarnessError`);
+  `SyntaxError` reaches `packages/cli/index.ts`'s catch, which rethrows anything that is not a `SkillwalkerError`);
   `extractOutputFiles` silently skips malformed lines. `SandboxError` and `ClaudeError` extend `Error`, not
-  `HarnessError`, so `harness clean` rewraps them and `harness test-run` does not. Pre-existing; recorded as context.
+  `SkillwalkerError`, so `skillwalker clean` rewraps them and `skillwalker test-run` does not. Pre-existing; recorded as context.
 - **Location:** `packages/data/src/stream-parser.ts:1-7`; `packages/data/src/jsonl-reader.ts:1-11`;
   `packages/claude-integration/src/extract-output-files.ts:20-30`; `packages/sandbox-integration/src/errors.ts:1-9`;
   `packages/claude-integration/src/errors.ts:1-9`; `packages/execution/src/lib/errors.ts:1-21`;
@@ -563,7 +563,7 @@ mutable state.
   return raw.split('\n').filter((line) => line.trim().startsWith('{')).map((line) => JSON.parse(line) as StreamJsonEvent)
   ```
   ```ts
-  } catch (err) { if (err instanceof HarnessError) { process.stderr.write(`Error: ${err.message}\n`); process.exit(1) } throw err }
+  } catch (err) { if (err instanceof SkillwalkerError) { process.stderr.write(`Error: ${err.message}\n`); process.exit(1) } throw err }
   ```
 - **Raised by:** behavioral-analyst B11, B12 (also B13 `dataDir` SQL interpolation at `analytics.ts:402-415`, B15
   hand-maintained response/client types, B18 the well-handled `evaluateLlmJudge` catch).
@@ -681,7 +681,7 @@ mutable state.
   $ (Bun 1.3.11) bun install --frozen-lockfile → Checked 125 installs across 187 packages (no changes), exit 0
   ```
   A second fresh clone at the base commit under 1.4.2: `bun install --frozen-lockfile` OK, `make build` exit 0 with
-  DuckDB 1.5.2-r.1 (relink → `@duckdb+node-bindings-darwin-arm64@1.5.2-r.1`), `./harness --help` exit 0, lockfile
+  DuckDB 1.5.2-r.1 (relink → `@duckdb+node-bindings-darwin-arm64@1.5.2-r.1`), `./skillwalker --help` exit 0, lockfile
   untouched — so the Bun pin alone (before any dependency moves) leaves the build working.
   `bun update` rewrote the root caret ranges to the new resolved versions (`@biomejs/biome ^2.4.12 → ^2.5.14`,
   `vitest ^4.1.4 → ^4.1.11`) and, through the `latest` ranges, moved `@duckdb/node-api` to 1.5.5-r.5,
@@ -716,14 +716,14 @@ mutable state.
           : require('@duckdb/node-bindings-linux-x64/duckdb.node');
   ```
   After adding `--external '@duckdb/node-bindings-linux-x64-musl'` and `--external '@duckdb/node-bindings-linux-arm64-musl'`
-  to both `bun build` commands in the scratch clone: `make build` exit 0; `harness` 63.0 MB, `harness-web` 63.4 MB,
-  `libduckdb.dylib` 117 MB; `./harness --help`, `./harness update-analytics-data` (exit 0), `./harness-web --help` all run;
+  to both `bun build` commands in the scratch clone: `make build` exit 0; `skillwalker` 63.0 MB, `skillwalker-web` 63.4 MB,
+  `libduckdb.dylib` 117 MB; `./skillwalker --help`, `./skillwalker update-analytics-data` (exit 0), `./skillwalker-web --help` all run;
   symlink → `node_modules/.bun/@duckdb+node-bindings-darwin-arm64@1.5.5-r.5/…`.
   A single `--external '@duckdb/node-bindings-*'` line per `bun build` invocation (Bun's `--external` accepts `*`
   wildcards) also builds: exit 0, same 63.0 MB binary, the binding still resolved at runtime
-  (`strings harness` still contains `node-bindings-darwin-arm64/duckdb.node`), `./harness update-analytics-data` exit 0.
+  (`strings skillwalker` still contains `node-bindings-darwin-arm64/duckdb.node`), `./skillwalker update-analytics-data` exit 0.
   `detect-libc@2.1.2` is a regular dependency of `@duckdb/node-bindings` (not optional) and is bundled into the
-  compiled binary (`strings harness` finds `familySync` and `glibcVersionRuntime`), so no further `--external` is
+  compiled binary (`strings skillwalker` finds `familySync` and `glibcVersionRuntime`), so no further `--external` is
   needed. The lockfile written on macOS records both musl packages
   (`@duckdb/node-bindings-linux-x64-musl@1.5.5-r.5`, `@duckdb/node-bindings-linux-arm64-musl@1.5.5-r.5`) even though
   neither is installed there.
@@ -767,7 +767,7 @@ mutable state.
              version and bumps carets (see manifest list below); root `bun update --latest` alone changes nothing in
              workspace packages
   Final    frozen install 0 · lint 0 · format 0 · typecheck 0 (TS 7.0.2) · 934/934 · 64/64 · make build 0 ·
-           ./harness 0 · ./harness update-analytics-data 0 · bun audit → No vulnerabilities found
+           ./skillwalker 0 · ./skillwalker update-analytics-data 0 · bun audit → No vulnerabilities found
   Re-run   on the exact target manifests (carets everywhere incl. `@duckdb/node-api ^1.5.5-r.5`, `packageManager`,
            `typescript ^7.0.2`, sorted `type JSX` imports, wildcard external): same results; `rm -rf node_modules &&
            bun install --frozen-lockfile` exit 0; `make build` leaves `git status --porcelain bun.lock` empty;
@@ -776,7 +776,7 @@ mutable state.
            `@remix-run/router` removed. `git revert` of a commit that changed a manifest and `bun.lock` together
            restores a state where `bun install --frozen-lockfile` reports no changes and the tree is clean.
   Intermediate state "React Router 7 on React 18" (the plan's Unit 3 before Unit 4): full gate passes (lint, format,
-           typecheck, 934/64, make build, ./harness), and every route's DOM summary hash (tags, attributes minus
+           typecheck, 934/64, make build, ./skillwalker), and every route's DOM summary hash (tags, attributes minus
            `data-discover`, text) equals the baseline's; `body.innerHTML` grows by exactly 21 bytes per router anchor.
   ```
   Manifest ranges after Stage F (before the re-run normalized the `bun add pkg@x.y.z` exact pins to carets):
@@ -827,8 +827,8 @@ mutable state.
   `getAcilHistory`) on **both** builds with these fixtures — a pre-existing defect, not an upgrade effect.
 - **Location:** `packages/web/src/server/routes/{scil,acil}.ts`; `packages/data/src/run-status.ts` (B14 in C-18);
   fixtures `packages/test-fixtures/data/analytics/{returns-summary,returns-scil-summary,returns-acil-summary,reflects-failed-expectations}`.
-- **Evidence:** executed 2026-09-21 — `./harness update-analytics-data` on each build (both import the fixtures),
-  `harness-web` on ports 3098 (baseline) and 3099 (upgraded), plus cross-reads (`--data-dir` pointed at the other
+- **Evidence:** executed 2026-09-21 — `./skillwalker update-analytics-data` on each build (both import the fixtures),
+  `skillwalker-web` on ports 3098 (baseline) and 3099 (upgraded), plus cross-reads (`--data-dir` pointed at the other
   build's `analytics/`):
   ```
   diff /api/test-runs, /api/scil, /api/acil, /api/analytics/per-test, /api/test-runs/20260101T000002 → IDENTICAL (all four pairings)
@@ -839,7 +839,7 @@ mutable state.
   ```
   The fixture run detail renders no `.markdown-content` section (no result text or output files in the fixture), so
   the marked comparison rests on C-31 Stage E. The compiled binaries must run from the repo root: run from another
-  directory, `./harness` fails with `Cannot find module '@duckdb/node-bindings-darwin-arm64/duckdb.node'` because
+  directory, `./skillwalker` fails with `Cannot find module '@duckdb/node-bindings-darwin-arm64/duckdb.node'` because
   the `--external` binding resolves against the cwd's `node_modules` (pre-existing, both builds).
 - **Raised by:** own sweep (executed, Chrome).
 - **Confidence:** Verified on macOS arm64.

@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { TEST_CONFIG_FILENAME } from '@testdouble/harness-data'
+import { TEST_CONFIG_FILENAME } from '@testdouble/skillwalker-data'
 import { ConfigNotFoundError } from '../../lib/errors.js'
 
 export async function validateConfig(testSuiteDir: string): Promise<{ configFilePath: string }> {

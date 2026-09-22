@@ -46,7 +46,7 @@ Every finding cites both sides — the target file and clause, and the suite fil
 The skill walks through a 5-step process with no interview pauses:
 
 1. **Identify the target** — run `scripts/collect-target-inputs.sh`, which resolves the name as a skill or agent and lists its references, dispatched agents, siblings, and whether a suite exists; read all of it and build the target's current profile (description clauses, checks, output shape)
-2. **Validate the suite structurally** — run `scripts/validate-suite.sh`, the same load-time checks the harness applies (prompt files, scaffolds, rubrics, `expect` arrays, identifiers)
+2. **Validate the suite structurally** — run `scripts/validate-suite.sh`, the same load-time checks Skillwalker applies (prompt files, scaffolds, rubrics, `expect` arrays, identifiers)
 3. **Read the suite** — every test entry, prompt file, rubric, and scaffold file, listing what each scaffold plants
 4. **Compare** — rubric against target, scaffold against target and rubric, prompts against the description's current clauses and siblings, deterministic expectations against the current output shape
 5. **Report** — verdict, structural findings, then findings by severity, then the repair order
@@ -63,8 +63,8 @@ The skill walks through a 5-step process with no interview pauses:
 Run the fix commands in the report's repair order, then re-run the audit until it reports no findings, then run the suite:
 
 ```bash
-./build/harness test-run --suite {name}
-./build/harness test-eval
+./build/skillwalker test-run --suite {name}
+./build/skillwalker test-eval
 ```
 
 ## References
@@ -73,7 +73,7 @@ Run the fix commands in the report's repair order, then re-run the audit until i
 - [Writing Skill Eval Rubrics](write-skill-eval-rubric.md) and [Writing Agent Eval Rubrics](write-agent-eval-rubric.md) — the rubric update flow
 - [Writing Skill-Call Evals](write-scil-evals.md) and [Writing Agent-Call Evals](write-acil-evals.md) — adding or re-scoping trigger prompts
 - [Test Suite Reference](test-suite-reference.md) — what the structural validation checks
-- [Test Harness README](../README.md) — prerequisites, setup, and running tests
+- [Skillwalker README](../README.md) — prerequisites, setup, and running tests
 
 ---
 

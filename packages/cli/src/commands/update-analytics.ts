@@ -1,5 +1,5 @@
-import { updateAllParquet } from '@testdouble/harness-data'
-import { clearReEvaluatedRuns, getReEvaluatedRuns } from '@testdouble/harness-execution'
+import { updateAllParquet } from '@testdouble/skillwalker-data'
+import { clearReEvaluatedRuns, getReEvaluatedRuns } from '@testdouble/skillwalker-execution'
 import type { Argv } from 'yargs'
 import { dataDir, outputDir } from '../paths.js'
 

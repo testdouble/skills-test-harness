@@ -7,7 +7,7 @@ The evaluation engine. Change this package when you need to touch how test run r
 After the `test-run` pipeline executes prompts inside Test Sandboxes and writes JSONL event streams, this package reads those streams and scores each test case's expectations, producing structured pass/fail records for both deterministic boolean checks and semantic LLM judge assessments.
 
 - **Last Updated:** 2026-05-15
-- **Package:** `@testdouble/harness-evals` (`packages/evals`, workspace package, not published)
+- **Package:** `@testdouble/skillwalker-evals` (`packages/evals`, workspace package, not published)
 - **Runtime:** TypeScript on Bun, ESNext target, strict mode
 - **Tests:** Vitest (co-located `.test.ts` files)
 
@@ -39,7 +39,7 @@ src/
 
 | Dependency | Usage |
 |---|---|
-| `@testdouble/harness-data` | JSONL I/O, stream event types, config records, `getResultText`, `getSkillInvocations`, `getAgentInvocations`, `parseStreamJsonLines`, `readJsonlFile`, `buildTestCaseId` |
+| `@testdouble/skillwalker-data` | JSONL I/O, stream event types, config records, `getResultText`, `getSkillInvocations`, `getAgentInvocations`, `parseStreamJsonLines`, `readJsonlFile`, `buildTestCaseId` |
 | `@testdouble/claude-integration` | `runClaude()` for invoking the judge model |
 
 ## Evaluation Types
@@ -128,7 +128,7 @@ All results carry a `status` field:
 
 ## Related References
 
-- [Test Harness Architecture](./test-harness-architecture.md) — System architecture, package boundaries, and dependency graph
+- [Skillwalker Architecture](./skillwalker-architecture.md) — System architecture, package boundaries, and dependency graph
 - [Execution Package](./execution.md) — The `runTestEval()` orchestrator that consumes `evaluateTestRun()`, the SCIL loop that uses `evaluateSkillCall` directly, and the ACIL loop that uses `evaluateAgentCall` directly
 - [CLI Package](./cli.md) — Thin Yargs wrapper that delegates to the execution package
 - [Data Package](./data.md) — Shared data layer providing JSONL I/O, stream event types, config records, and `getResultText`/`getSkillInvocations`

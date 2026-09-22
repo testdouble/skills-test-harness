@@ -6,7 +6,7 @@ vi.mock('node:fs/promises', () => ({
 }))
 
 import { readFile, writeFile } from 'node:fs/promises'
-import { HarnessError } from '../lib/errors.js'
+import { SkillwalkerError } from '../lib/errors.js'
 import { applyDescription } from './step-8-apply-description.js'
 
 beforeEach(() => {
@@ -71,7 +71,7 @@ describe('applyDescription', () => {
   it('throws when no frontmatter is found', async () => {
     vi.mocked(readFile).mockResolvedValue('No frontmatter here')
 
-    await expect(applyDescription('/skill/SKILL.md', 'new')).rejects.toThrow(HarnessError)
+    await expect(applyDescription('/skill/SKILL.md', 'new')).rejects.toThrow(SkillwalkerError)
   })
 
   it('reads from and writes to the correct file path', async () => {
@@ -144,7 +144,7 @@ describe('applyDescription', () => {
   it('throws when frontmatter has no description field', async () => {
     vi.mocked(readFile).mockResolvedValue('---\nname: "my-skill"\nallowed-tools: Read\n---\n\nBody')
 
-    await expect(applyDescription('/skill/SKILL.md', 'new')).rejects.toThrow(HarnessError)
+    await expect(applyDescription('/skill/SKILL.md', 'new')).rejects.toThrow(SkillwalkerError)
   })
 
   it('handles block scalar with chomping indicator >-', async () => {

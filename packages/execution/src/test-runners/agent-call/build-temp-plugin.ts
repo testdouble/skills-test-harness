@@ -1,6 +1,6 @@
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { replaceDescription, sanitizeForYaml } from '@testdouble/harness-data'
+import { replaceDescription, sanitizeForYaml } from '@testdouble/skillwalker-data'
 
 const AGENT_NOOP_BODY = '\nRespond with: "agent triggered" — nothing else.\n'
 const SKILL_NOOP_BODY = '\nRespond with: "skill triggered" — nothing else.\n'

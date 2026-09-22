@@ -1,11 +1,11 @@
 #!/usr/bin/env bun
-import { HarnessError } from '@testdouble/harness-execution'
+import { SkillwalkerError } from '@testdouble/skillwalker-execution'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 
 try {
   await yargs(hideBin(process.argv))
-    .scriptName('harness')
+    .scriptName('skillwalker')
     .command(await import('./src/commands/test-run.js'))
     .command(await import('./src/commands/test-eval.js'))
     .command(await import('./src/commands/shell.js'))
@@ -19,7 +19,7 @@ try {
     .showHelpOnFail(true)
     .parseAsync()
 } catch (err) {
-  if (err instanceof HarnessError) {
+  if (err instanceof SkillwalkerError) {
     process.stderr.write(`Error: ${err.message}\n`)
     process.exit(1)
   }

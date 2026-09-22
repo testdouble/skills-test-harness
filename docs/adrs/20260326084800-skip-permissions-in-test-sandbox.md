@@ -9,7 +9,7 @@
 
 ## Context
 
-The test harness runs Claude Code in `--print` mode (non-interactive) inside an isolated Test Sandbox. In this mode, Claude cannot prompt the user for permission approval. When a prompt test invokes a skill via the `Skill` tool, Claude Code denies the call because `Skill` is not in any auto-approved tools list. Claude then falls back to performing the task manually — bypassing the skill entirely — which causes `skill-call` expectations to fail consistently.
+Skillwalker runs Claude Code in `--print` mode (non-interactive) inside an isolated Test Sandbox. In this mode, Claude cannot prompt the user for permission approval. When a prompt test invokes a skill via the `Skill` tool, Claude Code denies the call because `Skill` is not in any auto-approved tools list. Claude then falls back to performing the task manually — bypassing the skill entirely — which causes `skill-call` expectations to fail consistently.
 
 This was discovered through the code-review test suite, where the prompt `run a /code-review on lib/example.rb` correctly triggered a `Skill` tool call, but the call returned `is_error: true` with the `Skill` tool listed in `permission_denials`. Claude's thinking confirmed the fallback: "Let me read the file first and then do the code review manually."
 
@@ -20,7 +20,7 @@ The problem affects all prompt-type tests that expect skill invocation, making i
 - Tests must run non-interactively — no human is present to approve permission prompts
 - The Test Sandbox already provides process and filesystem isolation
 - Permission denials are infrastructure artifacts, not skill quality signals — they mask real test results
-- The test harness is ephemeral and disposable; it is not a production workload
+- Skillwalker is ephemeral and disposable; it is not a production workload
 - Test results must be deterministic and reproducible across runs
 
 ## Considered Options
@@ -50,7 +50,7 @@ The problem affects all prompt-type tests that expect skill invocation, making i
 
 ## Decision
 
-We will use **`--dangerously-skip-permissions`** because the Test Sandbox already provides the isolation boundary that makes permission checks redundant in this context. The test harness exists to evaluate skill quality — not to test Claude Code's permission system. Stripping permissions eliminates an entire class of infrastructure-artifact failures and keeps test results focused on what matters: whether skills trigger correctly and produce quality output.
+We will use **`--dangerously-skip-permissions`** because the Test Sandbox already provides the isolation boundary that makes permission checks redundant in this context. Skillwalker exists to evaluate skill quality — not to test Claude Code's permission system. Stripping permissions eliminates an entire class of infrastructure-artifact failures and keeps test results focused on what matters: whether skills trigger correctly and produce quality output.
 
 The flag will be added to the Claude CLI arguments in both the prompt test runner and the skill-call test runner.
 

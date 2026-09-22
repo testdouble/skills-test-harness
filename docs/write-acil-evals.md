@@ -16,7 +16,7 @@ Use this skill when you need to:
 
 - You need prompt-type or rubric (effectiveness) tests — this skill produces **agent-call tests only**. Use `/write-agent-eval-rubric` for quality rubrics.
 - You're testing a skill rather than an agent — use `/write-scil-evals` instead.
-- You want to run the harness or improve a description — this skill scaffolds tests but does not run them or invoke ACIL.
+- You want to run Skillwalker or improve a description — this skill scaffolds tests but does not run them or invoke ACIL.
 
 ## Usage
 
@@ -70,7 +70,7 @@ The skill walks through an 8-step process with two pauses for the user: one to c
 5. **Assign scaffolds** — flagged prompts get `scaffold` set when the named scaffold exists; otherwise the gap is reported with the `/build-agent-eval-scaffold … --for trigger` command that builds it
 6. **Generate test configuration** — tests.json entries and prompt files with auto-generated names
 7. **Present summary and confirm** — everything that will be written, plus scaffold assignments and gaps
-8. **Write and validate** — create or update the suite, then run `scripts/validate-suite.sh`, which re-checks what the harness checks at load time, and fix every finding before reporting
+8. **Write and validate** — create or update the suite, then run `scripts/validate-suite.sh`, which re-checks what Skillwalker checks at load time, and fix every finding before reporting
 ## Prompt Categories
 
 ### Positive triggers (3-5 required)
@@ -110,12 +110,12 @@ After generating the test suite, you can:
 
 1. **Run the tests** to check trigger accuracy:
    ```bash
-   ./build/harness test-run --suite {agent-name}
+   ./build/skillwalker test-run --suite {agent-name}
    ```
 
 2. **Evaluate results**:
    ```bash
-   ./build/harness test-eval
+   ./build/skillwalker test-eval
    ```
 
 3. **Run ACIL** to iteratively improve the agent's trigger description based on eval results. See [Agent Call Improvement Loop](agent-call-improvement-loop.md).
@@ -126,7 +126,7 @@ After generating the test suite, you can:
 - [Test Suite Reference](test-suite-reference.md) — full tests.json field reference for `agent-call` type tests
 - [Writing Skill-Call Evals](write-scil-evals.md) — parallel skill for skill-call test suites
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Test Sandbox
-- [Test Harness README](../README.md) — prerequisites, setup, and running tests
+- [Skillwalker README](../README.md) — prerequisites, setup, and running tests
 
 ---
 

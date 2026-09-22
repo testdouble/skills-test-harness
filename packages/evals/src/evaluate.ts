@@ -1,6 +1,6 @@
 import path from 'node:path'
-import type { StreamJsonEvent, TestConfigRecord, TestExpectation } from '@testdouble/harness-data'
-import { buildTestCaseId, readJsonlFile } from '@testdouble/harness-data'
+import type { StreamJsonEvent, TestConfigRecord, TestExpectation } from '@testdouble/skillwalker-data'
+import { buildTestCaseId, readJsonlFile } from '@testdouble/skillwalker-data'
 import { evaluateAllExpectations } from './boolean-evals.js'
 import { evaluateLlmJudge } from './llm-judge-eval.js'
 import type { BooleanEvalResult, EvalResult, OnProgress } from './types.js'

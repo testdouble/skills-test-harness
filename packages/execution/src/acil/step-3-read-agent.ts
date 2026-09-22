@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises'
-import { parseDescription } from '@testdouble/harness-data'
-import { HarnessError } from '../lib/errors.js'
+import { parseDescription } from '@testdouble/skillwalker-data'
+import { SkillwalkerError } from '../lib/errors.js'
 
 export interface AgentFileContent {
   name: string
@@ -13,7 +13,7 @@ export async function readAgent(agentMdPath: string): Promise<AgentFileContent> 
 
   const fmMatch = fullContent.match(/^---\r?\n([\s\S]*?)\r?\n---/)
   if (!fmMatch) {
-    throw new HarnessError(`No frontmatter found in ${agentMdPath}`)
+    throw new SkillwalkerError(`No frontmatter found in ${agentMdPath}`)
   }
 
   const frontmatterRaw = fmMatch[1]

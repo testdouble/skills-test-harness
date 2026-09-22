@@ -1,6 +1,6 @@
 # Test Fixtures
 
-> **Tier 5 · Contributor reference.** Internal documentation for the `packages/test-fixtures` package; it is contributor-only test infrastructure with no user-facing equivalent. If you arrived here as a user, start at the [Test Harness README](../README.md).
+> **Tier 5 · Contributor reference.** Internal documentation for the `packages/test-fixtures` package; it is contributor-only test infrastructure with no user-facing equivalent. If you arrived here as a user, start at the [Skillwalker README](../README.md).
 
 Change this package when you need shared fixture data for tests — adding an analytics scenario for DuckDB integration tests, adding a CLI JSON fixture for unit tests, or touching the `loadFixtures()` copy utility. It is the centralized fixture repository for integration and unit tests across all workspace packages.
 
@@ -10,7 +10,7 @@ Change this package when you need shared fixture data for tests — adding an an
 
 ## Overview
 
-- Provides a centralized repository of test fixture data consumed by `@testdouble/cli`, `@testdouble/harness-data`, and `@testdouble/evals` packages
+- Provides a centralized repository of test fixture data consumed by `@testdouble/cli`, `@testdouble/skillwalker-data`, and `@testdouble/evals` packages
 - Exposes two access patterns: `loadFixtures()` for copying fixture directories into temp dirs (integration tests), and direct JSON imports for typed constants (unit tests)
 - Contains 17 named analytics scenarios with JSONL fixture files for DuckDB integration tests and 2 JSON fixtures for CLI unit tests
 - Depends only on `@testdouble/bun-helpers` for cross-runtime directory resolution via `currentDir()`
@@ -23,38 +23,21 @@ Key files:
 
 ## Architecture
 
-```
-                    @testdouble/test-fixtures
-                    ┌──────────────────────────────────────────┐
-                    │                                          │
-                    │  load-fixtures.ts                        │
-                    │  ┌────────────────────────────────┐      │
-                    │  │ loadFixtures(name, tmpDir)     │      │
-                    │  │   cp(fixtures/name → tmpDir)   │      │
-                    │  └──────────┬─────────────────────┘      │
-                    │             │                             │
-                    │  ┌──────────▼──────────────────────────┐ │
-                    │  │  Fixture Data                       │ │
-                    │  │                                     │ │
-                    │  │  data/analytics/                    │ │
-                    │  │    17 scenarios × JSONL files       │ │
-                    │  │    (test-run, test-config,          │ │
-                    │  │     test-results, scil-iteration,   │ │
-                    │  │     scil-summary)                   │ │
-                    │  │                                     │ │
-                    │  │  cli/test-runners/steps/            │ │
-                    │  │    mock-test-suite-config.json      │ │
-                    │  │    mock-parsed-metrics.json         │ │
-                    │  └────────────────────────────────────┘ │
-                    └──────────────────────────────────────────┘
-                        │                           │
-          ┌─────────────▼──────────┐   ┌────────────▼──────────────┐
-          │  Integration Tests     │   │  Unit Tests               │
-          │  (loadFixtures → cp)   │   │  (direct JSON import)     │
-          │                        │   │                            │
-          │  @testdouble/          │   │  @testdouble/cli          │
-          │    harness-data        │   │    fixtures.ts             │
-          └────────────────────────┘   └────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph pkg["@testdouble/test-fixtures"]
+        direction TB
+        loader["<b>load-fixtures.ts</b><br>loadFixtures(name, tmpDir)<br>cp(fixtures/name → tmpDir)"]
+        fixtures["<b>Fixture Data</b><br><br><b>data/analytics/</b><br>17 scenarios × JSONL files<br>(test-run, test-config, test-results,<br>scil-iteration, scil-summary)<br><br><b>cli/test-runners/steps/</b><br>mock-test-suite-config.json<br>mock-parsed-metrics.json"]
+
+        loader --> fixtures
+    end
+
+    integration["<b>Integration Tests</b><br>(loadFixtures → cp)<br><br>@testdouble/skillwalker-data"]
+    unit["<b>Unit Tests</b><br>(direct JSON import)<br><br>@testdouble/cli<br>fixtures.ts"]
+
+    pkg --> integration
+    pkg --> unit
 ```
 
 ## Key Files
@@ -129,7 +112,7 @@ export const mockParsedMetrics: ParsedRunMetrics = mockParsedMetricsJson as Pars
 
 ### Analytics Fixture Structure
 
-Each analytics scenario lives in a named directory under `data/analytics/` and contains a timestamped run directory (e.g., `20260101T000001/`). The JSONL files mirror the output format of the test harness:
+Each analytics scenario lives in a named directory under `data/analytics/` and contains a timestamped run directory (e.g., `20260101T000001/`). The JSONL files mirror the output format of Skillwalker:
 
 | File | Content | Purpose |
 |------|---------|---------|
@@ -177,8 +160,8 @@ The 17 named scenarios cover specific analytics query behaviors:
 
 ## Related References
 
-- [Test Harness Architecture](./test-harness-architecture.md) - System architecture including test-fixtures package boundaries and data flow
-- [Project Discovery](./project-discovery.md) - Full project discovery details for the test harness workspace
+- [Skillwalker Architecture](./skillwalker-architecture.md) - System architecture including test-fixtures package boundaries and data flow
+- [Project Discovery](./project-discovery.md) - Full project discovery details for Skillwalker workspace
 - [Test Data Factory Functions](./coding-standards/test-data-factories.md) - Coding standard for when to use test-fixtures vs inline factories
 - [ESM Import Conventions](./coding-standards/esm-import-conventions.md) - Import patterns for workspace packages including test-fixtures
 - [Cross-Runtime Meta Resolution](./coding-standards/cross-runtime-meta-resolution.md) - How `currentDir()` resolves paths across Bun and Vitest

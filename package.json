@@ -1,5 +1,5 @@
 {
-  "name": "testdouble-harness",
+  "name": "testdouble-skillwalker",
   "private": true,
   "packageManager": "bun@1.4.2",
   "workspaces": ["packages/*"],

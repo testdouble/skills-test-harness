@@ -1,6 +1,6 @@
 import { appendFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import { ensureOutputDir } from '@testdouble/harness-data'
+import { ensureOutputDir } from '@testdouble/skillwalker-data'
 
 export interface WritableIteration {
   iteration: number

@@ -1,17 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { HarnessError } = vi.hoisted(() => {
-  class HarnessError extends Error {
+const { SkillwalkerError } = vi.hoisted(() => {
+  class SkillwalkerError extends Error {
     constructor(message: string) {
       super(message)
-      this.name = 'HarnessError'
+      this.name = 'SkillwalkerError'
     }
   }
-  return { HarnessError }
+  return { SkillwalkerError }
 })
 
-vi.mock('@testdouble/harness-execution', () => ({
-  HarnessError,
+vi.mock('@testdouble/skillwalker-execution', () => ({
+  SkillwalkerError,
   runAcilLoop: vi.fn().mockResolvedValue(undefined),
 }))
 vi.mock('../paths.js', () => ({
@@ -19,7 +19,7 @@ vi.mock('../paths.js', () => ({
   testsDir: '/mock/tests',
 }))
 
-import { runAcilLoop } from '@testdouble/harness-execution'
+import { runAcilLoop } from '@testdouble/skillwalker-execution'
 import { builder, command, describe as commandDescribe, handler } from './acil.js'
 
 beforeEach(() => {
@@ -155,10 +155,10 @@ describe('acil handler', () => {
 })
 
 describe('acil handler validation', () => {
-  it('throws HarnessError for validation failures (EC8)', async () => {
+  it('throws SkillwalkerError for validation failures (EC8)', async () => {
     const argv = fullArgv()
     argv['max-iterations'] = 0
-    await expect(handler(argv)).rejects.toBeInstanceOf(HarnessError)
+    await expect(handler(argv)).rejects.toBeInstanceOf(SkillwalkerError)
   })
 
   // -- max-iterations --

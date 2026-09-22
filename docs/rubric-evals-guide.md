@@ -102,7 +102,7 @@ Add an `llm-judge` expectation to a skill-prompt test in `tests.json`:
 | `model` | no | `"opus"` | Claude model used as the judge |
 | `threshold` | no | `1.0` | Fraction of criteria that must pass (0.0–1.0) |
 
-A threshold of `0.8` with 10 criteria means at least 8 must pass. The harness validates that the rubric file exists at load time.
+A threshold of `0.8` with 10 criteria means at least 8 must pass. Skillwalker validates that the rubric file exists at load time.
 
 For the full field reference, see [Test Suite Reference](test-suite-reference.md).
 
@@ -111,7 +111,7 @@ For the full field reference, see [Test Suite Reference](test-suite-reference.md
 Run the test suite to produce output for the judge to evaluate:
 
 ```bash
-./build/harness test-run --suite code-review
+./build/skillwalker test-run --suite code-review
 ```
 
 This runs the skill against the prompt and scaffold. The judge does not run yet — it evaluates stored output in the next step.
@@ -119,7 +119,7 @@ This runs the skill against the prompt and scaffold. The judge does not run yet 
 To run a specific test:
 
 ```bash
-./build/harness test-run --suite code-review --test "Prompt: /code-review quality"
+./build/skillwalker test-run --suite code-review --test "Prompt: /code-review quality"
 ```
 
 ## Step 3: Evaluate with the Judge
@@ -127,13 +127,13 @@ To run a specific test:
 Run the evaluation pipeline, which includes the LLM judge:
 
 ```bash
-./build/harness test-eval
+./build/skillwalker test-eval
 ```
 
 Or evaluate a specific run:
 
 ```bash
-./build/harness test-eval <run-id>
+./build/skillwalker test-eval <run-id>
 ```
 
 ### Console Output
@@ -187,7 +187,7 @@ The judge re-evaluates from stored output, so you can refine criteria without re
 vim tests/test-suites/code-review/rubrics/code-review-quality.md
 
 # Re-evaluate the same run
-./build/harness test-eval <run-id>
+./build/skillwalker test-eval <run-id>
 ```
 
 Common adjustments:

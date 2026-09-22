@@ -21,7 +21,7 @@ In JavaScript, `[].every(predicate)` returns `true` for any predicate — this i
 
 ### Scope
 
-All TypeScript code in the harness workspace that uses `.every()` on arrays that may legitimately be empty at runtime. The most common case is checking if all test results pass before triggering special behavior.
+All TypeScript code in the Skillwalker workspace that uses `.every()` on arrays that may legitimately be empty at runtime. The most common case is checking if all test results pass before triggering special behavior.
 
 ## Background
 

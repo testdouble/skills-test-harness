@@ -4,7 +4,7 @@
 
 Use the `llm-judge` expectation to score skill or agent output against a rubric of discrete criteria with a second Claude invocation. This page documents how to configure the expectation, the rubric file format and criterion types, how the judge prompt is built and scored, the result rows it writes, error handling, and prompt size limits.
 
-The LLM judge extends the test harness beyond code-based assertions (`result-contains`, `skill-call`) to support semantic quality evaluation — e.g., "does the code review call out the SQL injection on line 23?"
+The LLM judge extends Skillwalker beyond code-based assertions (`result-contains`, `skill-call`) to support semantic quality evaluation — e.g., "does the code review call out the SQL injection on line 23?"
 
 The judge runs as step 3b in the `test-eval` pipeline, after existing expectations are evaluated and before results are written.
 
@@ -52,7 +52,7 @@ Agent-prompt tests use the same `llm-judge` expectation format:
 
 ### Validation
 
-At test suite load time, the harness validates that every referenced rubric file exists at `test-suites/{suite}/rubrics/{rubricFile}`. Missing rubric files cause an immediate error.
+At test suite load time, Skillwalker validates that every referenced rubric file exists at `test-suites/{suite}/rubrics/{rubricFile}`. Missing rubric files cause an immediate error.
 
 ## Rubric Files
 
@@ -130,7 +130,7 @@ Good rubrics mix several types of assertion:
 
 ### Judge Prompt
 
-The harness builds a prompt for the judge Claude invocation containing:
+Skillwalker builds a prompt for the judge Claude invocation containing:
 
 1. **Scaffold files** — all files from the test's scaffold directory (each truncated at 5KB), giving the judge the same source material the skill worked with
 2. **Transcript** — a summary of tool calls made during the skill or agent run (tool name, key arguments, first 2000 chars of each result)
@@ -215,7 +215,7 @@ Running LLM judge (opus) for "Prompt: /code-review quality" with 9 criteria...
 
 ## Error Handling
 
-If the judge invocation fails (sandbox error, invalid JSON response, file read error), the harness:
+If the judge invocation fails (sandbox error, invalid JSON response, file read error), Skillwalker:
 
 - Logs a warning: `⚠ LLM judge evaluation failed: {error}`
 - Returns a single aggregate row with `passed: false`, `judge_score: 0`, and the error message in `reasoning`
@@ -227,16 +227,16 @@ If the judge invocation fails (sandbox error, invalid JSON response, file read e
 
 ```bash
 # Run the test suite to produce output
-./build/harness test-run --suite code-review
+./build/skillwalker test-run --suite code-review
 
 # Evaluate all expectations including llm-judge
-./build/harness test-eval
+./build/skillwalker test-eval
 
 # Evaluate a specific run
-./build/harness test-eval <run-id>
+./build/skillwalker test-eval <run-id>
 
 # Evaluate with debug output (shows sandbox stderr)
-./build/harness test-eval <run-id> --debug
+./build/skillwalker test-eval <run-id> --debug
 ```
 
 ### Re-evaluating After Rubric Changes
@@ -248,7 +248,7 @@ Since `test-eval` re-evaluates from stored test output, you can edit a rubric fi
 vim tests/test-suites/code-review/rubrics/code-review-quality.md
 
 # Re-evaluate the same run
-./build/harness test-eval <run-id>
+./build/skillwalker test-eval <run-id>
 ```
 
 ### Inspecting Results
@@ -284,7 +284,7 @@ The judge prompt has built-in truncation to stay within OS argument limits (macO
 - [Test Suite Reference](test-suite-reference.md) — full tests.json field reference including the `llm-judge` expectation format
 - [Writing Skill Eval Rubrics](write-skill-eval-rubric.md) — using the `/write-skill-eval-rubric` skill to generate rubric files for skills
 - [Writing Agent Eval Rubrics](write-agent-eval-rubric.md) — using the `/write-agent-eval-rubric` skill to generate rubric files for agents
-- [Test Harness README](../README.md) — prerequisites, setup, and running tests
+- [Skillwalker README](../README.md) — prerequisites, setup, and running tests
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context for the judge
 - [Parquet Schema](parquet-schema.md) — analytics fields for judge results (`reasoning`, `judge_model`, `judge_threshold`, `judge_score`)
 - [Sandbox Integration](sandbox-integration.md) — `execInSandbox` API used to execute judge invocations

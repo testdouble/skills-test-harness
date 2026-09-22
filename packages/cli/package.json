@@ -1,16 +1,16 @@
 {
-  "name": "@testdouble/harness-cli",
+  "name": "@testdouble/skillwalker-cli",
   "version": "0.1.0",
   "private": true,
   "bin": {
-    "harness": "./index.ts"
+    "skillwalker": "./index.ts"
   },
   "dependencies": {
     "@testdouble/claude-integration": "workspace:*",
     "@testdouble/sandbox-integration": "workspace:*",
-    "@testdouble/harness-data": "workspace:*",
-    "@testdouble/harness-evals": "workspace:*",
-    "@testdouble/harness-execution": "workspace:*",
+    "@testdouble/skillwalker-data": "workspace:*",
+    "@testdouble/skillwalker-evals": "workspace:*",
+    "@testdouble/skillwalker-execution": "workspace:*",
     "cli-table3": "^0.6.5",
     "yargs": "^18.2.0"
   },

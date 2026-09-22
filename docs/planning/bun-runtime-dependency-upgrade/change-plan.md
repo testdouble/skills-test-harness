@@ -417,7 +417,7 @@ Every unit ends with the same gate, run from the repo root with Node 22.x on `PA
 3. `bun run test` — 934 pass; `bun run test:integration` — 64 pass.
 4. `make build` exit 0, then `git status --porcelain bun.lock` prints nothing (the target's unfrozen `bun install` must
    not rewrite the lockfile).
-5. `./harness --help` prints the eight commands. This proves more than it looks: the CLI imports every command at
+5. `./skillwalker --help` prints the eight commands. This proves more than it looks: the CLI imports every command at
    startup, which loads the DuckDB native binding and runs `resolveRelativePath` for the two sandbox scripts. So a
    compiled binary that cannot find its binding or no longer detects its `$bunfs` path fails here
    ([C-15](artifacts/current-state-findings.md#c-15-bun-specific-api-surface-is-small-and-one-helper-bets-on-importmetadir-and-the-bunfs-prefix),
@@ -480,7 +480,7 @@ so the relink cannot pick a stale 1.5.2 store entry. Then the gate passes, plus 
 - `grep -oE '"tailwindcss@[^"]+"' bun.lock | sort -u` prints exactly `"tailwindcss@4.3.3"`.
 - `readlink node_modules/@duckdb/node-bindings-$(bun -e "process.stdout.write(process.platform+'-'+process.arch)")`
   contains `1.5.5-r.5`.
-- `./harness update-analytics-data` exits 0.
+- `./skillwalker update-analytics-data` exits 0.
 
 The lockfile diff for this unit includes 21 `@typescript/*` platform entries and 2 DuckDB musl entries; they are
 expected, not noise. On push, read the CI jobs with the attribution rule under Risks.
@@ -698,7 +698,7 @@ produced is in [artifacts/change-decision-log.md](artifacts/change-decision-log.
 
 **Findings closed with evidence.**
 - `bunx tsc` resolves the root binary from a workspace directory (junior Q4, F-5).
-- `./harness --help` exercises `$bunfs` resolution (junior F-15, now stated in the gate).
+- `./skillwalker --help` exercises `$bunfs` resolution (junior F-15, now stated in the gate).
 - The Vitest 5 `clearMocks` default is fully covered by the executed suite (test-engineer 5).
 - Peer ranges permit reverting Units 3 and 4 in either order (devops).
 - `detect-libc` is bundled and must not be external (devops).

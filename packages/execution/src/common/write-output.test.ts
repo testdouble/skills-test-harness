@@ -5,13 +5,13 @@ vi.mock('node:fs/promises', () => ({
   writeFile: vi.fn().mockResolvedValue(undefined),
 }))
 
-vi.mock('@testdouble/harness-data', () => ({
+vi.mock('@testdouble/skillwalker-data', () => ({
   ensureOutputDir: vi.fn().mockResolvedValue(undefined),
 }))
 
 import { appendFile, writeFile } from 'node:fs/promises'
-import type { IterationResult, QueryResult } from '@testdouble/harness-data'
-import { ensureOutputDir } from '@testdouble/harness-data'
+import type { IterationResult, QueryResult } from '@testdouble/skillwalker-data'
+import { ensureOutputDir } from '@testdouble/skillwalker-data'
 import { writeIterationOutput, writeSummaryOutput } from './write-output.js'
 
 beforeEach(() => {

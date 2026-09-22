@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@testdouble/harness-data', () => ({
+vi.mock('@testdouble/skillwalker-data', () => ({
   readTestSuiteConfig: vi.fn(),
   TEST_CONFIG_FILENAME: 'tests.json',
 }))
@@ -9,8 +9,8 @@ vi.mock('node:fs', () => ({
 }))
 
 import { existsSync } from 'node:fs'
-import { readTestSuiteConfig } from '@testdouble/harness-data'
-import { HarnessError } from '../lib/errors.js'
+import { readTestSuiteConfig } from '@testdouble/skillwalker-data'
+import { SkillwalkerError } from '../lib/errors.js'
 import { resolveAndLoad } from './step-1-resolve-and-load.js'
 
 function makeAgentCallTest(name: string, agentFile: string, value: boolean) {
@@ -64,26 +64,28 @@ describe('resolveAndLoad (ACIL)', () => {
       expect(result.tests).toHaveLength(1)
     })
 
-    it('throws HarnessError when agent identifier has no colon', async () => {
+    it('throws SkillwalkerError when agent identifier has no colon', async () => {
       await expect(resolveAndLoad('my-suite', 'gap-analyzer', '/tests', '/repo')).rejects.toThrow(
         /Invalid agent identifier/,
       )
     })
 
-    it('throws HarnessError when agent identifier contains path traversal', async () => {
+    it('throws SkillwalkerError when agent identifier contains path traversal', async () => {
       await expect(resolveAndLoad('my-suite', '../../etc:passwd', '/tests', '/repo')).rejects.toThrow(
         /Invalid agent identifier/,
       )
     })
 
-    it('throws HarnessError when agent .md does not exist', async () => {
+    it('throws SkillwalkerError when agent .md does not exist', async () => {
       vi.mocked(existsSync).mockReturnValue(false)
       mockConfig([])
 
-      await expect(resolveAndLoad('my-suite', 'r-and-d:gap-analyzer', '/tests', '/repo')).rejects.toThrow(HarnessError)
+      await expect(resolveAndLoad('my-suite', 'r-and-d:gap-analyzer', '/tests', '/repo')).rejects.toThrow(
+        SkillwalkerError,
+      )
     })
 
-    it('throws HarnessError when no matching tests found', async () => {
+    it('throws SkillwalkerError when no matching tests found', async () => {
       vi.mocked(existsSync).mockReturnValue(true)
       mockConfig([makeAgentCallTest('test-1', 'r-and-d:other-agent', true)])
 
@@ -166,7 +168,7 @@ describe('resolveAndLoad (ACIL)', () => {
       vi.mocked(existsSync).mockReturnValue(false)
       mockConfig([makeAgentCallTest('test-1', 'r-and-d:gap-analyzer', true)])
 
-      await expect(resolveAndLoad('my-suite', undefined, '/tests', '/repo')).rejects.toThrow(HarnessError)
+      await expect(resolveAndLoad('my-suite', undefined, '/tests', '/repo')).rejects.toThrow(SkillwalkerError)
     })
   })
 })

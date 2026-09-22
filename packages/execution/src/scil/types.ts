@@ -1,4 +1,4 @@
-export type { IterationResult, QueryResult, ScilTestCase } from '@testdouble/harness-data'
+export type { IterationResult, QueryResult, ScilTestCase } from '@testdouble/skillwalker-data'
 
 export interface ScilConfig {
   suite: string

@@ -11,7 +11,7 @@
 
 ## Introduction
 
-This coding standard defines how test files are named, located, and internally structured across the test harness monorepo.
+This coding standard defines how test files are named, located, and internally structured across Skillwalker monorepo.
 
 ### Purpose
 
@@ -23,7 +23,7 @@ All TypeScript test files under `packages/*/src/` that are executed by Vitest.
 
 ## Background
 
-The harness uses two Vitest configurations to separate fast unit tests from slower integration tests that touch the filesystem or DuckDB. The naming suffix (`.test.ts` vs `.integration.test.ts`) is the mechanism that routes each file to the correct config. Co-locating test files alongside their implementation (rather than in a separate `__tests__/` tree) keeps navigation simple in a monorepo with multiple workspace packages.
+Skillwalker uses two Vitest configurations to separate fast unit tests from slower integration tests that touch the filesystem or DuckDB. The naming suffix (`.test.ts` vs `.integration.test.ts`) is the mechanism that routes each file to the correct config. Co-locating test files alongside their implementation (rather than in a separate `__tests__/` tree) keeps navigation simple in a monorepo with multiple workspace packages.
 
 Test case annotations (`TP-###`, `EC#`) were introduced to maintain traceability between test plans, edge-case analyses, and the tests that cover them. Without these annotations, it becomes difficult to verify that a test plan item has been implemented or that an edge case is covered.
 
@@ -103,9 +103,9 @@ describe('accumulateTotals', () => {
 })
 
 // Class — describe label matches class name
-describe('HarnessError', () => {
+describe('SkillwalkerError', () => {
   it('is an instance of Error', () => { ... })
-  it('has name set to HarnessError', () => { ... })
+  it('has name set to SkillwalkerError', () => { ... })
 })
 
 // Command handler — describe label includes the command name and aspect

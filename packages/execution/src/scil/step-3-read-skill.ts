@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises'
-import { parseDescription } from '@testdouble/harness-data'
-import { HarnessError } from '../lib/errors.js'
+import { parseDescription } from '@testdouble/skillwalker-data'
+import { SkillwalkerError } from '../lib/errors.js'
 
 export interface SkillFileContent {
   name: string
@@ -15,7 +15,7 @@ export async function readSkill(skillMdPath: string): Promise<SkillFileContent> 
 
   const fmMatch = fullContent.match(/^---\n([\s\S]*?)\n---/)
   if (!fmMatch) {
-    throw new HarnessError(`No frontmatter found in ${skillMdPath}`)
+    throw new SkillwalkerError(`No frontmatter found in ${skillMdPath}`)
   }
 
   const frontmatterRaw = fmMatch[1]

@@ -24,7 +24,7 @@ afterEach(() => {
 describe('ensureSandboxExists', () => {
   it('resolves when sandbox is found in sbx ls output', async () => {
     ;(globalThis as any).Bun.spawn.mockReturnValue({
-      stdout: makeStream('claude-skills-harness\n'),
+      stdout: makeStream('claude-skills-skillwalker\n'),
       stderr: makeStream(''),
       exited: Promise.resolve(),
       exitCode: 0,
@@ -83,7 +83,7 @@ describe('execInSandbox', () => {
     const result = await execInSandbox('/path/to/script', ['--print', 'hello'], null, false)
 
     expect((globalThis as any).Bun.spawn).toHaveBeenCalledWith(
-      ['sbx', 'exec', 'claude-skills-harness', '/path/to/script', '', '--print', 'hello'],
+      ['sbx', 'exec', 'claude-skills-skillwalker', '/path/to/script', '', '--print', 'hello'],
       expect.objectContaining({ stdout: 'pipe', stderr: 'pipe' }),
     )
     expect(result.exitCode).toBe(0)

@@ -1,10 +1,10 @@
 # Execution Package
 
-> **Tier 5 · Contributor reference.** Internal documentation for the `@testdouble/harness-execution` package — the test-run and test-eval pipelines, the SCIL and ACIL improvement loops, the error hierarchy, and path config. If you're a user looking to run or tune an evaluation, see [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md) or the [SCIL Evals Guide](scil-evals-guide.md).
+> **Tier 5 · Contributor reference.** Internal documentation for the `@testdouble/skillwalker-execution` package — the test-run and test-eval pipelines, the SCIL and ACIL improvement loops, the error hierarchy, and path config. If you're a user looking to run or tune an evaluation, see [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md) or the [SCIL Evals Guide](scil-evals-guide.md).
 
-This page is the orchestration reference for the harness. It documents the four entry points (`runTestSuite`, `runTestEval`, `runScilLoop`, `runAcilLoop`), the numbered step files behind each pipeline, the SCIL and ACIL loop algorithms and their shared scoring/output/report modules, the path-parameter design, and the error hierarchy. This is where most pipeline changes land.
+This page is the orchestration reference for Skillwalker. It documents the four entry points (`runTestSuite`, `runTestEval`, `runScilLoop`, `runAcilLoop`), the numbered step files behind each pipeline, the SCIL and ACIL loop algorithms and their shared scoring/output/report modules, the path-parameter design, and the error hierarchy. This is where most pipeline changes land.
 
-The `@testdouble/harness-execution` package owns all test execution orchestration, the SCIL and ACIL improvement loops, and test evaluation pipelines — extracted from the CLI to keep the CLI as a thin Yargs wrapper.
+The `@testdouble/skillwalker-execution` package owns all test execution orchestration, the SCIL and ACIL improvement loops, and test evaluation pipelines — extracted from the CLI to keep the CLI as a thin Yargs wrapper.
 
 - **Last Updated:** 2026-05-15
 - **Authors:**
@@ -14,8 +14,8 @@ The `@testdouble/harness-execution` package owns all test execution orchestratio
 
 - Four high-level orchestrators: `runTestSuite()` for test execution, `runTestEval()` for result evaluation, `runScilLoop()` for iterative skill description improvement, and `runAcilLoop()` for iterative agent description improvement
 - All filesystem paths (`outputDir`, `testsDir`, `repoRoot`) are passed as parameters — the package never calls `process.cwd()` or reads environment variables
-- Owns the error hierarchy (`HarnessError`, `ConfigNotFoundError`, `RunNotFoundError`), path config factory, and the step-based pipelines that coordinate the other packages
-- Sits between the CLI (which parses args and resolves paths) and the lower-level packages (harness-data, harness-evals, claude-integration, sandbox-integration)
+- Owns the error hierarchy (`SkillwalkerError`, `ConfigNotFoundError`, `RunNotFoundError`), path config factory, and the step-based pipelines that coordinate the other packages
+- Sits between the CLI (which parses args and resolves paths) and the lower-level packages (skillwalker-data, skillwalker-evals, claude-integration, sandbox-integration)
 
 Key files:
 - `packages/execution/index.ts` — Barrel exports (public API surface)
@@ -28,40 +28,44 @@ Key files:
 
 ## Architecture
 
-```
-                                CLI (thin wrapper)
-                                      │
-              ┌──────────────┬────────┼────────┬──────────────┐
-              v              v        v        v              v
-       runTestSuite()  runTestEval()  │  runScilLoop()  runAcilLoop()
-              │              │        │        │              │
-              v              v        v        v              v
-          ┌──────────────────────────────────────────────────────────┐
-          │             @testdouble/harness-execution                │
-          │                                                          │
-          │  test-runners/steps/     test-eval/       scil/   acil/  │
-          │  ├── step-1 resolve      run-test-eval    loop    loop   │
-          │  ├── step-2 validate     test-eval-steps/ steps   steps  │
-          │  ├── step-3 read-config                   1-10    1-10   │
-          │  ├── step-4 generate-id  lib/             common/        │
-          │  ├── step-6 build-flags  ├── errors.ts    score          │
-          │  ├── step-7 init-totals  ├── path-config  write-out      │
-          │  ├── step-8 run-tests    ├── metrics.ts   print-rpt      │
-          │  ├── step-9 print-totals └── output.ts                   │
-          │  └── step-10 exit                                        │
-          │                                                          │
-          │  test-runners/prompt/    test-runners/skill-call/        │
-          │  └── runPromptTests()    ├── runSkillCallTests()         │
-          │                          └── buildTempPlugin()           │
-          │                          test-runners/agent-call/        │
-          │                          └── buildTempAgentPlugin()      │
-          └────────┬────────────┬───────────────┬────────────────────┘
-                   │            │               │
-                   v            v               v
-           harness-data   harness-evals   claude-integration
-                                               │
-                                               v
-                                       sandbox-integration
+```mermaid
+flowchart TB
+    cli["CLI (thin wrapper)"]
+
+    entry1["runTestSuite()"]
+    entry2["runTestEval()"]
+    entry3["runScilLoop()"]
+    entry4["runAcilLoop()"]
+
+    subgraph pkg["@testdouble/skillwalker-execution"]
+        direction TB
+        runsteps["<b>test-runners/steps/</b><br>step-1 resolve · step-2 validate · step-3 read-config<br>step-4 generate-id · step-6 build-flags · step-7 init-totals<br>step-8 run-tests · step-9 print-totals · step-10 exit"]
+        runners["<b>test-runners/</b><br>prompt/ → runPromptTests()<br>skill-call/ → runSkillCallTests(), buildTempPlugin()<br>agent-call/ → buildTempAgentPlugin()"]
+        evalpipe["<b>test-eval/</b><br>run-test-eval · test-eval-steps/"]
+        loops["<b>scil/ · acil/</b><br>loop · steps 1-10"]
+        common["<b>common/</b><br>score · write-output · print-report"]
+        lib["<b>lib/</b><br>errors.ts · path-config · metrics.ts · output.ts"]
+    end
+
+    data["skillwalker-data"]
+    evals["skillwalker-evals"]
+    claude["claude-integration"]
+    sandbox["sandbox-integration"]
+
+    cli --> entry1 --> runsteps
+    cli --> entry2 --> evalpipe
+    cli --> entry3 --> loops
+    cli --> entry4 --> loops
+
+    runsteps --> runners
+    runners --> claude
+    evalpipe --> evals
+    loops --> common
+
+    pkg --> data
+    pkg --> evals
+    pkg --> claude
+    claude --> sandbox
 ```
 
 ## Key Files
@@ -94,7 +98,7 @@ Key files:
 | `packages/execution/src/acil/step-5-run-eval.ts` | Runs agent-call eval with concurrency pool and majority vote |
 | `packages/execution/src/acil/step-7-improve-description.ts` | Generates improved agent descriptions via Claude |
 | `packages/execution/src/acil/step-8-apply-description.ts` | Writes best description back to agent .md |
-| `packages/execution/src/lib/errors.ts` | `HarnessError`, `ConfigNotFoundError`, `RunNotFoundError` |
+| `packages/execution/src/lib/errors.ts` | `SkillwalkerError`, `ConfigNotFoundError`, `RunNotFoundError` |
 | `packages/execution/src/lib/path-config.ts` | `createPathConfig()` — derives all paths from a root directory |
 | `packages/execution/src/lib/metrics.ts` | `accumulateTotals()` — immutable token/duration accumulator |
 | `packages/execution/src/lib/output.ts` | `writeTestOutput()` — writes test config and run events to JSONL |
@@ -163,7 +167,7 @@ interface AcilConfig {
 // packages/execution/src/lib/path-config.ts
 interface PathConfig {
   testsDir: string    // = rootDir
-  harnessDir: string  // = rootDir/packages
+  skillwalkerDir: string  // = rootDir/packages
   repoRoot: string    // = rootDir/..
   outputDir: string   // = rootDir/output
   dataDir: string     // = rootDir/analytics
@@ -179,9 +183,9 @@ interface SkillFileContent {
 }
 
 // packages/execution/src/lib/errors.ts
-class HarnessError extends Error              // Base error — caught at CLI for clean exit
-class ConfigNotFoundError extends HarnessError  // tests.json not found
-class RunNotFoundError extends HarnessError     // Test run directory not found
+class SkillwalkerError extends Error              // Base error — caught at CLI for clean exit
+class ConfigNotFoundError extends SkillwalkerError  // tests.json not found
+class RunNotFoundError extends SkillwalkerError     // Test run directory not found
 ```
 
 ## Implementation Details
@@ -192,7 +196,7 @@ The execution package never resolves paths from `process.cwd()`. The CLI owns pa
 
 ```typescript
 // CLI (packages/cli/src/paths.ts) — the only place process.cwd() is called
-import { createPathConfig } from '@testdouble/harness-execution'
+import { createPathConfig } from '@testdouble/skillwalker-execution'
 const config = createPathConfig(process.cwd())
 export const outputDir = config.outputDir
 export const testsDir = config.testsDir
@@ -241,7 +245,7 @@ const skillCallTests = config.tests.filter(t => t.type === 'skill-call')
 
 **Agent-call runner** (`test-runners/agent-call/index.ts`): Same as the skill-call runner but builds a temporary agent plugin.
 
-All four runners share the same post-run output file extraction step: after Claude finishes, they call `extractOutputFiles()` from `claude-integration` to retrieve any files the skill/agent wrote inside the sandbox, then call `appendOutputFiles()` from `harness-data` to persist them to `output-files.jsonl` in the run directory.
+All four runners share the same post-run output file extraction step: after Claude finishes, they call `extractOutputFiles()` from `claude-integration` to retrieve any files the skill/agent wrote inside the sandbox, then call `appendOutputFiles()` from `skillwalker-data` to persist them to `output-files.jsonl` in the run directory.
 
 ### Temp Plugin Construction
 
@@ -265,7 +269,7 @@ When `testRunId` is provided, evaluates that specific run. When omitted, scans `
 For each run:
 1. Resolves the run directory via `resolveRunDir(id, outputDir)`
 2. Reads `test-config.jsonl` to determine the suite
-3. Calls `evaluateTestRun()` from `@testdouble/harness-evals`
+3. Calls `evaluateTestRun()` from `@testdouble/skillwalker-evals`
 4. Converts `EvalResult` to `TestResultRecord[]` — boolean evals produce one record; LLM-judge evals produce per-criterion records plus an aggregate
 5. Writes results to `test-results.jsonl`
 6. Marks forced re-evaluations for analytics reprocessing
@@ -275,7 +279,7 @@ For each run:
 The `runScilLoop` function orchestrates 10 steps iteratively:
 
 1. **Resolve and load** — Finds the target skill (explicit or inferred) and loads skill-call tests
-2. **Split sets** — Stratified train/test split based on holdout fraction (delegates to harness-data)
+2. **Split sets** — Stratified train/test split based on holdout fraction (delegates to skillwalker-data)
 3. **Read skill** — Parses SKILL.md frontmatter and body
 4. **Build temp plugin** — Creates temp plugin with current (or improved) description
 5. **Run eval** — Concurrent sandbox execution with configurable concurrency and majority voting
@@ -285,7 +289,7 @@ The `runScilLoop` function orchestrates 10 steps iteratively:
 9. **Write output** — Persists iteration JSONL (including phase) and summary JSON
 10. **Print report** — Iteration progress (with phase tag) and final comparison table (with phase column)
 
-Each iteration is assigned a phase (`explore`, `transition`, or `converge`) via `getPhase()` from `harness-data`. Early exit on perfect accuracy only occurs during or after the converge phase.
+Each iteration is assigned a phase (`explore`, `transition`, or `converge`) via `getPhase()` from `skillwalker-data`. Early exit on perfect accuracy only occurs during or after the converge phase.
 
 ### Concurrency Pool (SCIL Eval)
 
@@ -345,11 +349,11 @@ ACIL and SCIL share three modules in `packages/execution/src/common/`:
 
 | Error Class | Thrown By | Trigger |
 |-------------|-----------|---------|
-| `HarnessError` | Multiple steps | General errors (prompt not found, config read failure, missing frontmatter) |
+| `SkillwalkerError` | Multiple steps | General errors (prompt not found, config read failure, missing frontmatter) |
 | `ConfigNotFoundError` | `step-2-validate-config` | `tests.json` not found in test suite directory |
 | `RunNotFoundError` | `step-1-resolve-run-dir` | Test run directory does not exist in `outputDir` |
 
-The CLI catches `HarnessError` at the top level and writes the message to stderr with exit code 1.
+The CLI catches `SkillwalkerError` at the top level and writes the message to stderr with exit code 1.
 
 ## Constants
 
@@ -373,7 +377,7 @@ Tests are co-located with source files. Tests that previously mocked `paths.js` 
 
 ## Related Documentation
 
-- [Test Harness Architecture](./test-harness-architecture.md) — System-wide architecture, package boundaries, and dependency graph
+- [Skillwalker Architecture](./skillwalker-architecture.md) — System-wide architecture, package boundaries, and dependency graph
 - [CLI Package](./cli.md) — The thin CLI wrapper that delegates to this package
 - [Data Package](./data.md) — Shared data layer consumed by execution orchestrators
 - [Evals Package](./evals.md) — Evaluation engine called by `runTestEval`

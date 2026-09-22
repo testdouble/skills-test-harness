@@ -5,7 +5,7 @@ export function NavBar() {
     <header>
       <nav className="bg-[#0d0e0d] h-16 flex items-center px-10">
         <span className="text-[#75fe04] text-[23px] font-bold" style={{ letterSpacing: '3px' }}>
-          ⬡ HARNESS
+          ⬡ SKILLWALKER
         </span>
         <div className="flex-1" />
         <NavLink

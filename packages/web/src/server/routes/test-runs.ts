@@ -1,4 +1,4 @@
-import { queryTestRunDetails, queryTestRunSummaries } from '@testdouble/harness-data'
+import { queryTestRunDetails, queryTestRunSummaries } from '@testdouble/skillwalker-data'
 import type { Context } from 'hono'
 
 export async function getTestRuns(c: Context, dataDir: string): Promise<Response> {

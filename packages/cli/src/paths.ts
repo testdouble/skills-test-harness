@@ -1,11 +1,11 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { createPathConfig } from '@testdouble/harness-execution'
+import { createPathConfig } from '@testdouble/skillwalker-execution'
 
 const config = createPathConfig(process.cwd())
 
 export const testsDir = config.testsDir
-export const harnessDir = config.harnessDir
+export const skillwalkerDir = config.skillwalkerDir
 export const outputDir = config.outputDir
 export const dataDir = config.dataDir
 

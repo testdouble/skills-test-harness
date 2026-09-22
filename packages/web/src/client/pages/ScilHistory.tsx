@@ -32,7 +32,7 @@ export function ScilHistory(): JSX.Element {
   if (!runs || runs.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 text-[#4f4f4f]">
-        No SCIL runs found. Run SCIL with: harness scil --suite &lt;name&gt;
+        No SCIL runs found. Run SCIL with: skillwalker scil --suite &lt;name&gt;
       </div>
     )
   }

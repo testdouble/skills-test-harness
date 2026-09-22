@@ -11,7 +11,7 @@
 
 ## Introduction
 
-This coding standard defines how custom error classes are structured and tested across the test harness monorepo.
+This coding standard defines how custom error classes are structured and tested across Skillwalker monorepo.
 
 ### Purpose
 
@@ -23,7 +23,7 @@ All TypeScript source files under `packages/*/src/` that define or throw custom 
 
 ## Background
 
-The harness CLI uses a top-level try/catch in `packages/cli/index.ts` that catches any `HarnessError` and writes a formatted message to stderr before exiting with code 1. Errors that are not `HarnessError` instances are re-thrown as unexpected failures. This boundary depends on every domain error extending `HarnessError` so that the `instanceof` check works correctly. Without a shared base class, each new error type would need its own catch clause or a brittle string-matching approach.
+The Skillwalker CLI uses a top-level try/catch in `packages/cli/index.ts` that catches any `SkillwalkerError` and writes a formatted message to stderr before exiting with code 1. Errors that are not `SkillwalkerError` instances are re-thrown as unexpected failures. This boundary depends on every domain error extending `SkillwalkerError` so that the `instanceof` check works correctly. Without a shared base class, each new error type would need its own catch clause or a brittle string-matching approach.
 
 Setting `this.name` explicitly (rather than relying on `constructor.name`) ensures error identity survives minification, bundling, and serialization, all of which can strip or mangle constructor names.
 
@@ -31,15 +31,15 @@ Setting `this.name` explicitly (rather than relying on `constructor.name`) ensur
 
 ### Base Error Class
 
-All custom errors in the harness extend `HarnessError`, which itself extends the built-in `Error`. `HarnessError` is the single root of the error hierarchy and accepts a plain `message` string.
+All custom errors in Skillwalker extend `SkillwalkerError`, which itself extends the built-in `Error`. `SkillwalkerError` is the single root of the error hierarchy and accepts a plain `message` string.
 
 **Correct usage:**
 
 ```typescript
-export class HarnessError extends Error {
+export class SkillwalkerError extends Error {
   constructor(message: string) {
     super(message)
-    this.name = 'HarnessError'
+    this.name = 'SkillwalkerError'
   }
 }
 ```
@@ -47,7 +47,7 @@ export class HarnessError extends Error {
 **What to avoid:**
 
 ```typescript
-// Don't create additional intermediate base classes that skip HarnessError
+// Don't create additional intermediate base classes that skip SkillwalkerError
 export class AppError extends Error {
   constructor(message: string) {
     super(message)
@@ -60,7 +60,7 @@ export class ConfigNotFoundError extends Error { ... }
 ```
 
 **Project references:**
-- `packages/cli/src/lib/errors.ts` — defines `HarnessError` as the base class
+- `packages/cli/src/lib/errors.ts` — defines `SkillwalkerError` as the base class
 
 ### Always Set this.name
 
@@ -69,7 +69,7 @@ Every custom error class must set `this.name` to the exact string name of the cl
 **Correct usage:**
 
 ```typescript
-export class RunNotFoundError extends HarnessError {
+export class RunNotFoundError extends SkillwalkerError {
   constructor(runDir: string) {
     super(`Test run directory not found: ${runDir}`)
     this.name = 'RunNotFoundError'
@@ -81,7 +81,7 @@ export class RunNotFoundError extends HarnessError {
 
 ```typescript
 // Don't omit this.name — defaults to 'Error' in some environments
-export class RunNotFoundError extends HarnessError {
+export class RunNotFoundError extends SkillwalkerError {
   constructor(runDir: string) {
     super(`Test run directory not found: ${runDir}`)
     // missing this.name = 'RunNotFoundError'
@@ -89,7 +89,7 @@ export class RunNotFoundError extends HarnessError {
 }
 
 // Don't use this.constructor.name — unreliable after minification
-export class RunNotFoundError extends HarnessError {
+export class RunNotFoundError extends SkillwalkerError {
   constructor(runDir: string) {
     super(`Test run directory not found: ${runDir}`)
     this.name = this.constructor.name  // breaks when bundled
@@ -100,14 +100,14 @@ export class RunNotFoundError extends HarnessError {
 **Project references:**
 - `packages/cli/src/lib/errors.ts` — all three error classes set `this.name` explicitly
 
-### Specialized Errors Extend HarnessError
+### Specialized Errors Extend SkillwalkerError
 
-Domain-specific errors extend `HarnessError`, never `Error` directly. This preserves the `instanceof HarnessError` check at the CLI process boundary, allowing all harness errors to be caught and formatted uniformly.
+Domain-specific errors extend `SkillwalkerError`, never `Error` directly. This preserves the `instanceof SkillwalkerError` check at the CLI process boundary, allowing all Skillwalker errors to be caught and formatted uniformly.
 
 **Correct usage:**
 
 ```typescript
-export class ConfigNotFoundError extends HarnessError {
+export class ConfigNotFoundError extends SkillwalkerError {
   constructor(configPath: string) {
     super(`tests.json not found: ${configPath}`)
     this.name = 'ConfigNotFoundError'
@@ -128,8 +128,8 @@ export class ConfigNotFoundError extends Error {
 ```
 
 **Project references:**
-- `packages/cli/src/lib/errors.ts` — `ConfigNotFoundError` and `RunNotFoundError` both extend `HarnessError`
-- `packages/cli/index.ts` — top-level catch uses `instanceof HarnessError` to handle all domain errors
+- `packages/cli/src/lib/errors.ts` — `ConfigNotFoundError` and `RunNotFoundError` both extend `SkillwalkerError`
+- `packages/cli/index.ts` — top-level catch uses `instanceof SkillwalkerError` to handle all domain errors
 
 ### Descriptive Constructor Parameters
 
@@ -138,7 +138,7 @@ Specialized error constructors accept domain-specific parameters and format them
 **Correct usage:**
 
 ```typescript
-export class ConfigNotFoundError extends HarnessError {
+export class ConfigNotFoundError extends SkillwalkerError {
   constructor(configPath: string) {
     super(`tests.json not found: ${configPath}`)
     this.name = 'ConfigNotFoundError'
@@ -153,7 +153,7 @@ throw new ConfigNotFoundError(resolvedPath)
 
 ```typescript
 // Don't accept a pre-formatted message — that pushes formatting to every call site
-export class ConfigNotFoundError extends HarnessError {
+export class ConfigNotFoundError extends SkillwalkerError {
   constructor(message: string) {
     super(message)
     this.name = 'ConfigNotFoundError'
@@ -176,9 +176,9 @@ Error tests verify three properties: the `instanceof` chain (error extends the c
 
 ```typescript
 describe('ConfigNotFoundError', () => {
-  it('is an instance of HarnessError', () => {
+  it('is an instance of SkillwalkerError', () => {
     const err = new ConfigNotFoundError('/some/path/tests.json')
-    expect(err).toBeInstanceOf(HarnessError)
+    expect(err).toBeInstanceOf(SkillwalkerError)
   })
 
   it('has name set to ConfigNotFoundError', () => {
@@ -214,7 +214,7 @@ it('has the right message', () => {
 ```
 
 **Project references:**
-- `packages/cli/src/lib/errors.test.ts` — tests for `HarnessError`, `ConfigNotFoundError`, and `RunNotFoundError`
+- `packages/cli/src/lib/errors.test.ts` — tests for `SkillwalkerError`, `ConfigNotFoundError`, and `RunNotFoundError`
 
 ## Additional Resources
 

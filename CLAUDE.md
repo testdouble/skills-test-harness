@@ -1,4 +1,4 @@
-# CLAUDE.md — Test Harness
+# CLAUDE.md — Skillwalker
 
 ## Project Discovery
 
@@ -9,7 +9,7 @@
 
 ### Coding Standards
 
-- [Custom Error Class Hierarchy](docs/coding-standards/custom-error-hierarchy.md) — Single-rooted error hierarchy extending HarnessError, with explicit name properties and domain-specific constructors
+- [Custom Error Class Hierarchy](docs/coding-standards/custom-error-hierarchy.md) — Single-rooted error hierarchy extending SkillwalkerError, with explicit name properties and domain-specific constructors
 - [Test File Organization and Naming](docs/coding-standards/test-file-organization.md) — Test file naming suffixes, co-location, describe/it conventions, and traceability annotations
 - [Immutable Data Patterns](docs/coding-standards/immutable-data-patterns.md) — Return new objects from transformations, verify immutability in tests, use spread for test data variation
 - [ESM Import Conventions](docs/coding-standards/esm-import-conventions.md) — .js extensions in relative imports, node: prefix for built-ins, workspace package names, import type for type-only imports
@@ -24,7 +24,7 @@
 - [Consistent Derived Key Usage](docs/coding-standards/consistent-derived-key-usage.md) — All write and read paths for JSONL records must use the same key derivation function (e.g., buildTestCaseId) to prevent silent empty-result mismatches
 - [No Lint Disabling](docs/coding-standards/no-lint-disabling.md) — No lint-disable comments or per-file rule overrides; fix the code, import the right type, or change the rule globally
 
-### testdouble-harness
+### testdouble-skillwalker
 
 - Language: TypeScript (Bun runtime, ESNext target, strict mode)
 - Test: `make test` (Vitest, unit + integration)
@@ -32,7 +32,7 @@
 - Dev server: `make dev`
 - Packages: `packages/cli` (Yargs CLI), `packages/execution` (test-run, test-eval, SCIL/ACIL orchestration), `packages/data` (DuckDB), `packages/web` (Hono + React 19 + Tailwind v4), `packages/test-fixtures`, `packages/sandbox-integration` (Test Sandbox API)
 - See [`docs/sandbox-integration.md`](docs/sandbox-integration.md) for Test Sandbox architecture, API reference, and consumer patterns
-- See [`docs/test-harness-architecture.md`](docs/test-harness-architecture.md) for system architecture, package boundaries, data flow, and dependency graph
+- See [`docs/skillwalker-architecture.md`](docs/skillwalker-architecture.md) for system architecture, package boundaries, data flow, and dependency graph
 - See [`docs/execution.md`](docs/execution.md) for the execution package: test-run pipeline, test-eval, SCIL/ACIL loops, error hierarchy, and path config
 - See [`docs/cli.md`](docs/cli.md) for the CLI package: thin Yargs wrapper, command definitions, path resolution
 - See [`docs/bun-helpers.md`](docs/bun-helpers.md) for cross-runtime path resolution utilities (currentDir, resolveRelativePath)

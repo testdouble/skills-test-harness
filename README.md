@@ -1,6 +1,6 @@
-# Test Harness
+# Skillwalker
 
-A test harness for evaluating Claude Code skills and agents. It measures two
+Skillwalker evaluates Claude Code skills and agents. It measures two
 things you can improve independently:
 
 - **Trigger accuracy** — does Claude call your skill (or delegate to your
@@ -15,9 +15,9 @@ pick the one that matches what you're improving.
 
 ## Prerequisites
 
-- **Docker Sandboxes (`sbx`)** — the harness runs Claude Code inside Docker
+- **Docker Sandboxes (`sbx`)** — Skillwalker runs Claude Code inside Docker
   Sandboxes via the standalone [`sbx`](https://docs.docker.com/reference/cli/sbx/) CLI. Install `sbx` using [Docker's
-  instructions](https://docs.docker.com/ai/sandboxes/), then run `sbx login` before creating the harness sandbox.
+  instructions](https://docs.docker.com/ai/sandboxes/), then run `sbx login` before creating the Skillwalker sandbox.
 - **Bun 1.4.2** — the CLI and web app are built with Bun; the root `package.json` pins
   `"packageManager": "bun@1.4.2"` and CI installs that version. Install from [bun.sh](https://bun.sh).
 - **Node.js 22.12 or newer on `PATH`** — Vitest runs its test workers under `node`; without it the tests that stub
@@ -28,8 +28,8 @@ pick the one that matches what you're improving.
 
 All commands run from the **repository root**.
 
-1. **Build the harness.** This installs dependencies and compiles the `harness`
-   and `harness-web` binaries into `build/`:
+1. **Build Skillwalker.** This installs dependencies and compiles the `skillwalker`
+   and `skillwalker-web` binaries into `build/`:
 
    ```bash
    make build
@@ -40,7 +40,7 @@ All commands run from the **repository root**.
 
    ```bash
    sbx login
-   ./build/harness sandbox-setup
+   ./build/skillwalker sandbox-setup
    ```
 
    Complete the login in the Claude TUI. If you aren't prompted, run `/login`.
@@ -78,7 +78,7 @@ reference material — reach for them when a guide points you here.
 - [Skill Effectiveness](docs/getting-started/skill-effectiveness.md) — measure and improve skill output quality with LLM-judge rubrics
 - [Agent Trigger Accuracy](docs/getting-started/agent-trigger-accuracy.md) — measure and improve when Claude delegates to your agent
 - [Agent Effectiveness](docs/getting-started/agent-effectiveness.md) — measure and improve agent output quality with LLM-judge rubrics
-- [Viewing Results](docs/getting-started/viewing-results.md) — using the harness-web dashboard
+- [Viewing Results](docs/getting-started/viewing-results.md) — using the skillwalker-web dashboard
 - [Analytics](docs/getting-started/analytics.md) — importing data and CLI queries
 
 ### Full Workflow Guides
@@ -97,7 +97,7 @@ Claude Code skills that generate eval suites for you. They ship as the `eval-aut
 
 ```
 /plugin marketplace add testdouble/skills-test-harness
-/plugin install eval-authoring@skills-test-harness
+/plugin install eval-authoring@skillwalker
 ```
 
 - [Building Skill Eval Scaffolds](docs/build-skill-eval-scaffold.md) — `/build-skill-eval-scaffold`: analysis, signal planning, scaffold generation; `--for trigger` builds context scaffolds for skill-call tests
@@ -118,7 +118,7 @@ Claude Code skills that generate eval suites for you. They ship as the `eval-aut
 
 ### Architecture
 
-- [Test Harness Architecture](docs/test-harness-architecture.md) — system architecture, package boundaries, data flow, and dependency graph
+- [Skillwalker Architecture](docs/skillwalker-architecture.md) — system architecture, package boundaries, data flow, and dependency graph
 - [Sandbox Integration](docs/sandbox-integration.md) — Test Sandbox architecture, API, lifecycle, and consumer patterns
 - [Project Discovery](docs/project-discovery.md) — generated project attributes: languages, frameworks, tooling, commands
 

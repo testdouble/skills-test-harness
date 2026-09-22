@@ -1,4 +1,4 @@
-import type { StreamJsonEvent, TestExpectation } from '@testdouble/harness-data'
+import type { StreamJsonEvent, TestExpectation } from '@testdouble/skillwalker-data'
 import { describe, expect, it } from 'vitest'
 import {
   evaluateAgentCall,

@@ -5,14 +5,14 @@ argument-hint: "[plugin:agent] [optional description] [--for trigger] e.g. examp
 allowed-tools: Read, Write, Glob, Grep, Bash(mkdir *)
 ---
 
-Build a realistic project fixture the test harness runs the target agent against. In **quality mode** (the default) the fixture holds signals the agent is designed to find, so an LLM judge can score the agent's output against a rubric. In **trigger mode** (`--for trigger`) the fixture holds the repository context that decides whether Claude should delegate to the agent at all, so an `agent-call` test can measure delegation accuracy on prompts that depend on repo state. Either way the fixture only works when it reads like a project a real developer wrote, so this workflow analyzes the target agent first, then interviews the user in three phases before writing any files.
+Build a realistic project fixture Skillwalker runs the target agent against. In **quality mode** (the default) the fixture holds signals the agent is designed to find, so an LLM judge can score the agent's output against a rubric. In **trigger mode** (`--for trigger`) the fixture holds the repository context that decides whether Claude should delegate to the agent at all, so an `agent-call` test can measure delegation accuracy on prompts that depend on repo state. Either way the fixture only works when it reads like a project a real developer wrote, so this workflow analyzes the target agent first, then interviews the user in three phases before writing any files.
 
 ## Constraints
 
 These apply to every scaffold and shape both the file plan (Step 5) and generation (Step 6):
 
-- Always write the scaffold to `tests/test-suites/{agent}/scaffolds/{name}/`, relative to the repository root, BECAUSE the harness discovers scaffolds at that path when it builds the Test Sandbox.
-- Never write a `.git` directory BECAUSE the harness auto-initializes a git repo with `git init` and commits all scaffold files itself.
+- Always write the scaffold to `tests/test-suites/{agent}/scaffolds/{name}/`, relative to the repository root, BECAUSE Skillwalker discovers scaffolds at that path when it builds the Test Sandbox.
+- Never write a `.git` directory BECAUSE Skillwalker auto-initializes a git repo with `git init` and commits all scaffold files itself.
 - Never write lock files (`package-lock.json`, `Gemfile.lock`, `go.sum`) or dependency directories (`node_modules`, `vendor`, `__pycache__`) unless one is itself a planted signal BECAUSE they add hundreds of generated lines the target agent never inspects and bury the signals that matter.
 - Never mark a signal with comments like `BUG HERE` or `INTENTIONAL ISSUE` BECAUSE a signal the agent can find by reading a comment measures nothing about its analysis; signals must require the same work a real codebase would.
 - Always keep every file syntactically valid for its language (it should parse or compile apart from intentional logic bugs) BECAUSE a file that fails to parse makes the agent report the syntax error instead of the planted signal.
