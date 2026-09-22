@@ -8,7 +8,7 @@ Skill descriptions determine when Claude routes a user prompt to a skill. Gettin
 
 ## How It Works
 
-SCIL runs a loop over `skill-call` type tests in a test suite:
+SCIL runs a loop over `skill-call` type tests in an eval:
 
 1. **Evaluate** — run each test case against the current skill description in a Test Sandbox, recording whether the skill was invoked as expected
 2. **Score** — compute trigger accuracy across all test cases
@@ -27,7 +27,7 @@ make build
 ./build/skillwalker sandbox-setup
 ```
 
-## Test Suite Requirements
+## Eval Requirements
 
 `scil` reads `skill-call` type tests from `tests.json`. Only tests with `"type": "skill-call"` are used — skill-prompt tests are ignored.
 
@@ -72,57 +72,57 @@ All commands are run from the `tests/` directory.
 **Basic run — infer skill from tests.json:**
 
 ```bash
-./build/skillwalker scil --suite code-review
+./build/skillwalker scil --eval code-review
 ```
 
 **Specify the target skill explicitly:**
 
 ```bash
-./build/skillwalker scil --suite code-review --skill r-and-d:code-review
+./build/skillwalker scil --eval code-review --skill r-and-d:code-review
 ```
 
 **Increase iterations:**
 
 ```bash
-./build/skillwalker scil --suite code-review --max-iterations 10
+./build/skillwalker scil --eval code-review --max-iterations 10
 ```
 
 **Auto-apply the best description without prompting:**
 
 ```bash
-./build/skillwalker scil --suite code-review --apply
+./build/skillwalker scil --eval code-review --apply
 ```
 
 **Hold out 40% of tests for validation:**
 
 ```bash
-./build/skillwalker scil --suite code-review --holdout 0.4
+./build/skillwalker scil --eval code-review --holdout 0.4
 ```
 
 **Run containers in parallel:**
 
 ```bash
-./build/skillwalker scil --suite code-review --concurrency 3
+./build/skillwalker scil --eval code-review --concurrency 3
 ```
 
 **Run each test multiple times and aggregate by majority vote:**
 
 ```bash
-./build/skillwalker scil --suite code-review --runs-per-query 3
+./build/skillwalker scil --eval code-review --runs-per-query 3
 ```
 
 **Debug mode — dump raw stream-json to stdout:**
 
 ```bash
-./build/skillwalker scil --suite code-review --debug
+./build/skillwalker scil --eval code-review --debug
 ```
 
 ## CLI Flags
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--suite` | *(required)* | Test suite name |
-| `--skill` | *(inferred)* | Target skill in `plugin:skill` format. Inferred if the suite has only one distinct skill |
+| `--eval` | *(required)* | Eval name |
+| `--skill` | *(inferred)* | Target skill in `plugin:skill` format. Inferred if the eval has only one distinct skill |
 | `--max-iterations` | `5` | Maximum number of improvement iterations |
 | `--holdout` | `0` | Fraction of tests held out as a validation set (e.g. `0.4` = 40%). Default `0` disables holdout |
 | `--concurrency` | `1` | Number of parallel sandbox exec calls during evaluation |
@@ -135,7 +135,7 @@ All commands are run from the `tests/` directory.
 
 When `--holdout` is greater than `0`, SCIL splits the test cases into a train set and a test set before the loop begins. The split is:
 
-- **Deterministic** — the same suite+skill always produces the same split
+- **Deterministic** — the same eval+skill always produces the same split
 - **Stratified** — at least one positive (`expected: true`) and one negative (`expected: false`) in each set when possible
 
 During the loop, only train results are shown to the improvement prompt. Test accuracy is tracked separately and not included in the prompt, preventing data leakage. The best iteration is selected by highest test accuracy (not train accuracy) when holdout is active.
@@ -220,8 +220,8 @@ Apply this description to SKILL.md? [y/N]
 ## Related References
 
 - [Building SCIL Evals](scil-evals-guide.md) — step-by-step guide covering the full workflow from writing tests to running SCIL
-- [Test Suite Reference](test-suite-reference.md) — full tests.json field reference for `skill-call` type tests
-- [Writing Skill-Call Evals](write-scil-evals.md) — using the `/write-scil-evals` skill to generate test suites
+- [Evals Reference](evals-reference.md) — full tests.json field reference for `skill-call` type tests
+- [Writing Skill-Call Evals](write-scil-evals.md) — using the `/write-scil-evals` skill to generate evals
 - [Skillwalker README](../README.md) — prerequisites, setup, and running tests
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Test Sandbox
 - [CLI Package](cli.md) — CLI package implementing the `scil` command and test-run pipeline

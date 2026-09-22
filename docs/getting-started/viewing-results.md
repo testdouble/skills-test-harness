@@ -1,6 +1,6 @@
 # Viewing Results in the Dashboard
 
-> **Tier 1 · Anyone reviewing results.** Assumes you've completed [setup](../../README.md#setup), run at least one test suite, and imported data with `./build/skillwalker update-analytics-data` (see [Analytics](analytics.md) for the import command). This page gets you a browser dashboard for inspecting every test run, improvement loop, and cross-run trend.
+> **Tier 1 · Anyone reviewing results.** Assumes you've completed [setup](../../README.md#setup), run at least one eval, and imported data with `./build/skillwalker update-analytics-data` (see [Analytics](analytics.md) for the import command). This page gets you a browser dashboard for inspecting every test run, improvement loop, and cross-run trend.
 
 Launch the skillwalker-web dashboard and use each page to inspect test run results, SCIL and ACIL improvement loop history, and cross-run analytics — all from your browser.
 
@@ -32,9 +32,9 @@ This page lists all test runs with aggregate stats:
 - **Total tests** — the sum of all test cases across all runs
 - **Average pass rate** — the overall pass rate across all runs
 
-Each row shows a single test run with its suite name, date, test count, and a pass-rate progress bar. Click a row to drill into the run detail.
+Each row shows a single test run with its eval name, date, test count, and a pass-rate progress bar. Click a row to drill into the run detail.
 
-This is where you'll land after running any test suite — whether you're testing [skill trigger accuracy](skill-trigger-accuracy.md), [skill effectiveness](skill-effectiveness.md), [agent trigger accuracy](agent-trigger-accuracy.md), or [agent effectiveness](agent-effectiveness.md).
+This is where you'll land after running any eval — whether you're testing [skill trigger accuracy](skill-trigger-accuracy.md), [skill effectiveness](skill-effectiveness.md), [agent trigger accuracy](agent-trigger-accuracy.md), or [agent effectiveness](agent-effectiveness.md).
 
 ## Test Run Detail
 
@@ -46,7 +46,7 @@ This page shows the results of a single test run, broken into three sections:
 
 A table of every test in the run, showing:
 
-- Test name, suite, and model
+- Test name, eval, and model
 - Pass/fail status
 - Token usage (input and output tokens)
 - Cost in USD
@@ -56,7 +56,7 @@ A table of every test in the run, showing:
 
 A table of individual expectation assertions. Each row shows the expectation type (e.g., `skill-call`, `agent-call`, `result-contains`), the expected value, and whether it passed.
 
-For skill-call and agent-call tests, this is where you see whether your skill or agent was correctly triggered (or correctly not triggered). For details on how these expectations work, see [Test Suite Reference](../test-suite-reference.md).
+For skill-call and agent-call tests, this is where you see whether your skill or agent was correctly triggered (or correctly not triggered). For details on how these expectations work, see [Evals Reference](../evals-reference.md).
 
 ### LLM judge results
 
@@ -114,11 +114,11 @@ This page aggregates data across all test runs to show trends and patterns:
 
 - **Summary stats** — total runs, total tests, overall pass rate, total cost, and average turns
 - **Donut chart** — visual pass/fail breakdown across all tests
-- **Suite breakdown** — per-suite run count, test count, and pass rate with progress bars
+- **Eval breakdown** — per-eval run count, test count, and pass rate with progress bars
 - **Cost by test** — horizontal bar chart showing the most expensive tests
 - **Expectation types** — summary of which expectation types are in use
 
-This is useful for spotting patterns over time — which suites are improving, which tests are consistently expensive, and where failures cluster. For more on the underlying data and CLI query options, see [Analytics](analytics.md).
+This is useful for spotting patterns over time — which evals are improving, which tests are consistently expensive, and where failures cluster. For more on the underlying data and CLI query options, see [Analytics](analytics.md).
 
 ## Related documentation
 

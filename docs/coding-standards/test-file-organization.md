@@ -136,7 +136,7 @@ Test case descriptions use action phrases that describe the behavior being verif
 ```typescript
 it('returns a new object with accumulated metrics', () => { ... })
 it('throws ConfigNotFoundError when tests.json does not exist', () => { ... })
-it('passes suite to resolvePaths', () => { ... })
+it('passes eval to resolvePaths', () => { ... })
 it('routes prompt and undefined-type tests to runPromptTests', () => { ... })
 it('handles NaN holdout without crashing', () => { ... })
 ```
@@ -164,7 +164,7 @@ When a test case implements a specific test plan item, annotate it with a `// TP
 // TP-011: holdout=0 assigns all tests to train
 it('assigns all tests to train when holdout is 0', () => {
   const tests = makeManyTests(3, 2)
-  const result = splitSets('suite', 'p:s', tests, 0)
+  const result = splitSets('eval', 'p:s', tests, 0)
   expect(result.every(t => t.set === 'train')).toBe(true)
 })
 
@@ -194,8 +194,8 @@ When a test case covers a specific edge case from an edge-case analysis, append 
 
 ```typescript
 it('produces identical IDs for names that differ only in stripped characters (EC10)', () => {
-  const id1 = buildTestCaseId('suite', 'test: foo')
-  const id2 = buildTestCaseId('suite', 'test foo')
+  const id1 = buildTestCaseId('eval', 'test: foo')
+  const id2 = buildTestCaseId('eval', 'test foo')
   expect(id1).toBe(id2)
 })
 
@@ -275,5 +275,5 @@ export default defineConfig({
 ### Project Documentation
 
 - [Integration Test Lifecycle](./integration-test-lifecycle.md) — temp directory lifecycle, real filesystem/DuckDB usage, extracted test helpers, and section comments
-- [Test Suite Reference](../test-suite-reference.md) — tests.json field reference for eval test suites
+- [Evals Reference](../evals-reference.md) — tests.json field reference for eval evals
 - [Project Discovery](../project-discovery.md) — workspace package layout and test commands

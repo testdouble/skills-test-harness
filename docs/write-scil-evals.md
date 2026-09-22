@@ -1,15 +1,15 @@
 # Writing Skill-Call Evals
 
-> **Tier 3 · Skill/agent authors building evals.** The `/write-scil-evals` skill generates a complete skill-call test suite (`tests.json` plus prompt files) for a plugin skill; you need a target `plugin:skill` already defined.
+> **Tier 3 · Skill/agent authors building evals.** The `/write-scil-evals` skill generates a complete skill-call eval (`tests.json` plus prompt files) for a plugin skill; you need a target `plugin:skill` already defined.
 
-Run `/write-scil-evals` to scaffold a trigger-accuracy test suite for a plugin skill. The skill interviews you for trigger prompts and writes a `tests.json` configuration plus prompt files under `tests/test-suites/`. Use it before running SCIL, when you need to create a skill-call test suite or add skill-call tests to an existing one.
+Run `/write-scil-evals` to scaffold a trigger-accuracy eval for a plugin skill. The skill interviews you for trigger prompts and writes a `tests.json` configuration plus prompt files under `evals/`. Use it before running SCIL, when you need to create a skill-call eval or add skill-call tests to an existing one.
 
 ## When to use this skill
 
 Use this skill when you need to:
 
-- Create a new skill-call test suite for a plugin skill
-- Add skill-call tests to an existing test suite
+- Create a new skill-call eval for a plugin skill
+- Add skill-call tests to an existing eval
 - Set up trigger accuracy evaluation before running SCIL
 
 ## When NOT to use this skill
@@ -30,10 +30,10 @@ If no argument is provided, the skill will ask which plugin:skill to write evals
 
 ## What It Produces
 
-The skill creates (or updates) a test suite directory:
+The skill creates (or updates) an eval directory:
 
 ```
-tests/test-suites/{skill-name}/
+evals/{skill-name}/
   tests.json
   prompts/
     skill-call-{descriptive-slug}.md
@@ -65,12 +65,12 @@ The skill walks through an 8-step process with two pauses for the user: one to c
 
 1. **Identify the target skill** — parse and validate the `plugin:skill` argument, read the skill's SKILL.md, and note the description's boundary statements (they are what negative and sibling prompts test)
 2. **Detect siblings** — list the sibling skills in the same plugin
-3. **Locate the test suite** — `tests/test-suites/{skill-name}/`; detect create vs. update mode and note existing scaffolds
+3. **Locate the eval** — `evals/{skill-name}/`; detect create vs. update mode and note existing scaffolds
 4. **Collect trigger prompts** — one message asks for all three categories (positive, negative, sibling) with guidance for each, and asks the user to flag any prompt whose trigger decision depends on repo state
 5. **Assign scaffolds** — flagged prompts get `scaffold` set when the named scaffold exists; otherwise the gap is reported with the `/build-skill-eval-scaffold … --for trigger` command that builds it
 6. **Generate test configuration** — tests.json entries and prompt files with auto-generated names
 7. **Present summary and confirm** — everything that will be written, plus scaffold assignments and gaps
-8. **Write and validate** — create or update the suite, then run `scripts/validate-suite.sh`, which re-checks what Skillwalker checks at load time, and fix every finding before reporting
+8. **Write and validate** — create or update the eval, then run `scripts/validate-eval.sh`, which re-checks what Skillwalker checks at load time, and fix every finding before reporting
 ## Prompt Categories
 
 ### Positive triggers (3-5 required)
@@ -100,16 +100,16 @@ Good sibling prompts:
 
 ## Create vs. Update
 
-- **New suite**: Creates the directory, `tests.json`, and all prompt files from scratch
-- **Existing suite**: Appends new test entries to the existing `tests.json` and creates new prompt files with unique names. Never modifies or removes existing tests.
+- **New eval**: Creates the directory, `tests.json`, and all prompt files from scratch
+- **Existing eval**: Appends new test entries to the existing `tests.json` and creates new prompt files with unique names. Never modifies or removes existing tests.
 
 ## What to Do Next
 
-After generating the test suite, you can:
+After generating the eval, you can:
 
 1. **Run the tests** to check trigger accuracy:
    ```bash
-   ./build/skillwalker test-run --suite {skill-name}
+   ./build/skillwalker test-run --eval {skill-name}
    ```
 
 2. **Evaluate results**:
@@ -122,14 +122,14 @@ After generating the test suite, you can:
 ## References
 
 - [Building SCIL Evals](scil-evals-guide.md) — step-by-step guide covering the full workflow from writing tests to running SCIL
-- [Test Suite Reference](test-suite-reference.md) — full tests.json field reference for `skill-call` type tests
+- [Evals Reference](evals-reference.md) — full tests.json field reference for `skill-call` type tests
 - [Skill Call Improvement Loop](skill-call-improvement-loop.md) — SCIL mechanics: holdout splits, scoring, improvement prompt, CLI flags
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Test Sandbox
 - [Script Extraction](script-extraction.md) — the `/script-extraction` skill: hardening skills by extracting mechanical steps into scripts
 - [Skillwalker README](../README.md) — prerequisites, setup, and running tests
-- [Writing Agent-Call Evals](write-acil-evals.md) — parallel skill for agent-call test suites
+- [Writing Agent-Call Evals](write-acil-evals.md) — parallel skill for agent-call evals
 
 ---
 
-**Next:** [Building SCIL Evals](scil-evals-guide.md) — the full manual-authoring and SCIL-loop workflow once your suite exists.
-**Related:** [Writing Agent-Call Evals](write-acil-evals.md) — the parallel skill for agent-call test suites.
+**Next:** [Building SCIL Evals](scil-evals-guide.md) — the full manual-authoring and SCIL-loop workflow once your eval exists.
+**Related:** [Writing Agent-Call Evals](write-acil-evals.md) — the parallel skill for agent-call evals.

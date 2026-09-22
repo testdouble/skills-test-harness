@@ -45,7 +45,7 @@ import { handler } from './command.js'
 import { resolvePaths } from '../test-runners/steps/step-1-resolve-paths.js'
 
 // Relative import of local types
-import type { TestSuiteConfig } from './types.js'
+import type { EvalConfig } from './types.js'
 
 // Relative import of test helpers
 import { makeTmpDir, writeJsonl } from './analytics-test-helpers.js'
@@ -134,14 +134,14 @@ When importing only types (interfaces, type aliases, or types used solely in typ
 ```typescript
 // All imports are types — use import type
 import type { ParsedRunMetrics, RunTotals } from '@testdouble/skillwalker-data'
-import type { TestSuiteConfig } from './types.js'
+import type { EvalConfig } from './types.js'
 ```
 
 **What to avoid:**
 
 ```typescript
 // Using a regular import for type-only usage — needlessly retains the import at runtime
-import { TestSuiteConfig } from './types.js'
+import { EvalConfig } from './types.js'
 
 // Mixing types and values in one import when types could be separated
 // (acceptable when unavoidable, but prefer separate import type when all are types)
@@ -153,7 +153,7 @@ import { accumulateTotals } from '@testdouble/skillwalker-data'
 
 **Project references:**
 - `packages/cli/src/lib/metrics.ts` — `import type { ParsedRunMetrics, RunTotals } from '@testdouble/skillwalker-data'`
-- `packages/data/src/config.test.ts` — `import type { TestSuiteConfig } from './types.js'`
+- `packages/data/src/config.test.ts` — `import type { EvalConfig } from './types.js'`
 
 ### Use export type for Type Re-Exports
 

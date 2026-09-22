@@ -34,7 +34,7 @@ function makeOpts(overrides: Partial<RunEvalOptions> = {}): RunEvalOptions {
   return {
     tempDir: '/tmp/scil',
     testCases: [makeTestCase()],
-    suite: 'my-suite',
+    eval: 'my-eval',
     testsDir: '/mock/tests',
     concurrency: 2,
     runsPerQuery: 1,
@@ -73,7 +73,7 @@ describe('runEval', () => {
     await runEval(makeOpts({ testCases: [testCase] }))
 
     const opts = vi.mocked(runClaude).mock.calls[0][0]
-    expect(opts.scaffold).toBe('/mock/tests/test-suites/my-suite/scaffolds/my-scaffold')
+    expect(opts.scaffold).toBe('/mock/tests/evals/my-eval/scaffolds/my-scaffold')
   })
 
   // TP-025: scaffold null when falsy

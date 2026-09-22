@@ -33,22 +33,22 @@ export async function writeJsonl(filePath: string, records: unknown[]): Promise<
 // ─── fixture factories ────────────────────────────────────────────────────────
 
 /** Build a test_case ID the same way run-test.ts does via buildTestCaseId. */
-export function testCaseId(suite: string, testName: string): string {
+export function testCaseId(evalName: string, testName: string): string {
   const normalized = testName.replace(/ /g, '-').replace(/[^a-zA-Z0-9-]/g, '')
-  return `${suite}-${normalized}`
+  return `${evalName}-${normalized}`
 }
 
 /** Minimal TestConfigRecord for a test case. */
 export function makeConfigRecord(opts: {
   testRunId: string
-  suite: string
+  eval: string
   testName: string
   plugins?: string[]
   model?: string
 }): TestConfigRecord {
   return {
     test_run_id: opts.testRunId,
-    suite: opts.suite,
+    eval: opts.eval,
     plugins: opts.plugins ?? [],
     test: {
       name: opts.testName,
@@ -62,7 +62,7 @@ export function makeConfigRecord(opts: {
 /** A result event enriched with test_run_id and test_case, as written by appendTestRun. */
 export function makeRunResultRecord(opts: {
   testRunId: string
-  suite: string
+  eval: string
   testName: string
   totalCostUsd?: number
   numTurns?: number
@@ -73,7 +73,7 @@ export function makeRunResultRecord(opts: {
   return {
     type: 'result',
     test_run_id: opts.testRunId,
-    test_case: testCaseId(opts.suite, opts.testName),
+    test_case: testCaseId(opts.eval, opts.testName),
     result: 'ok',
     total_cost_usd: opts.totalCostUsd ?? 0.01,
     num_turns: opts.numTurns ?? 3,
@@ -88,7 +88,7 @@ export function makeRunResultRecord(opts: {
 /** A TestResultRecord as written by appendTestResults. */
 export function makeResultRecord(opts: {
   testRunId: string
-  suite: string
+  eval: string
   testName: string
   expectType?: string
   expectValue?: string
@@ -102,7 +102,7 @@ export function makeResultRecord(opts: {
 }): TestResultRecord {
   const record: TestResultRecord = {
     test_run_id: opts.testRunId,
-    suite: opts.suite,
+    eval: opts.eval,
     test_name: opts.testName,
     expect_type: opts.expectType ?? 'result-contains',
     expect_value: opts.expectValue ?? 'expected value',
@@ -126,7 +126,7 @@ export function makeResultRecord(opts: {
 export async function writeRunFixture(opts: {
   outputDir: string
   testRunId: string
-  suite: string
+  eval: string
   testName: string
   passed?: boolean
   totalCostUsd?: number
@@ -138,13 +138,13 @@ export async function writeRunFixture(opts: {
   const runDir = path.join(opts.outputDir, opts.testRunId)
 
   await writeJsonl(path.join(runDir, 'test-config.jsonl'), [
-    makeConfigRecord({ testRunId: opts.testRunId, suite: opts.suite, testName: opts.testName }),
+    makeConfigRecord({ testRunId: opts.testRunId, eval: opts.eval, testName: opts.testName }),
   ])
 
   await writeJsonl(path.join(runDir, 'test-run.jsonl'), [
     makeRunResultRecord({
       testRunId: opts.testRunId,
-      suite: opts.suite,
+      eval: opts.eval,
       testName: opts.testName,
       totalCostUsd: opts.totalCostUsd,
       numTurns: opts.numTurns,
@@ -157,7 +157,7 @@ export async function writeRunFixture(opts: {
   await writeJsonl(path.join(runDir, 'test-results.jsonl'), [
     makeResultRecord({
       testRunId: opts.testRunId,
-      suite: opts.suite,
+      eval: opts.eval,
       testName: opts.testName,
       passed: opts.passed ?? true,
     }),

@@ -20,7 +20,7 @@ const mockEvents = [{ type: 'system' as const, subtype: 'init' as const, session
 
 beforeEach(() => {
   vi.clearAllMocks()
-  vi.mocked(buildTestCaseId).mockReturnValue('my-suite-my-test')
+  vi.mocked(buildTestCaseId).mockReturnValue('my-eval-my-test')
   vi.mocked(ensureOutputDir).mockResolvedValue(undefined)
   vi.mocked(appendTestConfig).mockResolvedValue(undefined)
   vi.mocked(appendTestRun).mockResolvedValue(undefined)
@@ -28,28 +28,28 @@ beforeEach(() => {
 
 describe('writeTestOutput', () => {
   it('calls ensureOutputDir with runDir', async () => {
-    await writeTestOutput('/output/run-1', 'run-1', 'my-suite', ['r-and-d'], mockTest as any, mockEvents as any)
+    await writeTestOutput('/output/run-1', 'run-1', 'my-eval', ['r-and-d'], mockTest as any, mockEvents as any)
     expect(vi.mocked(ensureOutputDir)).toHaveBeenCalledWith('/output/run-1')
   })
 
   it('calls appendTestConfig with runDir and assembled record', async () => {
-    await writeTestOutput('/output/run-1', 'run-1', 'my-suite', ['r-and-d'], mockTest as any, mockEvents as any)
+    await writeTestOutput('/output/run-1', 'run-1', 'my-eval', ['r-and-d'], mockTest as any, mockEvents as any)
     expect(vi.mocked(appendTestConfig)).toHaveBeenCalledWith('/output/run-1', {
       test_run_id: 'run-1',
-      suite: 'my-suite',
+      eval: 'my-eval',
       plugins: ['r-and-d'],
       test: mockTest,
     })
   })
 
-  it('calls buildTestCaseId with suite and test name', async () => {
-    await writeTestOutput('/output/run-1', 'run-1', 'my-suite', ['r-and-d'], mockTest as any, mockEvents as any)
-    expect(vi.mocked(buildTestCaseId)).toHaveBeenCalledWith('my-suite', 'my test')
+  it('calls buildTestCaseId with eval and test name', async () => {
+    await writeTestOutput('/output/run-1', 'run-1', 'my-eval', ['r-and-d'], mockTest as any, mockEvents as any)
+    expect(vi.mocked(buildTestCaseId)).toHaveBeenCalledWith('my-eval', 'my test')
   })
 
   it('calls appendTestRun with runDir, events, testRunId, and test case id from buildTestCaseId', async () => {
-    vi.mocked(buildTestCaseId).mockReturnValue('my-suite-my-test')
-    await writeTestOutput('/output/run-1', 'run-1', 'my-suite', ['r-and-d'], mockTest as any, mockEvents as any)
-    expect(vi.mocked(appendTestRun)).toHaveBeenCalledWith('/output/run-1', mockEvents, 'run-1', 'my-suite-my-test')
+    vi.mocked(buildTestCaseId).mockReturnValue('my-eval-my-test')
+    await writeTestOutput('/output/run-1', 'run-1', 'my-eval', ['r-and-d'], mockTest as any, mockEvents as any)
+    expect(vi.mocked(appendTestRun)).toHaveBeenCalledWith('/output/run-1', mockEvents, 'run-1', 'my-eval-my-test')
   })
 })

@@ -16,7 +16,7 @@ import { unlink } from 'node:fs/promises'
 const mockRecords: TestResultRecord[] = [
   {
     test_run_id: 'run-1',
-    suite: 'code-review',
+    eval: 'code-review',
     test_name: 'my-test',
     expect_type: 'result-contains',
     expect_value: 'hello',

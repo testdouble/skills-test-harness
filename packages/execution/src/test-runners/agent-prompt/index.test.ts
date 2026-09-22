@@ -1,4 +1,4 @@
-import type { RunTotals, TestCase, TestSuiteConfig } from '@testdouble/skillwalker-data'
+import type { RunTotals, TestCase, EvalConfig } from '@testdouble/skillwalker-data'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { runAgentPromptTests, wrapWithDelegation } from './index.js'
 
@@ -6,7 +6,7 @@ vi.mock('@testdouble/skillwalker-data', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@testdouble/skillwalker-data')>()
   return {
     ...actual,
-    resolvePromptPath: vi.fn((_dir: string, file: string) => `/mock/suite/${file}`),
+    resolvePromptPath: vi.fn((_dir: string, file: string) => `/mock/eval/${file}`),
     readPromptFile: vi.fn().mockResolvedValue('analyze the project'),
     parseStreamJsonLines: vi.fn().mockReturnValue([]),
     extractMetrics: vi.fn().mockReturnValue({
@@ -43,7 +43,7 @@ import { writeTestOutput } from '../../lib/output.js'
 
 const defaultTotals: RunTotals = { totalDurationMs: 0, totalInputTokens: 0, totalOutputTokens: 0, failures: 0 }
 
-const mockConfig: TestSuiteConfig = {
+const mockConfig: EvalConfig = {
   plugins: ['r-and-d'],
   tests: [],
 }
@@ -84,7 +84,7 @@ describe('runAgentPromptTests', () => {
       [test],
       mockConfig,
       'gap-analyzer',
-      '/mock/suite',
+      '/mock/eval',
       ['/mock/plugins/r-and-d'],
       false,
       'run-001',
@@ -105,7 +105,7 @@ describe('runAgentPromptTests', () => {
       [test],
       mockConfig,
       'gap-analyzer',
-      '/mock/suite',
+      '/mock/eval',
       pluginDirs,
       false,
       'run-001',
@@ -123,7 +123,7 @@ describe('runAgentPromptTests', () => {
       [test],
       mockConfig,
       'gap-analyzer',
-      '/mock/suite',
+      '/mock/eval',
       ['/mock/plugins/r-and-d'],
       false,
       'run-001',
@@ -141,7 +141,7 @@ describe('runAgentPromptTests', () => {
       [test],
       mockConfig,
       'gap-analyzer',
-      '/mock/suite',
+      '/mock/eval',
       ['/mock/plugins/r-and-d'],
       false,
       'run-001',
@@ -150,7 +150,7 @@ describe('runAgentPromptTests', () => {
     )
 
     const claudeCall = vi.mocked(runClaude).mock.calls[0][0]
-    expect(claudeCall.scaffold).toBe('/mock/suite/scaffolds/go-project')
+    expect(claudeCall.scaffold).toBe('/mock/eval/scaffolds/go-project')
   })
 
   it('prints agentFile in test config output', async () => {
@@ -159,7 +159,7 @@ describe('runAgentPromptTests', () => {
       [test],
       mockConfig,
       'gap-analyzer',
-      '/mock/suite',
+      '/mock/eval',
       ['/mock/plugins/r-and-d'],
       false,
       'run-001',
@@ -177,7 +177,7 @@ describe('runAgentPromptTests', () => {
       [test],
       mockConfig,
       'gap-analyzer',
-      '/mock/suite',
+      '/mock/eval',
       ['/mock/plugins/r-and-d'],
       false,
       'run-001',
@@ -202,7 +202,7 @@ describe('runAgentPromptTests', () => {
       [test],
       mockConfig,
       'gap-analyzer',
-      '/mock/suite',
+      '/mock/eval',
       ['/mock/plugins/r-and-d'],
       false,
       'run-001',
@@ -218,7 +218,7 @@ describe('runAgentPromptTests', () => {
       [],
       mockConfig,
       'gap-analyzer',
-      '/mock/suite',
+      '/mock/eval',
       ['/mock/plugins/r-and-d'],
       false,
       'run-001',
@@ -239,7 +239,7 @@ describe('runAgentPromptTests', () => {
         [test],
         mockConfig,
         'gap-analyzer',
-        '/mock/suite',
+        '/mock/eval',
         ['/mock/plugins/r-and-d'],
         false,
         'run-001',

@@ -46,20 +46,20 @@ Agent-prompt tests use the same `llm-judge` expectation format:
 
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `rubricFile` | string | yes | — | Filename of the rubric in the suite's `rubrics/` directory |
+| `rubricFile` | string | yes | — | Filename of the rubric in the eval's `rubrics/` directory |
 | `model` | string | no | `"opus"` | Claude model used as the judge (`"opus"`, `"sonnet"`) |
 | `threshold` | number | no | `1.0` | Fraction of criteria that must pass (0.0–1.0) for the expectation to pass |
 
 ### Validation
 
-At test suite load time, Skillwalker validates that every referenced rubric file exists at `test-suites/{suite}/rubrics/{rubricFile}`. Missing rubric files cause an immediate error.
+At eval load time, Skillwalker validates that every referenced rubric file exists at `evals/{eval}/rubrics/{rubricFile}`. Missing rubric files cause an immediate error.
 
 ## Rubric Files
 
 ### Location
 
 ```
-tests/test-suites/{suite}/rubrics/{filename}.md
+evals/{eval}/rubrics/{filename}.md
 ```
 
 ### Format
@@ -135,7 +135,7 @@ Skillwalker builds a prompt for the judge Claude invocation containing:
 1. **Scaffold files** — all files from the test's scaffold directory (each truncated at 5KB), giving the judge the same source material the skill worked with
 2. **Transcript** — a summary of tool calls made during the skill or agent run (tool name, key arguments, first 2000 chars of each result)
 3. **Final output** — the result text from the skill or agent run
-4. **Output file content** — content of files the skill/agent wrote to the filesystem, included only when the rubric has `## File:` sections and the corresponding files exist in `output-files.jsonl` (matched by `buildTestCaseId(suite, test.name)`, not raw `test.name`)
+4. **Output file content** — content of files the skill/agent wrote to the filesystem, included only when the rubric has `## File:` sections and the corresponding files exist in `output-files.jsonl` (matched by `buildTestCaseId(eval, test.name)`, not raw `test.name`)
 5. **Rubric criteria** — numbered list of criteria with instructions to respond as JSON. File-scoped criteria are prefixed with `[File: path]` to give the judge context about which file to evaluate
 
 For skill-prompt tests, the judge prompt header describes the output as a "skill run." For agent-prompt tests, the header describes it as an "agent run," giving the judge appropriate context about the execution model.
@@ -226,8 +226,8 @@ If the judge invocation fails (sandbox error, invalid JSON response, file read e
 ### Running Tests with Judge Evaluation
 
 ```bash
-# Run the test suite to produce output
-./build/skillwalker test-run --suite code-review
+# Run the eval to produce output
+./build/skillwalker test-run --eval code-review
 
 # Evaluate all expectations including llm-judge
 ./build/skillwalker test-eval
@@ -245,7 +245,7 @@ Since `test-eval` re-evaluates from stored test output, you can edit a rubric fi
 
 ```bash
 # Edit the rubric
-vim tests/test-suites/code-review/rubrics/code-review-quality.md
+vim evals/code-review/rubrics/code-review-quality.md
 
 # Re-evaluate the same run
 ./build/skillwalker test-eval <run-id>
@@ -281,7 +281,7 @@ The judge prompt has built-in truncation to stay within OS argument limits (macO
 ## Related References
 
 - [Building Rubric Evals](rubric-evals-guide.md) — step-by-step guide covering the full workflow from writing rubrics to evaluating results
-- [Test Suite Reference](test-suite-reference.md) — full tests.json field reference including the `llm-judge` expectation format
+- [Evals Reference](evals-reference.md) — full tests.json field reference including the `llm-judge` expectation format
 - [Writing Skill Eval Rubrics](write-skill-eval-rubric.md) — using the `/write-skill-eval-rubric` skill to generate rubric files for skills
 - [Writing Agent Eval Rubrics](write-agent-eval-rubric.md) — using the `/write-agent-eval-rubric` skill to generate rubric files for agents
 - [Skillwalker README](../README.md) — prerequisites, setup, and running tests

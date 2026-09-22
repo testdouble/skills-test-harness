@@ -1,13 +1,13 @@
-import type { TestSuiteConfig } from '@testdouble/skillwalker-data'
-import { readTestSuiteConfig, validateScaffolds } from '@testdouble/skillwalker-data'
+import type { EvalConfig } from '@testdouble/skillwalker-data'
+import { readEvalConfig, validateScaffolds } from '@testdouble/skillwalker-data'
 import { SkillwalkerError } from '../../lib/errors.js'
 
 export async function readConfig(
   configFilePath: string,
-  testSuiteDir: string,
+  evalDir: string,
   testFilter: string | undefined,
-): Promise<TestSuiteConfig> {
-  const config = await readTestSuiteConfig(configFilePath).catch((err: Error) => {
+): Promise<EvalConfig> {
+  const config = await readEvalConfig(configFilePath).catch((err: Error) => {
     throw new SkillwalkerError(`Failed to read config: ${err.message}`)
   })
   if (testFilter) {
@@ -17,7 +17,7 @@ export async function readConfig(
     }
   }
   try {
-    validateScaffolds(testSuiteDir, config)
+    validateScaffolds(evalDir, config)
   } catch (err) {
     throw new SkillwalkerError((err as Error).message)
   }

@@ -1,20 +1,20 @@
-# Auditing Eval Suites
+# Auditing Evals
 
-> **Tier 3 · Skill/agent authors building evals.** The `/audit-eval-suite` skill compares an existing test suite against the current state of the skill or agent it tests and reports drift; you need a target `plugin:skill` or `plugin:agent` with a suite under `tests/test-suites/`.
+> **Tier 3 · Skill/agent authors building evals.** The `/audit-evals` skill compares an existing eval against the current state of the skill or agent it tests and reports drift; you need a target `plugin:skill` or `plugin:agent` with an eval under `evals/`.
 
-Run `/audit-eval-suite` when a skill or agent has changed and its evals may no longer describe it. A run follows stale evals faithfully: a rubric criterion for a check the skill dropped fails every run, a scaffold signal the skill no longer looks for proves nothing, and a positive prompt that a new boundary clause excludes is scored as a miss. Each looks like a target regression when it is a suite regression. The audit says which is which and names the skill that repairs each artifact. It edits nothing.
+Run `/audit-evals` when a skill or agent has changed and its evals may no longer describe it. A run follows stale evals faithfully: a rubric criterion for a check the skill dropped fails every run, a scaffold signal the skill no longer looks for proves nothing, and a positive prompt that a new boundary clause excludes is scored as a miss. Each looks like a target regression when it is an eval regression. The audit says which is which and names the skill that repairs each artifact. It edits nothing.
 
 ## When to use this skill
 
 Use this skill when you need to:
 
-- Check a suite after editing a skill's `SKILL.md`, references, or dispatched agents, or an agent's definition
-- Explain a suite that started failing — or passing — unexpectedly
+- Check an eval after editing a skill's `SKILL.md`, references, or dispatched agents, or an agent's definition
+- Explain an eval that started failing — or passing — unexpectedly
 - Confirm SCIL, ACIL, or judge scores are measuring the current target before acting on them
 
 ## When NOT to use this skill
 
-- The suite does not exist yet — use `/write-scil-evals`, `/write-acil-evals`, `/write-skill-eval-rubric`, or `/write-agent-eval-rubric` to create it.
+- The eval does not exist yet — use `/write-scil-evals`, `/write-acil-evals`, `/write-skill-eval-rubric`, or `/write-agent-eval-rubric` to create it.
 - You want the findings fixed — the audit reports only; it names the owning skill for each fix.
 - You want to review the skill itself rather than its evals — use the plugin-building guidance for that.
 
@@ -23,8 +23,8 @@ Use this skill when you need to:
 Invoke the skill with a `plugin:skill` or `plugin:agent` argument:
 
 ```
-/audit-eval-suite r-and-d:code-review
-/audit-eval-suite r-and-d:gap-analyzer
+/audit-evals r-and-d:code-review
+/audit-evals r-and-d:gap-analyzer
 ```
 
 The name is resolved as a skill first, then as an agent. If no argument is provided, the skill asks which target to audit.
@@ -39,15 +39,15 @@ A report in the conversation, led by a one-sentence verdict, with findings in th
 | **Weakens scoring** | The score is real but measures less than it claims | A trigger test whose prompt says "this branch" carries no `scaffold` |
 | **Coverage gap** | Something the target does is never exercised | The skill now dispatches a concurrency analyst; no scaffold plants a race |
 
-Every finding cites both sides — the target file and clause, and the suite file, criterion, prompt, or scaffold path — and ends with the fix command. The report closes with a repair order: scaffold first (criteria and prompts reference it), then rubric, then prompts.
+Every finding cites both sides — the target file and clause, and the eval file, criterion, prompt, or scaffold path — and ends with the fix command. The report closes with a repair order: scaffold first (criteria and prompts reference it), then rubric, then prompts.
 
 ## Workflow
 
 The skill walks through a 5-step process with no interview pauses:
 
-1. **Identify the target** — run `scripts/collect-target-inputs.sh`, which resolves the name as a skill or agent and lists its references, dispatched agents, siblings, and whether a suite exists; read all of it and build the target's current profile (description clauses, checks, output shape)
-2. **Validate the suite structurally** — run `scripts/validate-suite.sh`, the same load-time checks Skillwalker applies (prompt files, scaffolds, rubrics, `expect` arrays, identifiers)
-3. **Read the suite** — every test entry, prompt file, rubric, and scaffold file, listing what each scaffold plants
+1. **Identify the target** — run `scripts/collect-target-inputs.sh`, which resolves the name as a skill or agent and lists its references, dispatched agents, siblings, and whether an eval exists; read all of it and build the target's current profile (description clauses, checks, output shape)
+2. **Validate the eval structurally** — run `scripts/validate-eval.sh`, the same load-time checks Skillwalker applies (prompt files, scaffolds, rubrics, `expect` arrays, identifiers)
+3. **Read the eval** — every test entry, prompt file, rubric, and scaffold file, listing what each scaffold plants
 4. **Compare** — rubric against target, scaffold against target and rubric, prompts against the description's current clauses and siblings, deterministic expectations against the current output shape
 5. **Report** — verdict, structural findings, then findings by severity, then the repair order
 
@@ -60,10 +60,10 @@ The skill walks through a 5-step process with no interview pauses:
 
 ## What to Do Next
 
-Run the fix commands in the report's repair order, then re-run the audit until it reports no findings, then run the suite:
+Run the fix commands in the report's repair order, then re-run the audit until it reports no findings, then run the eval:
 
 ```bash
-./build/skillwalker test-run --suite {name}
+./build/skillwalker test-run --eval {name}
 ./build/skillwalker test-eval
 ```
 
@@ -72,10 +72,10 @@ Run the fix commands in the report's repair order, then re-run the audit until i
 - [Building Skill Eval Scaffolds](build-skill-eval-scaffold.md) and [Building Agent Eval Scaffolds](build-agent-eval-scaffold.md) — rebuilding a scaffold the audit found stale
 - [Writing Skill Eval Rubrics](write-skill-eval-rubric.md) and [Writing Agent Eval Rubrics](write-agent-eval-rubric.md) — the rubric update flow
 - [Writing Skill-Call Evals](write-scil-evals.md) and [Writing Agent-Call Evals](write-acil-evals.md) — adding or re-scoping trigger prompts
-- [Test Suite Reference](test-suite-reference.md) — what the structural validation checks
+- [Evals Reference](evals-reference.md) — what the structural validation checks
 - [Skillwalker README](../README.md) — prerequisites, setup, and running tests
 
 ---
 
-**Next:** [Building Rubric Evals](rubric-evals-guide.md) or [Building SCIL Evals](scil-evals-guide.md) — the full workflows the repaired suite feeds into.
+**Next:** [Building Rubric Evals](rubric-evals-guide.md) or [Building SCIL Evals](scil-evals-guide.md) — the full workflows the repaired eval feeds into.
 **Related:** [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context inside the Test Sandbox.

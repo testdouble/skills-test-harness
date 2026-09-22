@@ -75,7 +75,7 @@ async function ensureSandboxExists(): Promise<void>
 Pre-flight check that the sandbox is running. Runs `sbx ls --quiet` and verifies `SANDBOX_NAME` exactly matches one output line. Throws `SandboxError` with `exitCode: null` if the sandbox is not found, with a message directing the user to run `./build/skillwalker sandbox-setup`.
 
 **Consumers:**
-- `cli/src/commands/test-run.ts` -- before the per-suite test loop
+- `cli/src/commands/test-run.ts` -- before the per-eval test loop
 - `cli/src/scil/loop.ts` -- before the SCIL iteration loop
 - `lifecycle.ts: openShell()` -- before spawning an interactive bash session
 

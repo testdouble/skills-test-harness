@@ -5,7 +5,7 @@ import { Link, useParams } from 'react-router-dom'
 interface TestRunDetailRow {
   test_run_id: string
   test_name: string
-  suite: string
+  eval: string
   is_error: boolean
   all_expectations_passed: boolean
   total_cost_usd: number
@@ -16,7 +16,7 @@ interface TestRunDetailRow {
 
 interface TestRunExpectationRow {
   test_run_id: string
-  suite: string
+  eval: string
   test_name: string
   expect_type: string
   expect_value: string
@@ -65,8 +65,10 @@ function SectionHeader({ color, label }: { color: string; label: string }) {
   )
 }
 
-function SuiteBadge({ suite }: { suite: string }) {
-  return <span className="bg-[#1e1060] text-[#a580f9] text-[16px] font-semibold px-3.5 py-1.5 rounded-md">{suite}</span>
+function EvalBadge({ eval: evalName }: { eval: string }) {
+  return (
+    <span className="bg-[#1e1060] text-[#a580f9] text-[16px] font-semibold px-3.5 py-1.5 rounded-md">{evalName}</span>
+  )
 }
 
 function CollapsibleOutput({ resultText }: { resultText?: string }) {
@@ -293,7 +295,7 @@ export function TestRunDetail(): JSX.Element {
       </div>
     )
 
-  const suite = details?.summary[0]?.suite ?? ''
+  const evalName = details?.summary[0]?.eval ?? ''
   const failureCount = details?.summary.filter((r) => !r.all_expectations_passed || r.is_error).length ?? 0
   const allPassed = failureCount === 0
 
@@ -311,7 +313,7 @@ export function TestRunDetail(): JSX.Element {
         <span className="text-[#f0f0f0] text-[28px] font-bold" style={{ letterSpacing: '0.5px' }}>
           {runId}
         </span>
-        {suite && <SuiteBadge suite={suite} />}
+        {evalName && <EvalBadge eval={evalName} />}
         <div className="flex-1" />
         {!allPassed && (
           <div className="flex items-center gap-1.5 px-4 py-2 rounded-md border border-[#d63c00] bg-[#1f1000]">
@@ -350,7 +352,7 @@ export function TestRunDetail(): JSX.Element {
                   className="text-[#4f4f4f] text-[13px] font-bold text-left px-5 h-10 whitespace-nowrap border-b border-[#252625]"
                   style={{ letterSpacing: '1.5px' }}
                 >
-                  SUITE
+                  EVAL
                 </th>
                 <th
                   className="text-[#4f4f4f] text-[13px] font-bold text-left px-5 h-10 border-b border-[#252625]"
@@ -401,7 +403,7 @@ export function TestRunDetail(): JSX.Element {
                   </td>
                   <td className="px-5 whitespace-nowrap">
                     <span className="bg-[#1e1060] text-[#a580f9] text-[14px] font-semibold px-2 py-0.5 rounded">
-                      {row.suite}
+                      {row.eval}
                     </span>
                   </td>
                   <td className="text-[#4f4f4f] text-[16px] px-5">

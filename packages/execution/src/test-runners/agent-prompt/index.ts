@@ -1,6 +1,6 @@
 import path from 'node:path'
 import { extractOutputFiles, runClaude } from '@testdouble/claude-integration'
-import type { ParsedRunMetrics, RunTotals, TestCase, TestSuiteConfig } from '@testdouble/skillwalker-data'
+import type { ParsedRunMetrics, RunTotals, TestCase, EvalConfig } from '@testdouble/skillwalker-data'
 import {
   appendOutputFiles,
   buildTestCaseId,
@@ -25,8 +25,8 @@ function printTestConfig(test: TestCase, plugins: string[]): void {
   process.stderr.write(`  - plugins: ${plugins.join(', ')}\n`)
 }
 
-async function resolveAndReadPrompt(testSuiteDir: string, test: TestCase): Promise<string> {
-  const promptPath = resolvePromptPath(testSuiteDir, test.promptFile)
+async function resolveAndReadPrompt(evalDir: string, test: TestCase): Promise<string> {
+  const promptPath = resolvePromptPath(evalDir, test.promptFile)
   const promptContent = await readPromptFile(promptPath).catch(() => {
     throw new SkillwalkerError(`Prompt file not found: ${promptPath}`)
   })
@@ -66,9 +66,9 @@ function parseAgentName(agentFile: string): string {
 
 export async function runAgentPromptTests(
   tests: TestCase[],
-  config: TestSuiteConfig,
-  suite: string,
-  testSuiteDir: string,
+  config: EvalConfig,
+  evalName: string,
+  evalDir: string,
   pluginDirs: string[],
   debug: boolean,
   testRunId: string,
@@ -82,11 +82,11 @@ export async function runAgentPromptTests(
     printRunningTest(test.name)
     printTestConfig(test, config.plugins)
 
-    const promptContent = await resolveAndReadPrompt(testSuiteDir, test)
+    const promptContent = await resolveAndReadPrompt(evalDir, test)
     const agentName = parseAgentName(test.agentFile!)
     const wrappedPrompt = wrapWithDelegation(agentName, promptContent)
 
-    const scaffoldPath = test.scaffold ? path.join(testSuiteDir, 'scaffolds', test.scaffold) : null
+    const scaffoldPath = test.scaffold ? path.join(evalDir, 'scaffolds', test.scaffold) : null
 
     const { exitCode, stdout } = await runClaude({
       model: test.model ?? 'sonnet',
@@ -107,8 +107,8 @@ export async function runAgentPromptTests(
     current = accumulateTotals(current, metrics)
 
     const runDir = path.join(outputDir, testRunId)
-    await writeTestOutput(runDir, testRunId, suite, config.plugins, test, events)
-    await appendOutputFiles(runDir, testRunId, buildTestCaseId(suite, test.name), outputFiles)
+    await writeTestOutput(runDir, testRunId, evalName, config.plugins, test, events)
+    await appendOutputFiles(runDir, testRunId, buildTestCaseId(evalName, test.name), outputFiles)
   }
 
   return { ...current, failures }

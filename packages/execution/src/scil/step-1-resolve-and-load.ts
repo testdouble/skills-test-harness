@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import type { TestCase } from '@testdouble/skillwalker-data'
-import { readTestSuiteConfig, TEST_CONFIG_FILENAME } from '@testdouble/skillwalker-data'
+import { readEvalConfig, TEST_CONFIG_FILENAME } from '@testdouble/skillwalker-data'
 import { SkillwalkerError } from '../lib/errors.js'
 
 export interface ResolvedSkillAndTests {
@@ -11,14 +11,14 @@ export interface ResolvedSkillAndTests {
 }
 
 export async function resolveAndLoad(
-  suite: string,
+  evalName: string,
   skill: string | undefined,
   testsDir: string,
   repoRoot: string,
 ): Promise<ResolvedSkillAndTests> {
-  const testSuiteDir = path.join(testsDir, 'test-suites', suite)
-  const configPath = path.join(testSuiteDir, TEST_CONFIG_FILENAME)
-  const config = await readTestSuiteConfig(configPath)
+  const evalDir = path.join(testsDir, 'evals', evalName)
+  const configPath = path.join(evalDir, TEST_CONFIG_FILENAME)
+  const config = await readEvalConfig(configPath)
 
   // Filter to skill-call tests only
   const skillCallTests = config.tests.filter((t) => t.type === 'skill-call')
@@ -40,7 +40,7 @@ export async function resolveAndLoad(
     })
 
     if (filtered.length === 0) {
-      throw new SkillwalkerError(`No skill-call tests found for skill "${skill}" in suite "${suite}"`)
+      throw new SkillwalkerError(`No skill-call tests found for skill "${skill}" in eval "${evalName}"`)
     }
 
     return { skillFile: skill, skillMdPath, tests: filtered }
@@ -57,12 +57,12 @@ export async function resolveAndLoad(
   }
 
   if (skillFiles.size === 0) {
-    throw new SkillwalkerError(`No skill-call tests found in suite "${suite}"`)
+    throw new SkillwalkerError(`No skill-call tests found in eval "${evalName}"`)
   }
 
   if (skillFiles.size > 1) {
     const options = Array.from(skillFiles).join(', ')
-    throw new SkillwalkerError(`Multiple skills found in suite "${suite}": ${options}. Use --skill to specify one.`)
+    throw new SkillwalkerError(`Multiple skills found in eval "${evalName}": ${options}. Use --skill to specify one.`)
   }
 
   const inferredSkill = Array.from(skillFiles)[0]

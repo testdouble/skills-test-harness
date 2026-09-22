@@ -13,7 +13,7 @@ One row per test case per run.
 | Field | Type | Description |
 |-------|------|-------------|
 | `test_run_id` | text | Timestamp ID, e.g. `20260316T153306` |
-| `suite` | text | Test suite name, e.g. `code-review` |
+| `eval` | text | Eval name, e.g. `code-review` |
 | `plugins` | text[] | Plugin names loaded for the run |
 | `test` | struct | Full test config: `name`, `type`, `model`, `promptFile`, `skillFile`, `scaffold`, `expect` |
 
@@ -29,7 +29,7 @@ One row per Claude stream-json event (heterogeneous — includes `system`, `assi
 |-------|------|-------------|
 | `type` | text | Event type: `system`, `assistant`, `user`, or `result`. Filter to `'result'` for analytics. |
 | `test_run_id` | text | Links to test-config and test-results |
-| `test_case` | text | `{suite}-{normalized_name}` — present on result rows; join key to test-config |
+| `test_case` | text | `{eval}-{normalized_name}` — present on result rows; join key to test-config |
 | `result` | text (nullable) | The skill's final text output (result rows only) |
 | `is_error` | boolean (nullable) | True if run ended with an error (result rows only) |
 | `duration_ms` | integer (nullable) | Wall-clock runtime in milliseconds (result rows only) |
@@ -48,7 +48,7 @@ One row per expectation evaluated. Written by `./build/skillwalker test-eval`.
 | Field | Type | Description |
 |-------|------|-------------|
 | `test_run_id` | text | Links back to run |
-| `suite` | text | Test suite name |
+| `eval` | text | Eval name |
 | `test_name` | text | Test case name |
 | `expect_type` | text | One of: `result-contains`, `result-does-not-contain`, `skill-call`, `llm-judge`, `llm-judge-aggregate` |
 | `expect_value` | text | The value asserted (substring for result checks, boolean string for skill-call, criterion text for llm-judge, rubric filename for llm-judge-aggregate) |
@@ -70,7 +70,7 @@ One row per output file captured from the sandbox after a test case runs. Writte
 | Field | Type | Description |
 |-------|------|-------------|
 | `test_run_id` | text | Links back to run |
-| `test_name` | text | Test case ID (suite-normalized-name format) |
+| `test_name` | text | Test case ID (eval-normalized-name format) |
 | `file_path` | text | Relative path of the file written inside the sandbox |
 | `file_content` | text | Full text content of the captured file |
 
@@ -154,22 +154,22 @@ Join result rows to test-config via a reconstructed `test_case` key. The normali
 FROM read_parquet('analytics/data/test-run.parquet') r
 JOIN read_parquet('analytics/data/test-config.parquet') c
   ON r.test_run_id = c.test_run_id
-  AND r.test_case = c.suite || '-' ||
+  AND r.test_case = c.eval || '-' ||
       regexp_replace(regexp_replace(c.test.name, ' ', '-', 'g'), '[^a-zA-Z0-9-]', '', 'g')
 WHERE r.type = 'result'
 ```
 
 ### test-results to test-run + test-config
 
-Join test-results for expectation data using `(test_run_id, suite, test_name)`:
+Join test-results for expectation data using `(test_run_id, eval, test_name)`:
 
 ```sql
 LEFT JOIN (
-  SELECT test_run_id, suite, test_name, bool_and(passed) AS all_expectations_passed
+  SELECT test_run_id, eval, test_name, bool_and(passed) AS all_expectations_passed
   FROM read_parquet('analytics/data/test-results.parquet')
-  GROUP BY test_run_id, suite, test_name
+  GROUP BY test_run_id, eval, test_name
 ) e ON r.test_run_id = e.test_run_id
-    AND c.suite = e.suite
+    AND c.eval = e.eval
     AND c.test.name = e.test_name
 ```
 
@@ -187,26 +187,26 @@ JOIN read_parquet('analytics/data/scil-summary.parquet') s
 
 ## Example Queries
 
-**Pass rate by test suite:**
+**Pass rate by eval:**
 
 ```sql
 WITH expect_summary AS (
-  SELECT test_run_id, suite, test_name, bool_and(passed) AS all_expectations_passed
+  SELECT test_run_id, eval, test_name, bool_and(passed) AS all_expectations_passed
   FROM read_parquet('analytics/data/test-results.parquet')
-  GROUP BY test_run_id, suite, test_name
+  GROUP BY test_run_id, eval, test_name
 )
-SELECT c.suite,
+SELECT c.eval,
        COUNT(*) AS runs,
        ROUND(AVG(e.all_expectations_passed::int) * 100, 1) AS pass_pct
 FROM read_parquet('analytics/data/test-run.parquet') r
 JOIN read_parquet('analytics/data/test-config.parquet') c
   ON r.test_run_id = c.test_run_id
-  AND r.test_case = c.suite || '-' ||
+  AND r.test_case = c.eval || '-' ||
       regexp_replace(regexp_replace(c.test.name, ' ', '-', 'g'), '[^a-zA-Z0-9-]', '', 'g')
 LEFT JOIN expect_summary e
-  ON r.test_run_id = e.test_run_id AND c.suite = e.suite AND c.test.name = e.test_name
+  ON r.test_run_id = e.test_run_id AND c.eval = e.eval AND c.test.name = e.test_name
 WHERE r.type = 'result'
-GROUP BY c.suite
+GROUP BY c.eval
 ORDER BY pass_pct DESC;
 ```
 
@@ -221,7 +221,7 @@ SELECT c.test.model AS model,
 FROM read_parquet('analytics/data/test-run.parquet') r
 JOIN read_parquet('analytics/data/test-config.parquet') c
   ON r.test_run_id = c.test_run_id
-  AND r.test_case = c.suite || '-' ||
+  AND r.test_case = c.eval || '-' ||
       regexp_replace(regexp_replace(c.test.name, ' ', '-', 'g'), '[^a-zA-Z0-9-]', '', 'g')
 WHERE r.type = 'result'
 GROUP BY c.test.model;
@@ -255,7 +255,7 @@ JOIN read_parquet('analytics/data/scil-iteration.parquet') i
 ## Related References
 
 - [Skillwalker README](../README.md) — analytics commands and web app
-- [Test Suite Reference](test-suite-reference.md) — tests.json field reference (source of config and results data)
+- [Evals Reference](evals-reference.md) — tests.json field reference (source of config and results data)
 - [LLM Judge Evaluation](llm-judge.md) — explains the `llm-judge` and `llm-judge-aggregate` result types and their fields
 - [Skill Call Improvement Loop](skill-call-improvement-loop.md) — SCIL mechanics and output files
 - [Data Package](data.md) — DuckDB queries and JSONL-to-Parquet import logic that populates these tables

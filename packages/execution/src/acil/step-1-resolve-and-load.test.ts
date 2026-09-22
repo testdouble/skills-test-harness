@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@testdouble/skillwalker-data', () => ({
-  readTestSuiteConfig: vi.fn(),
+  readEvalConfig: vi.fn(),
   TEST_CONFIG_FILENAME: 'tests.json',
 }))
 vi.mock('node:fs', () => ({
@@ -9,7 +9,7 @@ vi.mock('node:fs', () => ({
 }))
 
 import { existsSync } from 'node:fs'
-import { readTestSuiteConfig } from '@testdouble/skillwalker-data'
+import { readEvalConfig } from '@testdouble/skillwalker-data'
 import { SkillwalkerError } from '../lib/errors.js'
 import { resolveAndLoad } from './step-1-resolve-and-load.js'
 
@@ -23,7 +23,7 @@ function makeAgentCallTest(name: string, agentFile: string, value: boolean) {
 }
 
 function mockConfig(tests: unknown[]) {
-  vi.mocked(readTestSuiteConfig).mockResolvedValue({ tests, plugins: ['r-and-d'] } as any)
+  vi.mocked(readEvalConfig).mockResolvedValue({ tests, plugins: ['r-and-d'] } as any)
 }
 
 beforeEach(() => {
@@ -39,7 +39,7 @@ describe('resolveAndLoad (ACIL)', () => {
         makeAgentCallTest('test-2', 'r-and-d:other-agent', true),
       ])
 
-      const result = await resolveAndLoad('my-suite', 'r-and-d:gap-analyzer', '/tests', '/repo')
+      const result = await resolveAndLoad('my-eval', 'r-and-d:gap-analyzer', '/tests', '/repo')
 
       expect(result.agentFile).toBe('r-and-d:gap-analyzer')
       expect(result.agentMdPath).toBe('/repo/r-and-d/agents/gap-analyzer.md')
@@ -59,19 +59,19 @@ describe('resolveAndLoad (ACIL)', () => {
         },
       ])
 
-      const result = await resolveAndLoad('my-suite', 'r-and-d:gap-analyzer', '/tests', '/repo')
+      const result = await resolveAndLoad('my-eval', 'r-and-d:gap-analyzer', '/tests', '/repo')
 
       expect(result.tests).toHaveLength(1)
     })
 
     it('throws SkillwalkerError when agent identifier has no colon', async () => {
-      await expect(resolveAndLoad('my-suite', 'gap-analyzer', '/tests', '/repo')).rejects.toThrow(
+      await expect(resolveAndLoad('my-eval', 'gap-analyzer', '/tests', '/repo')).rejects.toThrow(
         /Invalid agent identifier/,
       )
     })
 
     it('throws SkillwalkerError when agent identifier contains path traversal', async () => {
-      await expect(resolveAndLoad('my-suite', '../../etc:passwd', '/tests', '/repo')).rejects.toThrow(
+      await expect(resolveAndLoad('my-eval', '../../etc:passwd', '/tests', '/repo')).rejects.toThrow(
         /Invalid agent identifier/,
       )
     })
@@ -80,7 +80,7 @@ describe('resolveAndLoad (ACIL)', () => {
       vi.mocked(existsSync).mockReturnValue(false)
       mockConfig([])
 
-      await expect(resolveAndLoad('my-suite', 'r-and-d:gap-analyzer', '/tests', '/repo')).rejects.toThrow(
+      await expect(resolveAndLoad('my-eval', 'r-and-d:gap-analyzer', '/tests', '/repo')).rejects.toThrow(
         SkillwalkerError,
       )
     })
@@ -89,7 +89,7 @@ describe('resolveAndLoad (ACIL)', () => {
       vi.mocked(existsSync).mockReturnValue(true)
       mockConfig([makeAgentCallTest('test-1', 'r-and-d:other-agent', true)])
 
-      await expect(resolveAndLoad('my-suite', 'r-and-d:gap-analyzer', '/tests', '/repo')).rejects.toThrow(
+      await expect(resolveAndLoad('my-eval', 'r-and-d:gap-analyzer', '/tests', '/repo')).rejects.toThrow(
         /No agent-call tests found for agent/,
       )
     })
@@ -106,7 +106,7 @@ describe('resolveAndLoad (ACIL)', () => {
         makeAgentCallTest('agent-test', 'r-and-d:gap-analyzer', true),
       ])
 
-      const result = await resolveAndLoad('my-suite', 'r-and-d:gap-analyzer', '/tests', '/repo')
+      const result = await resolveAndLoad('my-eval', 'r-and-d:gap-analyzer', '/tests', '/repo')
 
       expect(result.tests).toHaveLength(1)
       expect(result.tests[0].name).toBe('agent-test')
@@ -121,7 +121,7 @@ describe('resolveAndLoad (ACIL)', () => {
         makeAgentCallTest('test-2', 'r-and-d:gap-analyzer', false),
       ])
 
-      const result = await resolveAndLoad('my-suite', undefined, '/tests', '/repo')
+      const result = await resolveAndLoad('my-eval', undefined, '/tests', '/repo')
 
       expect(result.agentFile).toBe('r-and-d:gap-analyzer')
       expect(result.tests).toHaveLength(2)
@@ -133,7 +133,7 @@ describe('resolveAndLoad (ACIL)', () => {
         makeAgentCallTest('test-2', 'r-and-d:other-agent', true),
       ])
 
-      await expect(resolveAndLoad('my-suite', undefined, '/tests', '/repo')).rejects.toThrow(/Multiple agents found/)
+      await expect(resolveAndLoad('my-eval', undefined, '/tests', '/repo')).rejects.toThrow(/Multiple agents found/)
     })
 
     it('throws when no agent-call tests found', async () => {
@@ -146,9 +146,7 @@ describe('resolveAndLoad (ACIL)', () => {
         },
       ])
 
-      await expect(resolveAndLoad('my-suite', undefined, '/tests', '/repo')).rejects.toThrow(
-        /No agent-call tests found/,
-      )
+      await expect(resolveAndLoad('my-eval', undefined, '/tests', '/repo')).rejects.toThrow(/No agent-call tests found/)
     })
 
     it('throws when inferred agent has invalid format', async () => {
@@ -161,14 +159,14 @@ describe('resolveAndLoad (ACIL)', () => {
         },
       ])
 
-      await expect(resolveAndLoad('my-suite', undefined, '/tests', '/repo')).rejects.toThrow(/Invalid agent identifier/)
+      await expect(resolveAndLoad('my-eval', undefined, '/tests', '/repo')).rejects.toThrow(/Invalid agent identifier/)
     })
 
     it('throws when inferred agent .md does not exist', async () => {
       vi.mocked(existsSync).mockReturnValue(false)
       mockConfig([makeAgentCallTest('test-1', 'r-and-d:gap-analyzer', true)])
 
-      await expect(resolveAndLoad('my-suite', undefined, '/tests', '/repo')).rejects.toThrow(SkillwalkerError)
+      await expect(resolveAndLoad('my-eval', undefined, '/tests', '/repo')).rejects.toThrow(SkillwalkerError)
     })
   })
 })

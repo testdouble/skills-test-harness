@@ -1,7 +1,7 @@
 export type { AcilIterationResult, AcilQueryResult, AcilTestCase } from '@testdouble/skillwalker-data'
 
 export interface AcilConfig {
-  suite: string
+  eval: string
   agent?: string
   maxIterations: number
   holdout: number

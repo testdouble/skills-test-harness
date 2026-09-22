@@ -208,7 +208,7 @@ mutable state.
   matches.
 - **Raised by:** structural-analyst S4.
 - **Confidence:** Unverified for dynamic/string-based loading from files outside `packages/*/src` (none was found,
-  but the sweep did not read shell scripts or test-suite folders).
+  but the sweep did not read shell scripts or eval folders).
 - **Bears on:** context only (no delta entry rests on it)
 
 ### C-7: The internal workspace graph is a clean DAG with every import declared

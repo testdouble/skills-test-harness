@@ -101,13 +101,13 @@ After extracting scripts, you can:
 
 1. **Test the skill manually** to verify the extracted scripts work correctly in context
 
-2. **Run existing evals** if the skill has a test suite:
+2. **Run existing evals** if the skill has an eval:
    ```bash
-   ./build/skillwalker test-run --suite {skill-name}
+   ./build/skillwalker test-run --eval {skill-name}
    ./build/skillwalker test-eval
    ```
 
-3. **Write evals** if the skill doesn't have a test suite yet:
+3. **Write evals** if the skill doesn't have an eval yet:
    ```
    /write-scil-evals {plugin}:{skill}
    /write-skill-eval-rubric {plugin}:{skill}
@@ -122,5 +122,5 @@ After extracting scripts, you can:
 
 ---
 
-**Next:** [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md) — once a skill is hardened, set up its first eval suite end to end.
+**Next:** [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md) — once a skill is hardened, set up its first eval end to end.
 **Related:** [Writing Skill-Call Evals](write-scil-evals.md) and [Writing Skill Eval Rubrics](write-skill-eval-rubric.md) — scaffold trigger and effectiveness tests for the hardened skill.

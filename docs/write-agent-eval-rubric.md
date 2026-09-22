@@ -2,14 +2,14 @@
 
 > **Tier 3 · Skill/agent authors building evals.** The `/write-agent-eval-rubric` skill generates quality rubric files and `llm-judge` `tests.json` expectations for an agent's effectiveness evals; you need a target `plugin:agent` (and usually a scaffold) already in place.
 
-Run `/write-agent-eval-rubric` to define how an LLM judge scores an agent's output quality. The skill interviews you for categorized criteria, writes a rubric markdown file under `tests/test-suites/{suite}/rubrics/`, and configures `llm-judge` expectations in `tests.json` for `agent-prompt` type tests. Run it after building a scaffold and before running and evaluating tests.
+Run `/write-agent-eval-rubric` to define how an LLM judge scores an agent's output quality. The skill interviews you for categorized criteria, writes a rubric markdown file under `evals/{eval}/rubrics/`, and configures `llm-judge` expectations in `tests.json` for `agent-prompt` type tests. Run it after building a scaffold and before running and evaluating tests.
 
 ## When to use this skill
 
 Use this skill when you need to:
 
 - Create a new quality rubric for an agent's agent-prompt tests
-- Add `llm-judge` expectations to an existing agent test suite
+- Add `llm-judge` expectations to an existing agent eval
 - Update criteria in an existing agent rubric file
 
 ## When NOT to use this skill
@@ -34,7 +34,7 @@ If no argument is provided, the skill will ask which plugin:agent to write rubri
 The skill creates (or updates) a rubric file and configures llm-judge expectations:
 
 ```
-tests/test-suites/{agent-name}/
+evals/{agent-name}/
   rubrics/
     {agent-name}-quality.md    # rubric file with categorized criteria
   tests.json                   # updated with llm-judge expectations
@@ -95,7 +95,7 @@ Each llm-judge expectation in `tests.json` follows this format:
 }
 ```
 
-- `rubricFile` — filename of the rubric in the suite's `rubrics/` directory (required)
+- `rubricFile` — filename of the rubric in the eval's `rubrics/` directory (required)
 - `model` — Claude model used to judge the output (default: `"opus"`)
 - `threshold` — fraction of criteria that must pass for the expectation to pass (default: `0.8`)
 
@@ -122,12 +122,12 @@ Agent-prompt tests reference the agent via the `agentFile` field in `plugin:agen
 The skill walks through a 7-step process with three pauses for the user: test targets, the drafted rubric, and a final preview.
 
 1. **Identify the target agent** — parse and validate the `plugin:agent` argument, read the agent definition to learn the output type, what the agent checks for, and whether it writes files
-2. **Inspect the test suite** — read existing `tests.json`, rubrics, and the scaffold files the `agent-prompt` tests use; detect create vs. update mode
+2. **Inspect the eval** — read existing `tests.json`, rubrics, and the scaffold files the `agent-prompt` tests use; detect create vs. update mode
 3. **Interview: Test targets** — propose which `agent-prompt` tests receive the rubric, whether to add a new one, and (for file-writing agents) the output paths the prompt should pin
 4. **Draft the rubric** — Presence, Specificity, Depth, and Absence criteria drawn from the agent's own checks and the scaffold's planted signals; `## File:` sections for file output; zero to two deterministic `result-contains` / `result-does-not-contain` checks for text the agent guarantees; llm-judge settings (defaults: opus, 0.8) and the rubric filename
 5. **Interview: Edit the draft** — the user approves, adds, removes, or modifies criteria, checks, and settings
 6. **Preview and confirm** — the exact rubric markdown, tests.json changes, and new prompt files
-7. **Write and validate** — write everything, then run `scripts/validate-suite.sh` and fix every finding before reporting
+7. **Write and validate** — write everything, then run `scripts/validate-eval.sh` and fix every finding before reporting
 ## Create vs. Update
 
 - **New rubric**: Creates the rubric file, adds `llm-judge` expectations to selected tests, and optionally creates new agent-prompt test entries
@@ -139,7 +139,7 @@ After generating the rubric, you can:
 
 1. **Run the tests** to produce output for the judge to evaluate:
    ```bash
-   ./build/skillwalker test-run --suite {agent-name}
+   ./build/skillwalker test-run --eval {agent-name}
    ```
 
 2. **Evaluate results** including the llm-judge expectations:
@@ -156,7 +156,7 @@ For details on how the llm-judge system works, see [LLM Judge Evaluation](llm-ju
 ## References
 
 - [Building Rubric Evals](rubric-evals-guide.md) — step-by-step guide covering the full workflow from writing rubrics to evaluating results
-- [Test Suite Reference](test-suite-reference.md) — full tests.json field reference including the `llm-judge` expectation format and `agent-prompt` test type
+- [Evals Reference](evals-reference.md) — full tests.json field reference including the `llm-judge` expectation format and `agent-prompt` test type
 - [LLM Judge Evaluation](llm-judge.md) — judge mechanics: prompt construction, scoring, output format, error handling
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context for the judge
 - [Writing Skill Eval Rubrics](write-skill-eval-rubric.md) — the equivalent skill for skill-based rubric evals

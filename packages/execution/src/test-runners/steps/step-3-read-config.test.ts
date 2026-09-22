@@ -1,10 +1,10 @@
-import { readTestSuiteConfig, validateScaffolds } from '@testdouble/skillwalker-data'
+import { readEvalConfig, validateScaffolds } from '@testdouble/skillwalker-data'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { SkillwalkerError } from '../../lib/errors.js'
 import { readConfig } from './step-3-read-config.js'
 
 vi.mock('@testdouble/skillwalker-data', () => ({
-  readTestSuiteConfig: vi.fn(),
+  readEvalConfig: vi.fn(),
   validateScaffolds: vi.fn(),
 }))
 
@@ -22,56 +22,56 @@ function makeConfig(names: string[]) {
 
 describe('readConfig', () => {
   it('returns the full config when no testFilter is provided', async () => {
-    vi.mocked(readTestSuiteConfig).mockResolvedValue(makeConfig(['test-a', 'test-b', 'test-c']))
-    const result = await readConfig('/path/config.json', '/path/suite', undefined)
+    vi.mocked(readEvalConfig).mockResolvedValue(makeConfig(['test-a', 'test-b', 'test-c']))
+    const result = await readConfig('/path/config.json', '/path/eval', undefined)
     expect(result.tests).toHaveLength(3)
   })
 
   it('filters config.tests to only the matching test when testFilter is provided', async () => {
-    vi.mocked(readTestSuiteConfig).mockResolvedValue(makeConfig(['test-a', 'test-b', 'test-c']))
-    const result = await readConfig('/path/config.json', '/path/suite', 'test-b')
+    vi.mocked(readEvalConfig).mockResolvedValue(makeConfig(['test-a', 'test-b', 'test-c']))
+    const result = await readConfig('/path/config.json', '/path/eval', 'test-b')
     expect(result.tests).toHaveLength(1)
     expect(result.tests[0].name).toBe('test-b')
   })
 
   it('throws SkillwalkerError when testFilter matches no tests', async () => {
-    vi.mocked(readTestSuiteConfig).mockResolvedValue(makeConfig(['test-a', 'test-b']))
+    vi.mocked(readEvalConfig).mockResolvedValue(makeConfig(['test-a', 'test-b']))
 
-    await expect(readConfig('/path/config.json', '/path/suite', 'nonexistent')).rejects.toThrow(SkillwalkerError)
-    await expect(readConfig('/path/config.json', '/path/suite', 'nonexistent')).rejects.toThrow('nonexistent')
+    await expect(readConfig('/path/config.json', '/path/eval', 'nonexistent')).rejects.toThrow(SkillwalkerError)
+    await expect(readConfig('/path/config.json', '/path/eval', 'nonexistent')).rejects.toThrow('nonexistent')
   })
 
-  it('throws SkillwalkerError with the error message when readTestSuiteConfig throws (TP-001)', async () => {
-    vi.mocked(readTestSuiteConfig).mockRejectedValue(new Error('Invalid JSON in config file'))
+  it('throws SkillwalkerError with the error message when readEvalConfig throws (TP-001)', async () => {
+    vi.mocked(readEvalConfig).mockRejectedValue(new Error('Invalid JSON in config file'))
 
-    await expect(readConfig('/path/config.json', '/path/suite', undefined)).rejects.toThrow(SkillwalkerError)
-    await expect(readConfig('/path/config.json', '/path/suite', undefined)).rejects.toThrow(
+    await expect(readConfig('/path/config.json', '/path/eval', undefined)).rejects.toThrow(SkillwalkerError)
+    await expect(readConfig('/path/config.json', '/path/eval', undefined)).rejects.toThrow(
       'Invalid JSON in config file',
     )
   })
 
-  it('calls validateScaffolds with testSuiteDir and config', async () => {
+  it('calls validateScaffolds with evalDir and config', async () => {
     const config = makeConfig(['test-a'])
-    vi.mocked(readTestSuiteConfig).mockResolvedValue(config)
-    await readConfig('/path/config.json', '/path/suite', undefined)
-    expect(vi.mocked(validateScaffolds)).toHaveBeenCalledWith('/path/suite', config)
+    vi.mocked(readEvalConfig).mockResolvedValue(config)
+    await readConfig('/path/config.json', '/path/eval', undefined)
+    expect(vi.mocked(validateScaffolds)).toHaveBeenCalledWith('/path/eval', config)
   })
 
   it('throws SkillwalkerError when validateScaffolds throws', async () => {
-    vi.mocked(readTestSuiteConfig).mockResolvedValue(makeConfig(['test-a']))
+    vi.mocked(readEvalConfig).mockResolvedValue(makeConfig(['test-a']))
     vi.mocked(validateScaffolds).mockImplementation(() => {
       throw new Error('Scaffold directory not found: /path/scaffolds/missing')
     })
 
-    await expect(readConfig('/path/config.json', '/path/suite', undefined)).rejects.toThrow(SkillwalkerError)
-    await expect(readConfig('/path/config.json', '/path/suite', undefined)).rejects.toThrow(
+    await expect(readConfig('/path/config.json', '/path/eval', undefined)).rejects.toThrow(SkillwalkerError)
+    await expect(readConfig('/path/config.json', '/path/eval', undefined)).rejects.toThrow(
       'Scaffold directory not found',
     )
   })
 
   it('returns all tests when multiple tests share the same name as testFilter (TP-030)', async () => {
-    vi.mocked(readTestSuiteConfig).mockResolvedValue(makeConfig(['test-a', 'test-a', 'test-b']))
-    const result = await readConfig('/path/config.json', '/path/suite', 'test-a')
+    vi.mocked(readEvalConfig).mockResolvedValue(makeConfig(['test-a', 'test-a', 'test-b']))
+    const result = await readConfig('/path/config.json', '/path/eval', 'test-a')
     expect(result.tests).toHaveLength(2)
     expect(result.tests.every((t) => t.name === 'test-a')).toBe(true)
   })

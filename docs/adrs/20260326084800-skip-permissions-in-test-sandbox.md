@@ -11,7 +11,7 @@
 
 Skillwalker runs Claude Code in `--print` mode (non-interactive) inside an isolated Test Sandbox. In this mode, Claude cannot prompt the user for permission approval. When a prompt test invokes a skill via the `Skill` tool, Claude Code denies the call because `Skill` is not in any auto-approved tools list. Claude then falls back to performing the task manually — bypassing the skill entirely — which causes `skill-call` expectations to fail consistently.
 
-This was discovered through the code-review test suite, where the prompt `run a /code-review on lib/example.rb` correctly triggered a `Skill` tool call, but the call returned `is_error: true` with the `Skill` tool listed in `permission_denials`. Claude's thinking confirmed the fallback: "Let me read the file first and then do the code review manually."
+This was discovered through the code-review eval, where the prompt `run a /code-review on lib/example.rb` correctly triggered a `Skill` tool call, but the call returned `is_error: true` with the `Skill` tool listed in `permission_denials`. Claude's thinking confirmed the fallback: "Let me read the file first and then do the code review manually."
 
 The problem affects all prompt-type tests that expect skill invocation, making it impossible to validate that skills are triggered correctly from natural language prompts.
 

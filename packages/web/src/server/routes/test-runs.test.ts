@@ -30,7 +30,7 @@ describe('getTestRuns', () => {
     const mockRuns = [
       {
         test_run_id: '20240103T120000',
-        suite: 'suite-a',
+        eval: 'eval-a',
         date: '2024-01-03T12:00:00.000Z',
         total_tests: 2,
         passed: 1,
@@ -38,7 +38,7 @@ describe('getTestRuns', () => {
       },
       {
         test_run_id: '20240101T080000',
-        suite: 'suite-b',
+        eval: 'eval-b',
         date: '2024-01-01T08:00:00.000Z',
         total_tests: 1,
         passed: 1,
@@ -81,7 +81,7 @@ describe('getTestRuns', () => {
     const mockRuns = [
       {
         test_run_id: '20240103T120000',
-        suite: 'suite-a',
+        eval: 'eval-a',
         date: '2024-01-03T12:00:00.000Z',
         total_tests: 5,
         passed: 3,

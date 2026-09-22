@@ -1,6 +1,6 @@
 # Analytics
 
-> **Tier 1 · Anyone querying results.** Assumes you've completed [setup](../../README.md#setup), run at least one test suite, and imported data with `./build/skillwalker update-analytics-data`. This page gets you queryable cross-run metrics from the CLI.
+> **Tier 1 · Anyone querying results.** Assumes you've completed [setup](../../README.md#setup), run at least one eval, and imported data with `./build/skillwalker update-analytics-data`. This page gets you queryable cross-run metrics from the CLI.
 
 Import test run data into a DuckDB database backed by Parquet files, then query it from the CLI or the web dashboard. This page covers importing data, running queries, and finding your way around the analytics output.
 
@@ -71,7 +71,7 @@ For the complete field reference for each table, see [Parquet Schema](../parquet
 
 ## Viewing in the dashboard
 
-For a visual interface to your analytics data, use the skillwalker-web dashboard. See [Viewing Results](viewing-results.md) for a full walkthrough, including the Per-Test Analytics page that surfaces cross-run trends, suite breakdowns, and cost analysis.
+For a visual interface to your analytics data, use the skillwalker-web dashboard. See [Viewing Results](viewing-results.md) for a full walkthrough, including the Per-Test Analytics page that surfaces cross-run trends, eval breakdowns, and cost analysis.
 
 ## Related documentation
 

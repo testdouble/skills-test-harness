@@ -1,6 +1,6 @@
 # Improving Agent Trigger Accuracy
 
-> **Tier 1 · Agent authors.** Assumes you've completed [setup](../../README.md#setup). This page gets you a first agent-call test suite run end-to-end, with results you can review.
+> **Tier 1 · Agent authors.** Assumes you've completed [setup](../../README.md#setup). This page gets you a first agent-call eval run end-to-end, with results you can review.
 
 Create agent-call tests, run them, and review whether Claude delegates to your agent correctly.
 
@@ -11,13 +11,13 @@ Agent trigger accuracy measures whether Claude correctly delegates tasks to your
 ## What you'll do
 
 1. Write your test configuration using the `/write-acil-evals` skill
-2. Run the test suite to measure current trigger accuracy
+2. Run the eval to measure current trigger accuracy
 3. Import the results into the analytics database
 4. View the results in the skillwalker-web dashboard
 
 ## Step 1: Write your test configuration
 
-Use the `/write-acil-evals` skill to generate a test suite for your agent:
+Use the `/write-acil-evals` skill to generate an eval for your agent:
 
 ```
 /write-acil-evals plugin:agent
@@ -35,19 +35,19 @@ The skill interviews you to collect three categories of prompts:
 - **Negative triggers** — prompts that should not delegate to your agent (3+ recommended)
 - **Sibling triggers** — prompts that should trigger other agents or skills in the same plugin, not yours (3+ if applicable)
 
-It generates two things in `tests/test-suites/{agent-name}/`:
+It generates two things in `evals/{agent-name}/`:
 
 - `tests.json` — the test configuration with one entry per prompt
 - `prompts/agent-call-*.md` — individual prompt files
 
-For details on the skill's full workflow and prompt category conventions, see [Writing Agent-Call Evals](../write-acil-evals.md). For the complete `tests.json` field reference, see [Test Suite Reference](../test-suite-reference.md).
+For details on the skill's full workflow and prompt category conventions, see [Writing Agent-Call Evals](../write-acil-evals.md). For the complete `tests.json` field reference, see [Evals Reference](../evals-reference.md).
 
-## Step 2: Run the test suite
+## Step 2: Run the eval
 
-Run all tests in your suite:
+Run all tests in your eval:
 
 ```bash
-./build/skillwalker test-run --suite {agent-name}
+./build/skillwalker test-run --eval {agent-name}
 ```
 
 Skillwalker executes each prompt inside the Test Sandbox, records whether your agent was delegated to, and prints a pass/fail summary.
@@ -55,13 +55,13 @@ Skillwalker executes each prompt inside the Test Sandbox, records whether your a
 **Tip:** To run a single test in isolation (useful for debugging):
 
 ```bash
-./build/skillwalker test-run --suite {agent-name} --test "Agent Call: some test name"
+./build/skillwalker test-run --eval {agent-name} --test "Agent Call: some test name"
 ```
 
 **Tip:** To see raw Claude output for troubleshooting:
 
 ```bash
-./build/skillwalker test-run --suite {agent-name} --debug
+./build/skillwalker test-run --eval {agent-name} --debug
 ```
 
 For the full list of CLI flags, see [CLI](../cli.md).

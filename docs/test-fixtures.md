@@ -28,7 +28,7 @@ flowchart TB
     subgraph pkg["@testdouble/test-fixtures"]
         direction TB
         loader["<b>load-fixtures.ts</b><br>loadFixtures(name, tmpDir)<br>cp(fixtures/name → tmpDir)"]
-        fixtures["<b>Fixture Data</b><br><br><b>data/analytics/</b><br>17 scenarios × JSONL files<br>(test-run, test-config, test-results,<br>scil-iteration, scil-summary)<br><br><b>cli/test-runners/steps/</b><br>mock-test-suite-config.json<br>mock-parsed-metrics.json"]
+        fixtures["<b>Fixture Data</b><br><br><b>data/analytics/</b><br>17 scenarios × JSONL files<br>(test-run, test-config, test-results,<br>scil-iteration, scil-summary)<br><br><b>cli/test-runners/steps/</b><br>mock-eval-config.json<br>mock-parsed-metrics.json"]
 
         loader --> fixtures
     end
@@ -47,7 +47,7 @@ flowchart TB
 | `packages/test-fixtures/load-fixtures.ts` | Exports `loadFixtures()` to recursively copy a named fixture directory into a temp dir |
 | `packages/test-fixtures/package.json` | Dual-export config: `"."` for `loadFixtures`, `"./*"` for direct file imports |
 | `packages/test-fixtures/data/analytics/` | 17 named scenario directories, each containing JSONL files for DuckDB analytics queries |
-| `packages/test-fixtures/cli/test-runners/steps/mock-test-suite-config.json` | Mock `TestSuiteConfig` JSON for CLI step unit tests |
+| `packages/test-fixtures/cli/test-runners/steps/mock-eval-config.json` | Mock `EvalConfig` JSON for CLI step unit tests |
 | `packages/test-fixtures/cli/test-runners/steps/mock-parsed-metrics.json` | Mock `ParsedRunMetrics` JSON for CLI step unit tests |
 
 ## Core Types
@@ -80,7 +80,7 @@ The package.json configures two export paths to serve different consumer pattern
 | Export | Pattern | Consumer | Example |
 |--------|---------|----------|---------|
 | `"."` | Named import of `loadFixtures` | Integration tests that need a full fixture directory tree copied to a temp dir | `import { loadFixtures } from '@testdouble/test-fixtures'` |
-| `"./*"` | Direct file path import | Unit tests that need a single JSON fixture as a typed constant | `import config from '@testdouble/test-fixtures/cli/test-runners/steps/mock-test-suite-config.json'` |
+| `"./*"` | Direct file path import | Unit tests that need a single JSON fixture as a typed constant | `import config from '@testdouble/test-fixtures/cli/test-runners/steps/mock-eval-config.json'` |
 
 ### Integration Test Pattern (loadFixtures)
 
@@ -103,10 +103,10 @@ The function performs a recursive `cp()` from the fixture source into the provid
 CLI unit tests in `packages/cli/` import JSON fixtures directly and cast them to their domain types:
 
 ```typescript
-import mockTestSuiteConfigJson from '@testdouble/test-fixtures/cli/test-runners/steps/mock-test-suite-config.json'
+import mockEvalConfigJson from '@testdouble/test-fixtures/cli/test-runners/steps/mock-eval-config.json'
 import mockParsedMetricsJson from '@testdouble/test-fixtures/cli/test-runners/steps/mock-parsed-metrics.json'
 
-export const mockTestSuiteConfig: TestSuiteConfig = mockTestSuiteConfigJson as TestSuiteConfig
+export const mockEvalConfig: EvalConfig = mockEvalConfigJson as EvalConfig
 export const mockParsedMetrics: ParsedRunMetrics = mockParsedMetricsJson as ParsedRunMetrics
 ```
 
@@ -117,7 +117,7 @@ Each analytics scenario lives in a named directory under `data/analytics/` and c
 | File | Content | Purpose |
 |------|---------|---------|
 | `test-run.jsonl` | One record per test case with result, cost, tokens, turns | Core test execution results |
-| `test-config.jsonl` | Suite name, plugins, test definition with expectations | Test configuration snapshot |
+| `test-config.jsonl` | Eval name, plugins, test definition with expectations | Test configuration snapshot |
 | `test-results.jsonl` | Per-expectation pass/fail with type, value, and result | Expectation-level results |
 | `scil-iteration.jsonl` | Per-iteration train/test accuracy and results | SCIL improvement loop iteration data |
 | `scil-summary.json` | Best iteration, accuracy progression | SCIL run summary (not all scenarios include this) |

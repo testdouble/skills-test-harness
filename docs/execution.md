@@ -2,7 +2,7 @@
 
 > **Tier 5 · Contributor reference.** Internal documentation for the `@testdouble/skillwalker-execution` package — the test-run and test-eval pipelines, the SCIL and ACIL improvement loops, the error hierarchy, and path config. If you're a user looking to run or tune an evaluation, see [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md) or the [SCIL Evals Guide](scil-evals-guide.md).
 
-This page is the orchestration reference for Skillwalker. It documents the four entry points (`runTestSuite`, `runTestEval`, `runScilLoop`, `runAcilLoop`), the numbered step files behind each pipeline, the SCIL and ACIL loop algorithms and their shared scoring/output/report modules, the path-parameter design, and the error hierarchy. This is where most pipeline changes land.
+This page is the orchestration reference for Skillwalker. It documents the four entry points (`runEvals`, `runTestEval`, `runScilLoop`, `runAcilLoop`), the numbered step files behind each pipeline, the SCIL and ACIL loop algorithms and their shared scoring/output/report modules, the path-parameter design, and the error hierarchy. This is where most pipeline changes land.
 
 The `@testdouble/skillwalker-execution` package owns all test execution orchestration, the SCIL and ACIL improvement loops, and test evaluation pipelines — extracted from the CLI to keep the CLI as a thin Yargs wrapper.
 
@@ -12,14 +12,14 @@ The `@testdouble/skillwalker-execution` package owns all test execution orchestr
 
 ## Summary
 
-- Four high-level orchestrators: `runTestSuite()` for test execution, `runTestEval()` for result evaluation, `runScilLoop()` for iterative skill description improvement, and `runAcilLoop()` for iterative agent description improvement
+- Four high-level orchestrators: `runEvals()` for test execution, `runTestEval()` for result evaluation, `runScilLoop()` for iterative skill description improvement, and `runAcilLoop()` for iterative agent description improvement
 - All filesystem paths (`outputDir`, `testsDir`, `repoRoot`) are passed as parameters — the package never calls `process.cwd()` or reads environment variables
 - Owns the error hierarchy (`SkillwalkerError`, `ConfigNotFoundError`, `RunNotFoundError`), path config factory, and the step-based pipelines that coordinate the other packages
 - Sits between the CLI (which parses args and resolves paths) and the lower-level packages (skillwalker-data, skillwalker-evals, claude-integration, sandbox-integration)
 
 Key files:
 - `packages/execution/index.ts` — Barrel exports (public API surface)
-- `packages/execution/src/test-suite/run-test-suite.ts` — Test execution orchestrator
+- `packages/execution/src/evals/run-evals.ts` — Test execution orchestrator
 - `packages/execution/src/test-eval/run-test-eval.ts` — Evaluation orchestrator
 - `packages/execution/src/scil/loop.ts` — SCIL improvement loop orchestrator
 - `packages/execution/src/scil/types.ts` — `ScilConfig` interface and re-exported SCIL types
@@ -32,7 +32,7 @@ Key files:
 flowchart TB
     cli["CLI (thin wrapper)"]
 
-    entry1["runTestSuite()"]
+    entry1["runEvals()"]
     entry2["runTestEval()"]
     entry3["runScilLoop()"]
     entry4["runAcilLoop()"]
@@ -73,7 +73,7 @@ flowchart TB
 | File | Purpose |
 |------|---------|
 | `packages/execution/index.ts` | Barrel exports — public API for CLI consumption |
-| `packages/execution/src/test-suite/run-test-suite.ts` | `runTestSuite()` — orchestrates the test-run pipeline |
+| `packages/execution/src/evals/run-evals.ts` | `runEvals()` — orchestrates the test-run pipeline |
 | `packages/execution/src/test-eval/run-test-eval.ts` | `runTestEval()` — orchestrates eval pipeline, converts results |
 | `packages/execution/src/scil/loop.ts` | `runScilLoop()` — orchestrates the iterative SCIL improvement loop |
 | `packages/execution/src/scil/types.ts` | `ScilConfig` interface, re-exports `ScilTestCase`, `QueryResult`, `IterationResult` |
@@ -106,9 +106,9 @@ flowchart TB
 ## Core Types
 
 ```typescript
-// packages/execution/src/test-suite/run-test-suite.ts
-interface RunTestSuiteOptions {
-  suites: string[]       // Suite names to execute
+// packages/execution/src/evals/run-evals.ts
+interface RunEvalsOptions {
+  evals: string[]       // Eval names to execute
   testFilter?: string    // Optional: filter to single test by name
   debug: boolean         // Show sandbox output in real time
   outputDir: string      // Where to write JSONL output (e.g., tests/output/)
@@ -116,7 +116,7 @@ interface RunTestSuiteOptions {
   repoRoot: string       // Repository root (parent of testsDir)
 }
 
-interface RunTestSuiteResult {
+interface RunEvalsResult {
   testRunId: string          // Generated timestamp ID (YYYYMMDDTHHmmss)
   totalDurationMs: number    // Total execution time across all tests
   totalInputTokens: number   // Total input tokens consumed
@@ -134,7 +134,7 @@ interface RunTestEvalOptions {
 
 // packages/execution/src/scil/types.ts
 interface ScilConfig {
-  suite: string           // Test suite name
+  eval: string           // Eval name
   skill?: string          // Target skill in plugin:skill format (inferred if omitted)
   maxIterations: number   // Maximum improvement iterations
   holdout: number         // Fraction held out for validation (0-1)
@@ -150,7 +150,7 @@ interface ScilConfig {
 
 // packages/execution/src/acil/types.ts
 interface AcilConfig {
-  suite: string           // Test suite name
+  eval: string           // Eval name
   agent?: string          // Target agent in plugin:agent format (inferred if omitted)
   maxIterations: number   // Maximum improvement iterations
   holdout: number         // Fraction held out for validation (0-1)
@@ -203,21 +203,21 @@ export const testsDir = config.testsDir
 export const repoRoot = config.repoRoot
 
 // CLI command (packages/cli/src/commands/test-run.ts) — passes paths explicitly
-const result = await runTestSuite({
-  suites, testFilter, debug,
+const result = await runEvals({
+  evals, testFilter, debug,
   outputDir, testsDir, repoRoot,
 })
 ```
 
 Paths flow through every layer — from orchestrator to step to runner — as explicit function parameters. This makes the package fully testable without filesystem mocks for path resolution.
 
-### runTestSuite Pipeline
+### runEvals Pipeline
 
-The `runTestSuite` function orchestrates a 10-step pipeline for each test suite:
+The `runEvals` function orchestrates a 10-step pipeline for each eval:
 
 | Step | File | Purpose |
 |------|------|---------|
-| 1 | `step-1-resolve-paths.ts` | Joins `testsDir` + `test-suites/` + suite name |
+| 1 | `step-1-resolve-paths.ts` | Joins `testsDir` + `evals/` + eval name |
 | 2 | `step-2-validate-config.ts` | Validates `tests.json` exists (throws `ConfigNotFoundError`) |
 | 3 | `step-3-read-config.ts` | Reads config, applies test filter, validates scaffolds |
 | 4 | `step-4-generate-run-id.ts` | Generates timestamp ID (`YYYYMMDDTHHmmss`) |
@@ -268,7 +268,7 @@ When `testRunId` is provided, evaluates that specific run. When omitted, scans `
 
 For each run:
 1. Resolves the run directory via `resolveRunDir(id, outputDir)`
-2. Reads `test-config.jsonl` to determine the suite
+2. Reads `test-config.jsonl` to determine the eval
 3. Calls `evaluateTestRun()` from `@testdouble/skillwalker-evals`
 4. Converts `EvalResult` to `TestResultRecord[]` — boolean evals produce one record; LLM-judge evals produce per-criterion records plus an aggregate
 5. Writes results to `test-results.jsonl`
@@ -350,7 +350,7 @@ ACIL and SCIL share three modules in `packages/execution/src/common/`:
 | Error Class | Thrown By | Trigger |
 |-------------|-----------|---------|
 | `SkillwalkerError` | Multiple steps | General errors (prompt not found, config read failure, missing frontmatter) |
-| `ConfigNotFoundError` | `step-2-validate-config` | `tests.json` not found in test suite directory |
+| `ConfigNotFoundError` | `step-2-validate-config` | `tests.json` not found in eval directory |
 | `RunNotFoundError` | `step-1-resolve-run-dir` | Test run directory does not exist in `outputDir` |
 
 The CLI catches `SkillwalkerError` at the top level and writes the message to stderr with exit code 1.

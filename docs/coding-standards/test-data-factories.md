@@ -34,7 +34,7 @@ All test data factory functions use the `make` prefix followed by a descriptive 
 **Correct usage:**
 
 ```typescript
-function makeConfig(tests: Array<{ name: string; scaffold?: string }>): TestSuiteConfig {
+function makeConfig(tests: Array<{ name: string; scaffold?: string }>): EvalConfig {
   return {
     plugins: ['r-and-d'],
     tests: tests.map(t => ({
@@ -63,17 +63,17 @@ function makeTestCase(overrides: Partial<ScilTestCase> = {}): ScilTestCase {
 
 ```typescript
 // Don't use other prefixes — "create", "build", "generate", "new" are not the convention
-function createConfig(tests: Array<{ name: string }>): TestSuiteConfig { ... }
+function createConfig(tests: Array<{ name: string }>): EvalConfig { ... }
 function buildTestCase(): ScilTestCase { ... }
 function newMockContext(): Context { ... }
 
 // Don't use generic names that don't describe what is being made
-function getTestData(): TestSuiteConfig { ... }
+function getTestData(): EvalConfig { ... }
 function setup(): ScilTestCase { ... }
 ```
 
 **Project references:**
-- `packages/data/src/config.test.ts` — `makeConfig` for `TestSuiteConfig`
+- `packages/data/src/config.test.ts` — `makeConfig` for `EvalConfig`
 - `packages/cli/src/scil/step-5-run-eval.test.ts` — `makeTestCase`, `makeOpts`
 - `packages/cli/src/scil/step-2-split-sets.test.ts` — `makeTest`, `makeManyTests`
 - `packages/web/src/server/routes/analytics.test.ts` — `makeMockContext`
@@ -126,7 +126,7 @@ When a factory constructs a type with many fields, accept a `Partial<T>` overrid
 ```typescript
 function makeQueryResult(overrides: Partial<QueryResult> = {}): QueryResult {
   return {
-    testCaseId: 'suite-test-1',
+    testCaseId: 'eval-test-1',
     testName: 'test-1',
     passed: true,
     events: [],
@@ -147,7 +147,7 @@ it('marks the query as failed when skill call is missing', () => {
 // Don't force callers to provide every field — it buries the interesting data
 it('marks the query as failed when skill call is missing', () => {
   const result: QueryResult = {
-    testCaseId: 'suite-test-1',
+    testCaseId: 'eval-test-1',
     testName: 'test-1',
     passed: false,           // ← the only field this test cares about
     events: [],
@@ -169,15 +169,15 @@ When fixture data is needed across workspace packages or is too large for inline
 
 ```typescript
 // packages/cli/src/test-runners/steps/fixtures.ts — directory-level shared fixtures
-import type { TestSuiteConfig, ParsedRunMetrics } from '@testdouble/skillwalker-data'
-import mockTestSuiteConfigJson from '@testdouble/test-fixtures/cli/test-runners/steps/mock-test-suite-config.json'
+import type { EvalConfig, ParsedRunMetrics } from '@testdouble/skillwalker-data'
+import mockEvalConfigJson from '@testdouble/test-fixtures/cli/test-runners/steps/mock-eval-config.json'
 import mockParsedMetricsJson from '@testdouble/test-fixtures/cli/test-runners/steps/mock-parsed-metrics.json'
 
-export const mockTestSuiteConfig: TestSuiteConfig = mockTestSuiteConfigJson as TestSuiteConfig
+export const mockEvalConfig: EvalConfig = mockEvalConfigJson as EvalConfig
 export const mockParsedMetrics: ParsedRunMetrics = mockParsedMetricsJson as ParsedRunMetrics
 
 // packages/cli/src/test-runners/steps/step-8-run-test-cases.test.ts — consuming shared fixtures
-import { mockTestSuiteConfig, mockParsedMetrics } from './fixtures.js'
+import { mockEvalConfig, mockParsedMetrics } from './fixtures.js'
 ```
 
 **What to avoid:**
@@ -185,10 +185,10 @@ import { mockTestSuiteConfig, mockParsedMetrics } from './fixtures.js'
 ```typescript
 // Don't duplicate large fixture objects across multiple test files
 // packages/cli/src/test-runners/steps/step-8-run-test-cases.test.ts
-const mockTestSuiteConfig = { suite: 'my-suite', plugins: ['r-and-d'], tests: [/* 20 lines */] }
+const mockEvalConfig = { eval: 'my-eval', plugins: ['r-and-d'], tests: [/* 20 lines */] }
 
 // packages/cli/src/test-runners/steps/step-9-print-totals.test.ts
-const mockTestSuiteConfig = { suite: 'my-suite', plugins: ['r-and-d'], tests: [/* same 20 lines */] }
+const mockEvalConfig = { eval: 'my-eval', plugins: ['r-and-d'], tests: [/* same 20 lines */] }
 
 // Don't import from test-fixtures when the data is only used in one test file —
 // keep it file-local with a make* factory instead
@@ -247,19 +247,19 @@ When multiple tests in a file need the same mock value and the value has no mean
 
 ```typescript
 // packages/cli/src/commands/test-run.test.ts
-const mockConfig = { suite: 'my-suite', tests: [] } as any
+const mockConfig = { eval: 'my-eval', tests: [] } as any
 const mockTotals = { totalDurationMs: 0, totalInputTokens: 0, totalOutputTokens: 0, failures: 0 }
 const mockClaudeFlags = ['--flag']
 
 const defaultArgv = {
-  suite: 'my-suite',
+  eval: 'my-eval',
   test: undefined,
   debug: false,
 }
 
 beforeEach(() => {
   vi.clearAllMocks()
-  vi.mocked(resolvePaths).mockReturnValue({ testSuiteDir: '/suites/my-suite' })
+  vi.mocked(resolvePaths).mockReturnValue({ evalDir: '/evals/my-eval' })
   vi.mocked(readConfig).mockResolvedValue(mockConfig)
   // ...
 })
@@ -269,12 +269,12 @@ beforeEach(() => {
 
 ```typescript
 // Don't repeat the same literal object in every test case
-it('calls resolvePaths with the suite', async () => {
-  await handler({ suite: 'my-suite', test: undefined, debug: false })  // duplicated
+it('calls resolvePaths with the eval', async () => {
+  await handler({ eval: 'my-eval', test: undefined, debug: false })  // duplicated
   // ...
 })
 it('calls readConfig with resolved path', async () => {
-  await handler({ suite: 'my-suite', test: undefined, debug: false })  // duplicated again
+  await handler({ eval: 'my-eval', test: undefined, debug: false })  // duplicated again
   // ...
 })
 

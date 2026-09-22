@@ -85,7 +85,7 @@ import { DuckDBInstance } from '@duckdb/node-api'
 it('creates a new parquet file from JSONL', async () => {
   const runDir = path.join(tmpDir, '20260101T100001')
   await writeJsonl(path.join(runDir, 'test-config.jsonl'), [
-    makeConfigRecord({ testRunId: '20260101T100001', suite: 's', testName: 'test one' }),
+    makeConfigRecord({ testRunId: '20260101T100001', eval: 's', testName: 'test one' }),
   ])
 
   const parquetPath = path.join(tmpDir, 'out.parquet')
@@ -171,7 +171,7 @@ describe('importJsonlToParquet', () => {
     await mkdir(runDir, { recursive: true })
     const config = {
       test_run_id: '20260101T100001',
-      suite: 's',
+      eval: 's',
       plugins: [],
       test: { name: 'test one', promptFile: 'prompt.md', model: 'sonnet', expect: [] },
     }

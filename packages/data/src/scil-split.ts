@@ -37,13 +37,13 @@ function getExpectedTrigger(test: TestCase): boolean {
   return true
 }
 
-export function splitSets(suite: string, entityFile: string, tests: TestCase[], holdout: number): ScilTestCase[] {
+export function splitSets(evalName: string, entityFile: string, tests: TestCase[], holdout: number): ScilTestCase[] {
   // Holdout 0 → all train, empty test
   if (holdout === 0) {
     return tests.map((t) => ({ ...t, set: 'train' as const }))
   }
 
-  const seed = hashString(`${suite}:${entityFile}`)
+  const seed = hashString(`${evalName}:${entityFile}`)
   const rng = mulberry32(seed)
 
   // Stratify by expected trigger value

@@ -17,7 +17,7 @@ beforeEach(() => {
 
 function fullArgv(): Record<string, unknown> {
   return {
-    suite: 'my-suite',
+    eval: 'my-eval',
     skill: 'plugin:skill',
     'max-iterations': 10,
     holdout: 0.2,
@@ -54,9 +54,9 @@ describe('scil builder', () => {
     return options
   }
 
-  it('configures suite as a required string option', () => {
+  it('configures eval as a required string option', () => {
     const options = buildOptions()
-    expect(options.suite).toMatchObject({ type: 'string', demandOption: true })
+    expect(options.eval).toMatchObject({ type: 'string', demandOption: true })
   })
 
   it('configures max-iterations with default 5', () => {
@@ -112,7 +112,7 @@ describe('scil handler', () => {
 
     expect(runScilLoop).toHaveBeenCalledOnce()
     expect(runScilLoop).toHaveBeenCalledWith({
-      suite: 'my-suite',
+      eval: 'my-eval',
       skill: 'plugin:skill',
       maxIterations: 10,
       holdout: 0.2,

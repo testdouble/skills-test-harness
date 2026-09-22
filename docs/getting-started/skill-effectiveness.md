@@ -12,7 +12,7 @@ Skill effectiveness measures how well your skill performs its job — not whethe
 
 1. Create a project scaffold that gives your skill realistic context to work with
 2. Write your test configuration and rubric using the `/write-skill-eval-rubric` skill
-3. Run the test suite to produce skill output
+3. Run the eval to produce skill output
 4. Evaluate the results with the LLM judge
 5. Import the results into the analytics database
 6. View the results in the skillwalker-web dashboard
@@ -33,7 +33,7 @@ For example:
 /build-skill-eval-scaffold r-and-d:code-review
 ```
 
-The skill interviews you about the technology stack, project shape, and specific signals to plant, then generates a scaffold directory at `tests/test-suites/{skill-name}/scaffolds/{scaffold-name}/`.
+The skill interviews you about the technology stack, project shape, and specific signals to plant, then generates a scaffold directory at `evals/{skill-name}/scaffolds/{scaffold-name}/`.
 
 For details on the scaffold creation workflow, see [Building Skill Eval Scaffolds](../build-skill-eval-scaffold.md). For how scaffolds work inside the Test Sandbox, see [Test Scaffolding](../test-scaffolding.md).
 
@@ -60,19 +60,19 @@ The skill reads your scaffold files and interviews you to collect criteria in fo
 
 It generates two things:
 
-- `tests/test-suites/{skill-name}/rubrics/{skill-name}-quality.md` — the rubric file with categorized criteria
-- Updates to `tests/test-suites/{skill-name}/tests.json` — skill-prompt test entries with `llm-judge` expectations
+- `evals/{skill-name}/rubrics/{skill-name}-quality.md` — the rubric file with categorized criteria
+- Updates to `evals/{skill-name}/tests.json` — skill-prompt test entries with `llm-judge` expectations
 
 **Note:** The skill can create skill-prompt tests from scratch if none exist yet, or add rubric expectations to existing tests.
 
-For details on the skill's full workflow and criteria categories, see [Writing Skill Eval Rubrics](../write-skill-eval-rubric.md). For the complete `tests.json` field reference, see [Test Suite Reference](../test-suite-reference.md).
+For details on the skill's full workflow and criteria categories, see [Writing Skill Eval Rubrics](../write-skill-eval-rubric.md). For the complete `tests.json` field reference, see [Evals Reference](../evals-reference.md).
 
-## Step 3: Run the test suite
+## Step 3: Run the eval
 
-Run all tests in your suite:
+Run all tests in your eval:
 
 ```bash
-./build/skillwalker test-run --suite {skill-name}
+./build/skillwalker test-run --eval {skill-name}
 ```
 
 This runs your skill against the prompt and scaffold inside the Test Sandbox. The LLM judge does not run yet — it evaluates stored output in the next step.
@@ -80,13 +80,13 @@ This runs your skill against the prompt and scaffold inside the Test Sandbox. Th
 **Tip:** To run a single test in isolation (useful for debugging):
 
 ```bash
-./build/skillwalker test-run --suite {skill-name} --test "Prompt: some test name"
+./build/skillwalker test-run --eval {skill-name} --test "Prompt: some test name"
 ```
 
 **Tip:** To see raw Claude output for troubleshooting:
 
 ```bash
-./build/skillwalker test-run --suite {skill-name} --debug
+./build/skillwalker test-run --eval {skill-name} --debug
 ```
 
 For the full list of CLI flags, see [CLI](../cli.md).

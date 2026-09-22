@@ -314,15 +314,15 @@ export async function queryPerTest(dataDir: string): Promise<PerTestRow[]> {
     const statusFilter = await infraErrorCondition(conn, dataDir)
     const sql = `
       WITH expect_summary AS (
-        SELECT test_run_id, suite, test_name, bool_and(passed) AS all_expectations_passed
+        SELECT test_run_id, eval, test_name, bool_and(passed) AS all_expectations_passed
         FROM read_parquet('${dataDir}/test-results.parquet')
         ${statusFilter ? `WHERE ${statusFilter}` : ''}
-        GROUP BY test_run_id, suite, test_name
+        GROUP BY test_run_id, eval, test_name
       )
       SELECT
         r.test_run_id,
         c.test.name AS test_name,
-        c.suite,
+        c.eval,
         e.all_expectations_passed,
         ROUND(r.total_cost_usd, 2) AS total_cost_usd,
         CAST(r.num_turns AS INTEGER) AS num_turns,
@@ -331,11 +331,11 @@ export async function queryPerTest(dataDir: string): Promise<PerTestRow[]> {
       FROM read_parquet('${dataDir}/test-run.parquet') r
       JOIN read_parquet('${dataDir}/test-config.parquet') c
         ON r.test_run_id = c.test_run_id
-        AND r.test_case = c.suite || '-' ||
+        AND r.test_case = c.eval || '-' ||
             regexp_replace(regexp_replace(c.test.name, ' ', '-', 'g'), '[^a-zA-Z0-9-]', '', 'g')
       LEFT JOIN expect_summary e
         ON r.test_run_id = e.test_run_id
-        AND c.suite = e.suite
+        AND c.eval = e.eval
         AND c.test.name = e.test_name
       WHERE r.type = 'result'
       ORDER BY r.test_run_id DESC, c.test.name
@@ -360,35 +360,35 @@ export async function queryTestRunSummaries(dataDir: string): Promise<TestRunSum
     const statusFilter = await infraErrorCondition(conn, dataDir)
     const sql = `
       WITH expect_summary AS (
-        SELECT test_run_id, suite, test_name, bool_and(passed) AS all_expectations_passed
+        SELECT test_run_id, eval, test_name, bool_and(passed) AS all_expectations_passed
         FROM read_parquet('${dataDir}/test-results.parquet')
         ${statusFilter ? `WHERE ${statusFilter}` : ''}
-        GROUP BY test_run_id, suite, test_name
+        GROUP BY test_run_id, eval, test_name
       ),
       per_test AS (
         SELECT
           r.test_run_id,
-          c.suite,
+          c.eval,
           e.all_expectations_passed
         FROM read_parquet('${dataDir}/test-run.parquet') r
         JOIN read_parquet('${dataDir}/test-config.parquet') c
           ON r.test_run_id = c.test_run_id
-          AND r.test_case = c.suite || '-' ||
+          AND r.test_case = c.eval || '-' ||
               regexp_replace(regexp_replace(c.test.name, ' ', '-', 'g'), '[^a-zA-Z0-9-]', '', 'g')
         LEFT JOIN expect_summary e
           ON r.test_run_id = e.test_run_id
-          AND c.suite = e.suite
+          AND c.eval = e.eval
           AND c.test.name = e.test_name
         WHERE r.type = 'result'
       )
       SELECT
         test_run_id,
-        suite,
+        eval,
         CAST(COUNT(*) AS INTEGER) AS total_tests,
         CAST(COUNT(*) FILTER (WHERE all_expectations_passed) AS INTEGER) AS passed,
         CAST(COUNT(*) - COUNT(*) FILTER (WHERE all_expectations_passed) AS INTEGER) AS failed
       FROM per_test
-      GROUP BY test_run_id, suite
+      GROUP BY test_run_id, eval
       ORDER BY test_run_id DESC
     `
     const rows = (await conn.runAndReadAll(sql)).getRowObjects() as unknown as Omit<TestRunSummary, 'date'>[]
@@ -426,7 +426,7 @@ export async function queryTestRunDetails(dataDir: string, testRunId: string): P
       SELECT
         r.test_run_id,
         c.test.name AS test_name,
-        c.suite,
+        c.eval,
         r.is_error,
         e.all_expectations_passed,
         r.result,
@@ -437,7 +437,7 @@ export async function queryTestRunDetails(dataDir: string, testRunId: string): P
       FROM read_parquet('${dataDir}/test-run.parquet') r
       JOIN read_parquet('${dataDir}/test-config.parquet') c
         ON r.test_run_id = c.test_run_id
-        AND r.test_case = c.suite || '-' ||
+        AND r.test_case = c.eval || '-' ||
             regexp_replace(regexp_replace(c.test.name, ' ', '-', 'g'), '[^a-zA-Z0-9-]', '', 'g')
       LEFT JOIN expect_summary e
         ON r.test_run_id = e.test_run_id
@@ -485,7 +485,7 @@ export async function queryTestRunDetails(dataDir: string, testRunId: string): P
       } else {
         expectations.push({
           test_run_id: row.test_run_id,
-          suite: row.suite,
+          eval: row.eval,
           test_name: row.test_name,
           expect_type: row.expect_type,
           expect_value: row.expect_value,

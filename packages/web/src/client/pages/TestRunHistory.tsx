@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 
 interface TestRunSummary {
   test_run_id: string
-  suite: string
+  eval: string
   date: string
   total_tests: number
   passed: number
@@ -34,7 +34,7 @@ export function TestRunHistory(): JSX.Element {
   if (!runs || runs.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 text-[#4f4f4f]">
-        No test runs found. Run tests with: skillwalker run-test --suite &lt;name&gt;
+        No test runs found. Run tests with: skillwalker run-test --eval &lt;name&gt;
       </div>
     )
   }
@@ -50,7 +50,7 @@ export function TestRunHistory(): JSX.Element {
         <h1 className="text-[#f0f0f0] text-[35px] font-bold leading-tight" style={{ letterSpacing: '-0.5px' }}>
           Test Run History
         </h1>
-        <p className="text-[#4f4f4f] text-[18px] mt-1.5">Track and audit Claude skill test runs across all suites</p>
+        <p className="text-[#4f4f4f] text-[18px] mt-1.5">Track and audit Claude skill test runs across all evals</p>
       </div>
 
       {/* Stats row */}
@@ -84,7 +84,7 @@ export function TestRunHistory(): JSX.Element {
                 className="text-[#4f4f4f] text-[14px] font-bold text-left px-5 h-11 whitespace-nowrap border-b border-[#252625]"
                 style={{ letterSpacing: '1.5px' }}
               >
-                SUITE
+                EVAL
               </th>
               <th
                 className="text-[#4f4f4f] text-[14px] font-bold text-left px-5 h-11 border-b border-[#252625]"
@@ -137,7 +137,7 @@ export function TestRunHistory(): JSX.Element {
                   </td>
                   <td className="px-5 whitespace-nowrap">
                     <span className="bg-[#1e1060] text-[#a580f9] text-[16px] font-semibold px-2.5 py-1 rounded">
-                      {run.suite}
+                      {run.eval}
                     </span>
                   </td>
                   <td className="text-[#c5c5c5] text-[16px] px-5">{run.date}</td>

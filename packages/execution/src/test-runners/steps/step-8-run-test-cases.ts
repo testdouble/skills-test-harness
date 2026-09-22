@@ -1,13 +1,13 @@
-import type { RunTotals, TestSuiteConfig } from '@testdouble/skillwalker-data'
+import type { RunTotals, EvalConfig } from '@testdouble/skillwalker-data'
 import { runAgentCallTests } from '../agent-call/index.js'
 import { runAgentPromptTests } from '../agent-prompt/index.js'
 import { runPromptTests } from '../prompt/index.js'
 import { runSkillCallTests } from '../skill-call/index.js'
 
 export async function runTestCases(
-  config: TestSuiteConfig,
-  suite: string,
-  testSuiteDir: string,
+  config: EvalConfig,
+  evalName: string,
+  evalDir: string,
   pluginDirs: string[],
   debug: boolean,
   testRunId: string,
@@ -23,8 +23,8 @@ export async function runTestCases(
   let current = await runPromptTests(
     skillPromptTests,
     config,
-    suite,
-    testSuiteDir,
+    evalName,
+    evalDir,
     pluginDirs,
     debug,
     testRunId,
@@ -34,8 +34,8 @@ export async function runTestCases(
   current = await runSkillCallTests(
     skillCallTests,
     config,
-    suite,
-    testSuiteDir,
+    evalName,
+    evalDir,
     debug,
     testRunId,
     current,
@@ -45,8 +45,8 @@ export async function runTestCases(
   current = await runAgentCallTests(
     agentCallTests,
     config,
-    suite,
-    testSuiteDir,
+    evalName,
+    evalDir,
     debug,
     testRunId,
     current,
@@ -56,8 +56,8 @@ export async function runTestCases(
   current = await runAgentPromptTests(
     agentPromptTests,
     config,
-    suite,
-    testSuiteDir,
+    evalName,
+    evalDir,
     pluginDirs,
     debug,
     testRunId,

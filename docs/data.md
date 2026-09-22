@@ -17,7 +17,7 @@ What this package owns:
 
 Key files:
 - `packages/data/src/types.ts` — All shared TypeScript interfaces and type unions
-- `packages/data/src/config.ts` — Test suite configuration parsing and validation
+- `packages/data/src/config.ts` — Eval configuration parsing and validation
 - `packages/data/src/analytics.ts` — DuckDB JSONL-to-Parquet import and test run queries
 - `packages/data/src/connection.ts` — Cached in-memory DuckDB instance management
 - `packages/data/index.ts` — Public API barrel export
@@ -28,7 +28,7 @@ Key files:
 flowchart TB
     tests["tests.json"]
 
-    config["<b>config.ts</b> — parse &amp; validate<br>readTestSuiteConfig() · resolvePromptPath()<br>readPromptFile() · buildTestCaseId() · validateScaffolds()"]
+    config["<b>config.ts</b> — parse &amp; validate<br>readEvalConfig() · resolvePromptPath()<br>readPromptFile() · buildTestCaseId() · validateScaffolds()"]
     types["<b>types.ts</b> — shared contracts<br>TestCase · TestExpectation · StreamJsonEvent<br>TestResultRecord · ScilTestCase · PerTestRow · ..."]
 
     writer["<b>jsonl-writer</b><br>append to output/<br>JSONL files<br>(incl. output-files)"]
@@ -98,7 +98,7 @@ interface TestCase {
   skillFile?: string
   agentFile?: string
   model?:     string      // defaults to "sonnet" when absent
-  scaffold?:  string      // name of scaffolds/{name}/ directory in test suite
+  scaffold?:  string      // name of scaffolds/{name}/ directory in eval
   expect:     TestExpectation[]
 }
 
@@ -109,7 +109,7 @@ type StreamJsonEvent = SystemInitEvent | AssistantEvent | UserEvent | ResultEven
 interface PerTestRow {
   test_run_id:             string
   test_name:               string
-  suite:                   string
+  eval:                   string
   all_expectations_passed: boolean
   total_cost_usd:          number
   num_turns:               number
@@ -146,7 +146,7 @@ See `packages/data/src/types.ts` for the complete set of 40+ interfaces covering
 
 | Constant | Value | Description |
 |----------|-------|-------------|
-| `TEST_CONFIG_FILENAME` | `'tests.json'` | Expected filename for test suite configuration |
+| `TEST_CONFIG_FILENAME` | `'tests.json'` | Expected filename for eval configuration |
 | Default model | `'sonnet'` | Applied to `TestCase.model` when absent in `tests.json` |
 | Run ID format | `/^\d{8}T\d{6}$/` | Timestamp-based ID validated by `validateRunId()` (e.g. `20260316T153306`) |
 | MARKER_FILE | `'.re-evaluated-runs.json'` | Filename for tracking re-evaluated runs in `output/` |
@@ -155,7 +155,7 @@ See `packages/data/src/types.ts` for the complete set of 40+ interfaces covering
 
 ### Configuration Parsing (`config.ts`)
 
-`readTestSuiteConfig()` reads a `tests.json` file and normalizes the shorthand expectation format into typed discriminated unions. The normalization handles three expectation patterns:
+`readEvalConfig()` reads a `tests.json` file and normalizes the shorthand expectation format into typed discriminated unions. The normalization handles three expectation patterns:
 
 | Format | Input | Normalized Output |
 |--------|-------|-------------------|
@@ -168,9 +168,9 @@ See `packages/data/src/types.ts` for the complete set of 40+ interfaces covering
 
 ```typescript
 // Test case ID generation — used as join key between test-run and test-config
-function buildTestCaseId(suite: string, testName: string): string {
+function buildTestCaseId(eval: string, testName: string): string {
   const normalized = testName.replace(/ /g, '-').replace(/[^a-zA-Z0-9-]/g, '')
-  return `${suite}-${normalized}`
+  return `${eval}-${normalized}`
 }
 ```
 
@@ -213,7 +213,7 @@ The optional `filter` callback enables pre-filtering JSONL rows (used by `test-r
 Three main query functions join across Parquet files:
 
 - **`queryPerTest()`** — Joins `test-run`, `test-config`, and `test-results` to produce per-test rows with pass/fail, cost, turns, and token counts
-- **`queryTestRunSummaries()`** — Aggregates per-test results into run-level pass/fail counts by suite
+- **`queryTestRunSummaries()`** — Aggregates per-test results into run-level pass/fail counts by eval
 - **`queryTestRunDetails()`** — Returns detailed per-test summaries, individual expectation results, grouped LLM judge criteria, and output files for a single run
 
 All queries filter out `infrastructure-error` status rows when the `status` column exists in the Parquet schema (backward compatibility with older data).
@@ -249,7 +249,7 @@ function extractMetrics(events: StreamJsonEvent[]): ParsedRunMetrics
 
 ### SCIL Train/Test Splitting (`scil-split.ts`)
 
-`splitSets()` produces a deterministic stratified split using a seeded PRNG (mulberry32). The seed is derived from `hashString(`${suite}:${entityFile}`)`, ensuring the same test cases always land in the same split for a given suite/entity pair. The `entityFile` parameter accepts both skill files and agent files — it is used only as a hash seed for deterministic splitting. `getExpectedTrigger()` recognizes both `skill-call` and `agent-call` expectation types.
+`splitSets()` produces a deterministic stratified split using a seeded PRNG (mulberry32). The seed is derived from `hashString(`${eval}:${entityFile}`)`, ensuring the same test cases always land in the same split for a given eval/entity pair. The `entityFile` parameter accepts both skill files and agent files — it is used only as a hash seed for deterministic splitting. `getExpectedTrigger()` recognizes both `skill-call` and `agent-call` expectation types.
 
 Stratification preserves the ratio of positive (expected trigger) to negative (expected no-trigger) cases. When `holdout === 0`, all cases go to the train set.
 
@@ -292,7 +292,7 @@ Tracks which test runs have been re-evaluated via a `.re-evaluated-runs.json` fi
 ## Testing
 
 - `packages/data/src/config.test.ts` — Unit tests for `buildTestCaseId`, `resolvePromptPath`, `validateScaffolds` (mocked filesystem)
-- `packages/data/src/config-bun.test.ts` — Unit tests for `readTestSuiteConfig`, `readPromptFile` (stubbed `Bun.file`)
+- `packages/data/src/config-bun.test.ts` — Unit tests for `readEvalConfig`, `readPromptFile` (stubbed `Bun.file`)
 - `packages/data/src/stream-parser.test.ts` — Unit tests for stream parsing and metric extraction
 - `packages/data/src/jsonl-writer.test.ts` — Unit tests for JSONL file writing
 - `packages/data/src/jsonl-reader.test.ts` — Unit tests for JSONL file reading
@@ -318,7 +318,7 @@ Tracks which test runs have been re-evaluated via a `.re-evaluated-runs.json` fi
 
 - [Skillwalker Architecture](./skillwalker-architecture.md) — System architecture, package boundaries, and data flow
 - [Parquet Schema Reference](./parquet-schema.md) — Column-level schema for all Parquet tables
-- [Test Suite Reference](./test-suite-reference.md) — Format and semantics of `tests.json` files
+- [Evals Reference](./evals-reference.md) — Format and semantics of `tests.json` files
 - [SCIL Improvement Loop](./skill-call-improvement-loop.md) — How SCIL uses train/test splits and iterative description refinement
 - [LLM Judge](./llm-judge.md) — LLM judge evaluation system that produces the criteria grouped by `queryTestRunDetails()`
 - [CLI Package](./cli.md) — CLI commands that orchestrate data reading/writing through this package

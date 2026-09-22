@@ -27,7 +27,7 @@ All TypeScript step-based pipelines in `packages/execution/src/`. Currently four
 
 ## Background
 
-Skillwalker performs several multi-step workflows — running test suites, evaluating results, and iteratively improving skill or agent descriptions. Early implementations put all logic in the command handler, making handlers difficult to test and reason about. Extracting each operation into a numbered step file solved three problems: (1) individual steps could be tested with focused unit tests, (2) the orchestrator test could verify call order without re-testing step internals, and (3) step numbering made the execution sequence visible in the file listing.
+Skillwalker performs several multi-step workflows — running evals, evaluating results, and iteratively improving skill or agent descriptions. Early implementations put all logic in the command handler, making handlers difficult to test and reason about. Extracting each operation into a numbered step file solved three problems: (1) individual steps could be tested with focused unit tests, (2) the orchestrator test could verify call order without re-testing step internals, and (3) step numbering made the execution sequence visible in the file listing.
 
 The numbered prefix (`step-N-`) is a file-system convention, not a runtime mechanism. Steps are imported and called explicitly by the orchestrator — there is no dynamic step discovery or auto-registration. This keeps the control flow explicit and easy to trace.
 
@@ -85,11 +85,11 @@ Each step file exports one primary function. The function name is a camelCase ve
 
 ```typescript
 // step-1-resolve-paths.ts — exports resolvePaths
-import { getTestSuiteDir } from '../../paths.js'
+import { getEvalDir } from '../../paths.js'
 
-export function resolvePaths(suite: string): { testSuiteDir: string } {
-  const testSuiteDir = getTestSuiteDir(suite)
-  return { testSuiteDir }
+export function resolvePaths(eval: string): { evalDir: string } {
+  const evalDir = getEvalDir(eval)
+  return { evalDir }
 }
 ```
 
@@ -99,8 +99,8 @@ import path from 'node:path'
 import { TEST_CONFIG_FILENAME } from '@testdouble/skillwalker-data'
 import { ConfigNotFoundError } from '../../lib/errors.js'
 
-export async function validateConfig(testSuiteDir: string): Promise<{ configFilePath: string }> {
-  const configFilePath = path.join(testSuiteDir, TEST_CONFIG_FILENAME)
+export async function validateConfig(evalDir: string): Promise<{ configFilePath: string }> {
+  const configFilePath = path.join(evalDir, TEST_CONFIG_FILENAME)
   if (!(await Bun.file(configFilePath).exists())) {
     throw new ConfigNotFoundError(configFilePath)
   }
@@ -112,16 +112,16 @@ export async function validateConfig(testSuiteDir: string): Promise<{ configFile
 
 ```typescript
 // Don't include the step number in the function name
-export function step1ResolvePaths(suite: string) { ... }
+export function step1ResolvePaths(eval: string) { ... }
 
 // Don't export multiple unrelated functions from a single step
-export function resolvePaths(suite: string) { ... }
+export function resolvePaths(eval: string) { ... }
 export function resolveOutputDir(runId: string) { ... }
 
 // Don't rely on shared mutable state instead of parameters
-let _suite: string
-export function setSuite(s: string) { _suite = s }
-export function resolvePaths() { return getTestSuiteDir(_suite) }
+let _eval: string
+export function setEval(s: string) { _eval = s }
+export function resolvePaths() { return getEvalDir(_eval) }
 ```
 
 **Project references:**
@@ -152,9 +152,9 @@ export async function resolveRunDir(testRunId: string): Promise<{ runDir: string
 
 ```typescript
 // Orchestrator threads return values from one step into the next
-const { testSuiteDir } = resolvePaths(suite)
-const { configFilePath } = await validateConfig(testSuiteDir)
-const config = await readConfig(configFilePath, testSuiteDir, testFilter)
+const { evalDir } = resolvePaths(eval)
+const { configFilePath } = await validateConfig(evalDir)
+const config = await readConfig(configFilePath, evalDir, testFilter)
 ```
 
 **What to avoid:**
@@ -162,22 +162,22 @@ const config = await readConfig(configFilePath, testSuiteDir, testFilter)
 ```typescript
 // Don't use a shared context bag that steps mutate
 interface PipelineContext {
-  suite?: string
-  testSuiteDir?: string
+  eval?: string
+  evalDir?: string
   configFilePath?: string
 }
 
 export function resolvePaths(ctx: PipelineContext) {
-  ctx.testSuiteDir = getTestSuiteDir(ctx.suite!)  // mutates shared state
+  ctx.evalDir = getEvalDir(ctx.eval!)  // mutates shared state
 }
 
 export async function validateConfig(ctx: PipelineContext) {
-  ctx.configFilePath = path.join(ctx.testSuiteDir!, TEST_CONFIG_FILENAME)  // reads implicit dependency
+  ctx.configFilePath = path.join(ctx.evalDir!, TEST_CONFIG_FILENAME)  // reads implicit dependency
 }
 ```
 
 **Project references:**
-- `packages/execution/src/test-suite/run-test-suite.ts` — test execution orchestrator threading data between steps
+- `packages/execution/src/evals/run-evals.ts` — test execution orchestrator threading data between steps
 - `packages/execution/src/scil/loop.ts` — SCIL orchestrator threading step results
 - `packages/execution/src/acil/loop.ts` — ACIL orchestrator threading step results
 
@@ -191,17 +191,17 @@ Each step file has a co-located test file in the same directory. The test file m
 // step-1-resolve-paths.test.ts
 import { describe, it, expect, vi } from 'vitest'
 import { resolvePaths } from './step-1-resolve-paths.js'
-import { getTestSuiteDir } from '../../paths.js'
+import { getEvalDir } from '../../paths.js'
 
 vi.mock('../../paths.js', () => ({
-  getTestSuiteDir: vi.fn(),
+  getEvalDir: vi.fn(),
 }))
 
 describe('resolvePaths', () => {
-  it('delegates to getTestSuiteDir and returns the result as testSuiteDir', () => {
-    vi.mocked(getTestSuiteDir).mockReturnValue('/mock/test-suites/my-suite')
-    const result = resolvePaths('my-suite')
-    expect(result).toEqual({ testSuiteDir: '/mock/test-suites/my-suite' })
+  it('delegates to getEvalDir and returns the result as evalDir', () => {
+    vi.mocked(getEvalDir).mockReturnValue('/mock/evals/my-eval')
+    const result = resolvePaths('my-eval')
+    expect(result).toEqual({ evalDir: '/mock/evals/my-eval' })
   })
 })
 ```
@@ -235,11 +235,11 @@ it('calls steps in correct order', async () => {
   const callOrder: string[] = []
   vi.mocked(resolvePaths).mockImplementation(() => {
     callOrder.push('resolvePaths')
-    return { testSuiteDir: '/suites/my-suite' }
+    return { evalDir: '/evals/my-eval' }
   })
   vi.mocked(validateConfig).mockImplementation(async () => {
     callOrder.push('validateConfig')
-    return { configFilePath: '/suites/my-suite/tests.json' }
+    return { configFilePath: '/evals/my-eval/tests.json' }
   })
   vi.mocked(readConfig).mockImplementation(async () => {
     callOrder.push('readConfig')
@@ -306,7 +306,7 @@ expect(validateConfig).toHaveBeenCalledBefore(readConfig)
 
 ### Orchestrator Delegates to Steps
 
-The orchestrator (command handler or loop function) imports each step, calls them in sequence, and threads return values between them. The orchestrator contains no domain logic of its own — only sequencing, logging, and control flow (e.g., looping over suites). Helper functions that are not steps (like `ensureSandboxExists`) may also appear in the orchestrator but live outside the steps directory.
+The orchestrator (command handler or loop function) imports each step, calls them in sequence, and threads return values between them. The orchestrator contains no domain logic of its own — only sequencing, logging, and control flow (e.g., looping over evals). Helper functions that are not steps (like `ensureSandboxExists`) may also appear in the orchestrator but live outside the steps directory.
 
 **Correct usage:**
 
@@ -317,12 +317,12 @@ export async function handler(argv: Record<string, unknown>): Promise<void> {
   await ensureSandboxExists()
   let totals = initTotals()
 
-  for (const suite of suites) {
-    const { testSuiteDir } = resolvePaths(suite)
-    const { configFilePath } = await validateConfig(testSuiteDir)
-    const config = await readConfig(configFilePath, testSuiteDir, testFilter)
+  for (const eval of evals) {
+    const { evalDir } = resolvePaths(eval)
+    const { configFilePath } = await validateConfig(evalDir)
+    const config = await readConfig(configFilePath, evalDir, testFilter)
     const { claudeFlags } = buildFlags(config)
-    totals = await runTestCases(config, suite, testSuiteDir, claudeFlags, debug, testRunId, totals)
+    totals = await runTestCases(config, eval, evalDir, claudeFlags, debug, testRunId, totals)
   }
 
   printTotals(totals.totalDurationMs, totals.totalInputTokens, totals.totalOutputTokens, testRunId)
@@ -335,8 +335,8 @@ export async function handler(argv: Record<string, unknown>): Promise<void> {
 ```typescript
 // Don't inline step logic in the orchestrator
 export async function handler(argv: Record<string, unknown>): Promise<void> {
-  const testSuiteDir = getTestSuiteDir(argv.suite as string)  // should be in a step
-  const configFilePath = path.join(testSuiteDir, 'tests.json')  // should be in a step
+  const evalDir = getEvalDir(argv.eval as string)  // should be in a step
+  const configFilePath = path.join(evalDir, 'tests.json')  // should be in a step
   if (!(await Bun.file(configFilePath).exists())) {
     throw new Error('Config not found')  // should be in a step
   }
@@ -345,7 +345,7 @@ export async function handler(argv: Record<string, unknown>): Promise<void> {
 ```
 
 **Project references:**
-- `packages/execution/src/test-suite/run-test-suite.ts` — test execution orchestrator
+- `packages/execution/src/evals/run-evals.ts` — test execution orchestrator
 - `packages/execution/src/scil/loop.ts` — SCIL loop orchestrator
 - `packages/execution/src/acil/loop.ts` — ACIL loop orchestrator
 - `packages/execution/src/test-eval/run-test-eval.ts` — test evaluation orchestrator
@@ -365,7 +365,7 @@ export interface ResolvedSkillAndTests {
 }
 
 export async function resolveAndLoad(
-  suite: string,
+  eval: string,
   skill?: string
 ): Promise<ResolvedSkillAndTests> {
   // ...
@@ -391,7 +391,7 @@ export async function readSkill(skillMdPath: string): Promise<SkillFileContent> 
 
 ```typescript
 // Don't return untyped objects — consumers lose type safety
-export async function resolveAndLoad(suite: string) {
+export async function resolveAndLoad(eval: string) {
   return { skillFile: '...', skillMdPath: '...', tests: [] }  // inferred, not explicit
 }
 

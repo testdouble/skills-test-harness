@@ -9,11 +9,11 @@ export const skillwalkerDir = config.skillwalkerDir
 export const outputDir = config.outputDir
 export const dataDir = config.dataDir
 
-export function getTestSuiteDir(suite: string): string {
-  return path.join(config.testsDir, 'test-suites', suite)
+export function getEvalDir(evalName: string): string {
+  return path.join(config.testsDir, 'evals', evalName)
 }
 
-export function getAllTestSuites(): string[] {
-  const testSuitesDir = path.join(config.testsDir, 'test-suites')
-  return fs.readdirSync(testSuitesDir).filter((entry) => fs.statSync(path.join(testSuitesDir, entry)).isDirectory())
+export function getAllEvals(): string[] {
+  const evalsDir = path.join(config.testsDir, 'evals')
+  return fs.readdirSync(evalsDir).filter((entry) => fs.statSync(path.join(evalsDir, entry)).isDirectory())
 }

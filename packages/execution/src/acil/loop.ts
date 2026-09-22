@@ -18,9 +18,9 @@ import type { AcilConfig, AcilIterationResult } from './types.js'
 
 export async function runAcilLoop(config: AcilConfig): Promise<void> {
   // Step 1: Resolve agent and load tests
-  process.stderr.write(`Resolving agent and loading tests for suite "${config.suite}"...\n`)
+  process.stderr.write(`Resolving agent and loading tests for eval "${config.eval}"...\n`)
   const { agentFile, agentMdPath, tests } = await resolveAndLoad(
-    config.suite,
+    config.eval,
     config.agent,
     config.testsDir,
     config.repoRoot,
@@ -33,7 +33,7 @@ export async function runAcilLoop(config: AcilConfig): Promise<void> {
   } else {
     process.stderr.write(`Using all ${tests.length} tests for training (no holdout)\n`)
   }
-  const splitTests = splitSets(config.suite, agentFile, tests, config.holdout)
+  const splitTests = splitSets(config.eval, agentFile, tests, config.holdout)
   const trainTestNames = new Set(splitTests.filter((t) => t.set === 'train').map((t) => t.name))
 
   // Step 3: Read agent .md
@@ -69,7 +69,7 @@ export async function runAcilLoop(config: AcilConfig): Promise<void> {
     const allResults = await runEval({
       tempDir,
       testCases: splitTests,
-      suite: config.suite,
+      eval: config.eval,
       testsDir: config.testsDir,
       concurrency: config.concurrency,
       runsPerQuery: config.runsPerQuery,

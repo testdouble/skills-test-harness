@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@testdouble/skillwalker-data', () => ({
-  readTestSuiteConfig: vi.fn(),
+  readEvalConfig: vi.fn(),
   TEST_CONFIG_FILENAME: 'tests.json',
 }))
 vi.mock('node:fs', () => ({
@@ -9,7 +9,7 @@ vi.mock('node:fs', () => ({
 }))
 
 import { existsSync } from 'node:fs'
-import { readTestSuiteConfig } from '@testdouble/skillwalker-data'
+import { readEvalConfig } from '@testdouble/skillwalker-data'
 import { SkillwalkerError } from '../lib/errors.js'
 import { resolveAndLoad } from './step-1-resolve-and-load.js'
 
@@ -40,7 +40,7 @@ describe('resolveAndLoad', () => {
   // TP-008: Explicit skill — filters tests by test-level skillFile match
   it('filters tests by test-level skillFile when --skill provided', async () => {
     vi.mocked(existsSync).mockReturnValue(true)
-    vi.mocked(readTestSuiteConfig).mockResolvedValue({
+    vi.mocked(readEvalConfig).mockResolvedValue({
       plugins: ['r-and-d'],
       tests: [
         makeTestWithTestLevelSkillFile('t1', 'r-and-d:code-review', true),
@@ -48,7 +48,7 @@ describe('resolveAndLoad', () => {
       ],
     })
 
-    const result = await resolveAndLoad('my-suite', 'r-and-d:code-review', '/mock/tests', '/repo')
+    const result = await resolveAndLoad('my-eval', 'r-and-d:code-review', '/mock/tests', '/repo')
     expect(result.tests).toHaveLength(1)
     expect(result.tests[0].name).toBe('t1')
     expect(result.skillFile).toBe('r-and-d:code-review')
@@ -57,7 +57,7 @@ describe('resolveAndLoad', () => {
   // TP-009: Explicit skill — filters by expectation-level skillFile match
   it('includes tests where expectation skillFile matches even if test-level does not', async () => {
     vi.mocked(existsSync).mockReturnValue(true)
-    vi.mocked(readTestSuiteConfig).mockResolvedValue({
+    vi.mocked(readEvalConfig).mockResolvedValue({
       plugins: ['r-and-d'],
       tests: [
         {
@@ -69,19 +69,19 @@ describe('resolveAndLoad', () => {
       ],
     })
 
-    const result = await resolveAndLoad('my-suite', 'r-and-d:code-review', '/mock/tests', '/repo')
+    const result = await resolveAndLoad('my-eval', 'r-and-d:code-review', '/mock/tests', '/repo')
     expect(result.tests).toHaveLength(1)
   })
 
   // TP-004: Throws when SKILL.md does not exist (explicit skill)
   it('throws when SKILL.md does not exist for explicit skill', async () => {
     vi.mocked(existsSync).mockReturnValue(false)
-    vi.mocked(readTestSuiteConfig).mockResolvedValue({
+    vi.mocked(readEvalConfig).mockResolvedValue({
       plugins: [],
       tests: [makeSkillCallTest('t1', 'r-and-d:code-review', true)],
     })
 
-    await expect(resolveAndLoad('my-suite', 'r-and-d:code-review', '/mock/tests', '/repo')).rejects.toThrow(
+    await expect(resolveAndLoad('my-eval', 'r-and-d:code-review', '/mock/tests', '/repo')).rejects.toThrow(
       SkillwalkerError,
     )
   })
@@ -89,12 +89,12 @@ describe('resolveAndLoad', () => {
   // TP-005: Throws when no matching tests found for explicit skill
   it('throws when no tests match the explicit skill', async () => {
     vi.mocked(existsSync).mockReturnValue(true)
-    vi.mocked(readTestSuiteConfig).mockResolvedValue({
+    vi.mocked(readEvalConfig).mockResolvedValue({
       plugins: ['r-and-d'],
       tests: [makeSkillCallTest('t1', 'r-and-d:investigate', true)],
     })
 
-    await expect(resolveAndLoad('my-suite', 'r-and-d:code-review', '/mock/tests', '/repo')).rejects.toThrow(
+    await expect(resolveAndLoad('my-eval', 'r-and-d:code-review', '/mock/tests', '/repo')).rejects.toThrow(
       SkillwalkerError,
     )
   })
@@ -102,7 +102,7 @@ describe('resolveAndLoad', () => {
   // TP-010: Inferred skill — single skill detected
   it('infers skill when only one skillFile found across expectations', async () => {
     vi.mocked(existsSync).mockReturnValue(true)
-    vi.mocked(readTestSuiteConfig).mockResolvedValue({
+    vi.mocked(readEvalConfig).mockResolvedValue({
       plugins: ['r-and-d'],
       tests: [
         makeSkillCallTest('t1', 'r-and-d:code-review', true),
@@ -110,14 +110,14 @@ describe('resolveAndLoad', () => {
       ],
     })
 
-    const result = await resolveAndLoad('my-suite', undefined, '/mock/tests', '/repo')
+    const result = await resolveAndLoad('my-eval', undefined, '/mock/tests', '/repo')
     expect(result.skillFile).toBe('r-and-d:code-review')
     expect(result.tests).toHaveLength(2)
   })
 
   // TP-006: Throws when no skill-call expectations found
   it('throws when no skill-call expectations exist in tests', async () => {
-    vi.mocked(readTestSuiteConfig).mockResolvedValue({
+    vi.mocked(readEvalConfig).mockResolvedValue({
       plugins: ['r-and-d'],
       tests: [
         {
@@ -129,12 +129,12 @@ describe('resolveAndLoad', () => {
       ],
     })
 
-    await expect(resolveAndLoad('my-suite', undefined, '/mock/tests', '/repo')).rejects.toThrow(SkillwalkerError)
+    await expect(resolveAndLoad('my-eval', undefined, '/mock/tests', '/repo')).rejects.toThrow(SkillwalkerError)
   })
 
   // TP-007: Throws when multiple skills found during inference
   it('throws when multiple skills found during inference', async () => {
-    vi.mocked(readTestSuiteConfig).mockResolvedValue({
+    vi.mocked(readEvalConfig).mockResolvedValue({
       plugins: ['r-and-d'],
       tests: [
         makeSkillCallTest('t1', 'r-and-d:code-review', true),
@@ -142,24 +142,24 @@ describe('resolveAndLoad', () => {
       ],
     })
 
-    await expect(resolveAndLoad('my-suite', undefined, '/mock/tests', '/repo')).rejects.toThrow(SkillwalkerError)
+    await expect(resolveAndLoad('my-eval', undefined, '/mock/tests', '/repo')).rejects.toThrow(SkillwalkerError)
   })
 
   // TP-018: Inferred skill — throws when inferred SKILL.md does not exist
   it('throws when inferred SKILL.md does not exist', async () => {
     vi.mocked(existsSync).mockReturnValue(false)
-    vi.mocked(readTestSuiteConfig).mockResolvedValue({
+    vi.mocked(readEvalConfig).mockResolvedValue({
       plugins: ['r-and-d'],
       tests: [makeSkillCallTest('t1', 'r-and-d:code-review', true)],
     })
 
-    await expect(resolveAndLoad('my-suite', undefined, '/mock/tests', '/repo')).rejects.toThrow(SkillwalkerError)
+    await expect(resolveAndLoad('my-eval', undefined, '/mock/tests', '/repo')).rejects.toThrow(SkillwalkerError)
   })
 
   // TP-019: Filters to skill-call type tests only
   it('filters out non-skill-call test types', async () => {
     vi.mocked(existsSync).mockReturnValue(true)
-    vi.mocked(readTestSuiteConfig).mockResolvedValue({
+    vi.mocked(readEvalConfig).mockResolvedValue({
       plugins: ['r-and-d'],
       tests: [
         makeSkillCallTest('skill-test', 'r-and-d:code-review', true),
@@ -172,7 +172,7 @@ describe('resolveAndLoad', () => {
       ],
     })
 
-    const result = await resolveAndLoad('my-suite', undefined, '/mock/tests', '/repo')
+    const result = await resolveAndLoad('my-eval', undefined, '/mock/tests', '/repo')
     expect(result.tests).toHaveLength(1)
     expect(result.tests[0].name).toBe('skill-test')
   })
@@ -180,22 +180,22 @@ describe('resolveAndLoad', () => {
   // TP-001: Skill string without colon — existsSync receives path with "undefined"
   it('constructs path with undefined skillName when skill has no colon', async () => {
     vi.mocked(existsSync).mockReturnValue(false)
-    vi.mocked(readTestSuiteConfig).mockResolvedValue({
+    vi.mocked(readEvalConfig).mockResolvedValue({
       plugins: [],
       tests: [],
     })
 
-    await expect(resolveAndLoad('my-suite', 'no-colon', '/mock/tests', '/repo')).rejects.toThrow()
+    await expect(resolveAndLoad('my-eval', 'no-colon', '/mock/tests', '/repo')).rejects.toThrow()
   })
 
   // TP-002: Inferred skillFile without colon from tests.json
   it('handles inferred skillFile without colon in expectations', async () => {
     vi.mocked(existsSync).mockReturnValue(false)
-    vi.mocked(readTestSuiteConfig).mockResolvedValue({
+    vi.mocked(readEvalConfig).mockResolvedValue({
       plugins: [],
       tests: [makeSkillCallTest('t1', 'malformed-no-colon', true)],
     })
 
-    await expect(resolveAndLoad('my-suite', undefined, '/mock/tests', '/repo')).rejects.toThrow()
+    await expect(resolveAndLoad('my-eval', undefined, '/mock/tests', '/repo')).rejects.toThrow()
   })
 })

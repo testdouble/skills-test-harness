@@ -8,7 +8,7 @@ export const describe = 'Agent Call Improvement Loop — iteratively improve an 
 
 export function builder(yargs: Argv): Argv {
   return yargs
-    .option('suite', { type: 'string', demandOption: true, describe: 'Test suite name' })
+    .option('eval', { type: 'string', demandOption: true, describe: 'Eval name' })
     .option('agent', { type: 'string', describe: 'Target agent in plugin:agent format (inferred if omitted)' })
     .option('max-iterations', { type: 'number', default: 5, describe: 'Maximum improvement iterations' })
     .option('holdout', { type: 'number', default: 0, describe: 'Fraction of tests held out for validation (e.g. 0.4)' })
@@ -61,7 +61,7 @@ export async function handler(argv: Record<string, unknown>): Promise<void> {
   }
 
   const config: AcilConfig = {
-    suite: argv.suite as string,
+    eval: argv.eval as string,
     agent,
     maxIterations,
     holdout,

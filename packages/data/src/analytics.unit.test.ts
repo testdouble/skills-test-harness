@@ -92,7 +92,7 @@ describe('SQL injection rejection (integration)', () => {
     await writeRunFixture({
       outputDir,
       testRunId: '20260327T120000',
-      suite: 'test-suite',
+      eval: 'eval',
       testName: 'a test',
     })
     await updateAllParquet({ outputDir, dataDir })
