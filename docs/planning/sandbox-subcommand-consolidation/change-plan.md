@@ -15,9 +15,9 @@ this, and no prior report exists. The source is the user's own request, quoted i
 After this change the CLI has one command that owns the Test Sandbox lifecycle instead of three scattered ones. The
 `sandbox` command answers for grouping and dispatch and nothing else — it holds no logic of its own, and each of its
 three children does exactly what it does today. The old flat spellings stop working outright
-([D-1](artifacts/change-decision-log.md#d-1-old-flat-command-names-are-removed-outright)), so every place that told
-someone to type one of them — two thrown error messages, a stderr hint, a Makefile recipe, the README, and six docs
-files — names the new spelling instead.
+([D-1](artifacts/change-decision-log.md#d-1-old-flat-command-names-are-removed-outright)). Every place that told
+someone to type one of them now names the new spelling instead: two thrown error messages, a stderr hint, a Makefile
+recipe, the README, and six docs files.
 
 ## Current State
 
@@ -48,7 +48,7 @@ Three facts shape how the change has to be carried out:
 ## Target State
 
 `packages/cli/src/commands/sandbox.ts` is a parent command that owns grouping and dispatch. It holds no sandbox logic:
-its `builder` registers the three children and requires one of them, and its `handler` is an unreachable no-op that
+its `builder` registers the three children and requires one of them. Its `handler` is an unreachable no-op that
 exists only because Yargs' `CommandModule` type declares `handler` non-optional
 ([D-7](artifacts/change-decision-log.md#d-7-the-parent-module-imports-its-children-statically)).
 
@@ -218,7 +218,7 @@ command tests use:
 
 **Why.** S-8 changes a literal that nothing currently pins, in the one command module with no co-located test
 ([C-6](artifacts/current-state-findings.md#c-6-tests-pin-command-as-an-exact-literal-and-sandbox-setup-has-no-test-at-all)).
-`docs/coding-standards/test-file-organization.md` documents co-location as the project's convention; it carries
+`docs/coding-standards/test-file-organization.md` documents co-location as the project's convention. It carries
 `Status: proposed` and says nothing about exemptions, so it is a convention this module was the sole gap against
 rather than a rule it violated.
 
@@ -260,8 +260,9 @@ enforces that they match a registered command
 ### S-11: The `Makefile` `sandbox-setup` target and the `README.md` setup step — Re-scoped
 
 **Target state.** The Make target is still named `sandbox-setup` and still depends on `build`; its recipe invokes
-`./build/skillwalker sandbox setup`. Running `make sandbox-setup` creates the Test Sandbox, as it does today. The
-README's step-2 setup block at `README.md:43` reads `./build/skillwalker sandbox setup`, so someone following the
+`./build/skillwalker sandbox setup`. Running `make sandbox-setup` creates the Test Sandbox, as it does today.
+
+The README's step-2 setup block at `README.md:43` reads `./build/skillwalker sandbox setup`. Someone following the
 getting-started instructions from a clean checkout types a command that exists.
 
 **Behavior.** Preserving. The observer is anyone running `make sandbox-setup` or following the README, and what they
@@ -272,8 +273,8 @@ get is unchanged. The target name is deliberately not renamed
 ([C-8](artifacts/current-state-findings.md#c-8-the-makefile-has-a-sandbox-setup-target-that-calls-the-binary-and-a-sandbox-clean-target-that-bypasses-it),
 [C-11](artifacts/current-state-findings.md#c-11-six-documentation-files-name-these-commands-beyond-the-code)).
 
-The README was named in this plan's opening paragraph and in Unit 3 from the start, but an earlier draft of this entry
-covered only the Makefile, leaving the README with no target state and no acceptance criterion. The review round
+The README was named in this plan's opening paragraph and in Unit 3 from the start. However, an earlier draft of this
+entry covered only the Makefile, leaving the README with no target state and no acceptance criterion. The review round
 caught it. `C-11` lists the README as an item distinct from the six docs files Unit 4 covers, so it belongs here.
 
 **Depends on.** S-3.
@@ -300,10 +301,16 @@ which this change makes untrue
 ### S-13: `packages/cli/src/command-registration.integration.test.ts` — Added
 
 **Target state.** An integration test that spawns the CLI entry point as a subprocess and asserts on what it prints.
-It covers five things: `sandbox` appears in the top-level command list; `clean`, `shell`, and `sandbox-setup` do not;
-a removed flat name exits 1 with `Unknown argument: clean`; a bare `sandbox` lists all three sub-commands and exits 1;
-and an unknown sub-command exits 1. It reads the command column of the help output rather than matching free text, so
-a command's description cannot be mistaken for a registration.
+It covers five things:
+
+1. `sandbox` appears in the top-level command list.
+2. `clean`, `shell`, and `sandbox-setup` do not.
+3. A removed flat name exits 1 with `Unknown argument: clean`.
+4. A bare `sandbox` lists all three sub-commands and exits 1.
+5. An unknown sub-command exits 1.
+
+It reads the command column of the help output rather than matching free text, so a command's description cannot be
+mistaken for a registration.
 
 It covers no success path. Those dispatch into `createSandbox`, `removeSandbox`, and `openShell`, which need a real or
 faked `sbx`. Every assertion here short-circuits inside Yargs before any handler runs, so the test needs no sandbox and
@@ -343,9 +350,9 @@ side effect the plan discovered afterwards.
    sandbox does not exist, which currently reads `Sandbox "claude-skills-skillwalker" not found. Run
    './build/skillwalker sandbox-setup' first.` **User's decision:** "Everything, including docs."
 
-Everything else in the delta is behavior-preserving. `make sandbox-setup` still creates the sandbox (S-11), the two
-moved modules keep their exports and their tests pass unmodified (S-6, S-7), and the added test and ADR change nothing
-a user observes (S-9, S-12).
+Everything else in the delta is behavior-preserving. `make sandbox-setup` still creates the sandbox (S-11). The two
+moved modules keep their exports, and their tests pass unmodified (S-6, S-7). The added test and ADR change nothing a
+user observes (S-9, S-12).
 
 ## Change Units
 
@@ -359,13 +366,13 @@ a user observes (S-9, S-12).
 **Ordering constraint.** None before it; everything else depends on it. This unit **cannot be split** into "move the
 files" and "rewire `index.ts`". The import paths in `index.ts` are plain string literals with no static check tying
 them to real files, and nothing in the test suite exercises `index.ts` at all
-([Gaps](artifacts/current-state-findings.md#gaps)), so either half alone is a commit where the CLI is broken and
+([Gaps](artifacts/current-state-findings.md#gaps)). Either half alone is a commit where the CLI is broken and
 `make test` still passes.
 
 **How you know it worked.** `clean.test.ts` and `shell.test.ts` pass unmodified, and the unit count rises from 934
 only by the tests this unit adds. `bun run test:integration` passes, including the five assertions S-13 adds. Each row
 of the Target State table above reproduces against both `bun run packages/cli/index.ts` and the compiled
-`./build/skillwalker`, including the exit codes — the compiled binary matters separately, because it is what the
+`./build/skillwalker`, including the exit codes. The compiled binary matters separately, because it is what the
 Makefile and the README tell people to run.
 
 ### Unit 2: Correct the failure messages
@@ -419,7 +426,7 @@ carries a status line it previously lacked.
 ## Risks
 
 - **A command that fails to register used to be invisible to the test suite.** Every command test mocks its delegate,
-  and the import paths in `index.ts` are plain string literals with no static check, so a typo there would pass the
+  and the import paths in `index.ts` are plain string literals with no static check. A typo there would pass the
   unit suite and break the built binary. Blast radius: the entire CLI, since `index.ts` is the single entry point.
   **Closed by S-13**, which spawns the entry point and asserts on registration. Measured: with the `sandbox`
   registration pointed at a nonexistent module, all 938 unit tests still pass and four of S-13's five assertions fail.
@@ -434,6 +441,11 @@ carries a status line it previously lacked.
   `sandbox setup --repo-root` row of the Target State table.
 
 ## Deferred (YAGNI)
+
+Each entry below failed one of two gates. The **evidence test** asks whether anything shows the item is needed now — a
+stated need, a named dependency, a code path that breaks without it, or a measured problem. The **simpler-version
+test** asks whether a strictly simpler structure satisfies that same evidence. Nothing here is rejected; each carries
+the trigger that would reopen it.
 
 ### A shared `CommandModule` base type, or a barrel file for `commands/sandbox/`
 
@@ -492,18 +504,18 @@ cross-package user-facing string appears and the pair justifies a shared mechani
 ### A `.fail()` handler mapping retired command names to their new spelling
 
 **Why deferred:** The recorded boundary answers it. The review round observed that `Unknown argument: clean` tells
-someone what is wrong but not where the command went, and proposed a small lookup table in a Yargs `.fail()` callback
-printing one extra line. The user was shown this exact behavior when choosing the hard cut — the option they selected
-was described as "typing `clean` fails with Yargs' 'Unknown argument' error and the help listing" — and chose it. The
-same handler would also replace `Not enough non-option arguments: got 0, need at least 1` on a bare `sandbox` with
+someone what is wrong but not where the command went. It proposed a small lookup table in a Yargs `.fail()` callback
+printing one extra line. The user was shown this exact behavior when choosing the hard cut. The option they selected
+was described as "typing `clean` fails with Yargs' 'Unknown argument' error and the help listing," and they chose it.
+The same handler would also replace `Not enough non-option arguments: got 0, need at least 1` on a bare `sandbox` with
 plain language.
 **Reopen when:** Someone reports being unable to find a moved command, which is the evidence this currently lacks.
 **Source:** `han-core:user-experience-designer` UX-1 and UX-6, Step 7 review round.
 
-### Making the `sbx ls` failure hint name the command the user actually ran
+### Making the `sbx ls` failure hint name the command the user ran
 
 **Why deferred:** Evidence test. That message always recommends `sandbox setup`, but it is reachable from
-`sandbox shell`, `scil`, `acil`, and eval runs, so someone running `sandbox shell` is told to retry a command that is
+`sandbox shell`, `scil`, `acil`, and eval runs. Someone running `sandbox shell` is told to retry a command that is
 not what they wanted. Pre-existing — the same context-independence existed under the flat name, and S-10 changed only
 the spelling. A real fix needs the throw site to know its caller, which is a structural change a rename does not
 reach. The message's primary instruction, `sbx login`, is correct in every calling context.
@@ -515,7 +527,7 @@ reach. The message's primary instruction, `sbx login`, is correct in every calli
 **Why deferred:** Evidence test. Top-level help now shows `Manage the Test Sandbox` where it previously showed the
 words `shell`, `clean`, and `setup`, so someone scanning for "shell" has to go one level in. Widening the description
 to something like `Manage the Test Sandbox (setup, clean, shell)` would restore that at no cost, but nothing indicates
-anyone has been lost — and `skillwalker sandbox --help` exits 0 and lists all three, so the extra hop is cheap.
+anyone has been lost. `skillwalker sandbox --help` exits 0 and lists all three, so the extra hop is cheap.
 **Reopen when:** Someone reports not finding a sandbox command after the change.
 **Source:** `han-core:user-experience-designer` UX-5, Step 7 review round.
 
@@ -549,10 +561,10 @@ Either of these can be reinstated. Saying so is itself a valid justification, an
 None blocking.
 
 One non-blocking item the builder inherits: **S-13 covers registration, not dispatch.** Its assertions all
-short-circuit inside Yargs before a handler runs, so nothing automated proves that `sandbox setup` actually reaches
+short-circuit inside Yargs before a handler runs, so nothing automated proves that `sandbox setup` reaches
 `createSandbox` in the built binary. Closing that needs a fake `sbx` on `PATH`, which is a materially larger piece of
 work than this change calls for. The handler-level unit tests pin the delegation, and the Target State table was run
-by hand against the compiled binary, so the gap is narrow — but it is real, and it is the seam a future sandbox change
+by hand against the compiled binary, so the gap is narrow. But it is real, and it is the seam a future sandbox change
 should close.
 
 ## Review Findings
@@ -578,19 +590,19 @@ Findings that changed the plan:
 Findings deliberately not acted on:
 
 - **D-6's file-layout decision was challenged as a YAGNI candidate** under the symmetry anti-pattern, on the grounds
-  that a simpler version exists — leave `clean.ts` and `shell.ts` at their flat paths, rename `sandbox-setup.ts` in
-  place, and have the parent import all three flat. The challenge is partly sustained: D-6's original rationale never
+  that a simpler version exists. That version would leave `clean.ts` and `shell.ts` at their flat paths, rename
+  `sandbox-setup.ts` in place, and have the parent import all three flat. The challenge is partly sustained: D-6's original rationale never
   ran the simpler-version test, and never recorded the flat alternative. D-6 now records it. The subdirectory is kept,
   because its justification rests on `C-4` — an existing cohesion in the import graph — rather than on symmetry alone.
   This is the one place the change went past the minimum the recorded reason required, and it is reversible.
 - **`lifecycle.ts:40` still reads `sbx rm --force claude-skills-skillwalker`**, one line above the hint S-10 rewrote.
   It instructs someone to bypass the CLI to do what `sandbox clean` now does, which sits awkwardly beside this
-  change's own "one spelling per action" premise. Left alone deliberately: a raw `sbx` call is the more robust
-  recovery instruction precisely when the sandbox is in a bad state, and swapping it would change what the message
-  tells people to do rather than what it calls a command. Surfaced as a recommendation rather than absorbed.
+  change's own "one spelling per action" premise. Left alone deliberately: a raw `sbx` call is the more reliable
+  recovery instruction precisely when the sandbox is in a bad state. Swapping it would change what the message
+  tells people to do, rather than what it calls a command. Surfaced as a recommendation rather than absorbed.
 - **D-7's claim that the parent's empty `handler` is "required rather than chosen"** was challenged as resting on a
   `@types/yargs` 17 declaration against a Yargs 18 runtime. Settled by measurement instead of argument: deleting the
-  export fails `tsc --noEmit` with `TS2769` against the types this project actually installs. The claim stands.
+  export fails `tsc --noEmit` with `TS2769` against the types this project installs. The claim stands.
 
 The decisions each finding produced are recorded in
 [`artifacts/change-decision-log.md`](artifacts/change-decision-log.md).
