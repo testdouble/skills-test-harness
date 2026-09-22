@@ -1,4 +1,5 @@
 import { withConnection } from './connection.js'
+import { hasParquet } from './parquet-files.js'
 import type {
   AcilHistoryRow,
   AcilIterationRow,
@@ -36,6 +37,7 @@ function convertBigInts(val: unknown): unknown {
 }
 
 export async function queryScilHistory(dataDir: string): Promise<ScilHistoryRow[]> {
+  if (!hasParquet(dataDir, 'scil-iteration')) return []
   return withConnection(dataDir, async (conn) => {
     const sql = `
       SELECT
@@ -54,6 +56,9 @@ export async function queryScilHistory(dataDir: string): Promise<ScilHistoryRow[
 
 export async function queryScilRunDetails(dataDir: string, runId: string): Promise<ScilRunDetails> {
   validateRunId(runId)
+  if (!hasParquet(dataDir, 'scil-summary')) {
+    throw new Error(`SCIL run not found: ${runId}`)
+  }
   return withConnection(dataDir, async (conn) => {
     const existsRows = (
       await conn.runAndReadAll(
@@ -74,13 +79,16 @@ export async function queryScilRunDetails(dataDir: string, runId: string): Promi
     `
     const summaryRows = (await conn.runAndReadAll(summarySql, [runId])).getRowObjects()
 
-    const iterationsSql = `
-      SELECT * REPLACE (CAST(iteration AS INTEGER) AS iteration)
-      FROM read_parquet('${dataDir}/scil-iteration.parquet')
-      WHERE test_run_id = $1
-      ORDER BY iteration ASC
-    `
-    const iterationRows = (await conn.runAndReadAll(iterationsSql, [runId])).getRowObjects()
+    let iterationRows: unknown[] = []
+    if (hasParquet(dataDir, 'scil-iteration')) {
+      const iterationsSql = `
+        SELECT * REPLACE (CAST(iteration AS INTEGER) AS iteration)
+        FROM read_parquet('${dataDir}/scil-iteration.parquet')
+        WHERE test_run_id = $1
+        ORDER BY iteration ASC
+      `
+      iterationRows = (await conn.runAndReadAll(iterationsSql, [runId])).getRowObjects()
+    }
 
     return {
       summary: summaryRows[0] as unknown as ScilSummaryRow,
@@ -90,6 +98,7 @@ export async function queryScilRunDetails(dataDir: string, runId: string): Promi
 }
 
 export async function queryAcilHistory(dataDir: string): Promise<AcilHistoryRow[]> {
+  if (!hasParquet(dataDir, 'acil-iteration')) return []
   return withConnection(dataDir, async (conn) => {
     const sql = `
       SELECT
@@ -108,6 +117,9 @@ export async function queryAcilHistory(dataDir: string): Promise<AcilHistoryRow[
 
 export async function queryAcilRunDetails(dataDir: string, runId: string): Promise<AcilRunDetails> {
   validateRunId(runId)
+  if (!hasParquet(dataDir, 'acil-summary')) {
+    throw new Error(`ACIL run not found: ${runId}`)
+  }
   return withConnection(dataDir, async (conn) => {
     const existsRows = (
       await conn.runAndReadAll(
@@ -128,13 +140,16 @@ export async function queryAcilRunDetails(dataDir: string, runId: string): Promi
     `
     const summaryRows = (await conn.runAndReadAll(summarySql, [runId])).getRowObjects()
 
-    const iterationsSql = `
-      SELECT * REPLACE (CAST(iteration AS INTEGER) AS iteration)
-      FROM read_parquet('${dataDir}/acil-iteration.parquet')
-      WHERE test_run_id = $1
-      ORDER BY iteration ASC
-    `
-    const iterationRows = (await conn.runAndReadAll(iterationsSql, [runId])).getRowObjects()
+    let iterationRows: unknown[] = []
+    if (hasParquet(dataDir, 'acil-iteration')) {
+      const iterationsSql = `
+        SELECT * REPLACE (CAST(iteration AS INTEGER) AS iteration)
+        FROM read_parquet('${dataDir}/acil-iteration.parquet')
+        WHERE test_run_id = $1
+        ORDER BY iteration ASC
+      `
+      iterationRows = (await conn.runAndReadAll(iterationsSql, [runId])).getRowObjects()
+    }
 
     return {
       summary: summaryRows[0] as unknown as AcilSummaryRow,

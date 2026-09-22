@@ -5,6 +5,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { type DuckDBConnection, DuckDBInstance } from '@duckdb/node-api'
 import { withConnection } from './connection.js'
+import { hasParquet } from './parquet-files.js'
 import type {
   AcilSummaryRecord,
   LlmJudgeCriterion,
@@ -19,7 +20,20 @@ import type {
 } from './types.js'
 import { InvalidRunIdError } from './types.js'
 
+// Stands in for the expect_summary CTE when test-results.parquet does not exist,
+// so the LEFT JOIN yields NULL all_expectations_passed instead of failing.
+const EMPTY_EXPECT_SUMMARY = `
+  SELECT NULL::VARCHAR AS test_run_id, NULL::VARCHAR AS eval,
+         NULL::VARCHAR AS test_name, NULL::BOOLEAN AS all_expectations_passed
+  WHERE false
+`
+
+function hasTestRunData(dataDir: string): boolean {
+  return hasParquet(dataDir, 'test-run') && hasParquet(dataDir, 'test-config')
+}
+
 async function infraErrorCondition(conn: DuckDBConnection, dataDir: string): Promise<string> {
+  if (!hasParquet(dataDir, 'test-results')) return ''
   try {
     const cols = (
       await conn.runAndReadAll(
@@ -312,14 +326,19 @@ async function convertAcilSummariesToTempJsonl(outputDir: string): Promise<strin
 }
 
 export async function queryPerTest(dataDir: string): Promise<PerTestRow[]> {
+  if (!hasTestRunData(dataDir)) return []
   return withConnection(dataDir, async (conn) => {
     const statusFilter = await infraErrorCondition(conn, dataDir)
     const sql = `
       WITH expect_summary AS (
-        SELECT test_run_id, eval, test_name, bool_and(passed) AS all_expectations_passed
+        ${
+          hasParquet(dataDir, 'test-results')
+            ? `SELECT test_run_id, eval, test_name, bool_and(passed) AS all_expectations_passed
         FROM read_parquet('${dataDir}/test-results.parquet')
         ${statusFilter ? `WHERE ${statusFilter}` : ''}
-        GROUP BY test_run_id, eval, test_name
+        GROUP BY test_run_id, eval, test_name`
+            : EMPTY_EXPECT_SUMMARY
+        }
       )
       SELECT
         r.test_run_id,
@@ -358,14 +377,19 @@ function parseRunIdDate(runId: string): string {
 }
 
 export async function queryTestRunSummaries(dataDir: string): Promise<TestRunSummary[]> {
+  if (!hasTestRunData(dataDir)) return []
   return withConnection(dataDir, async (conn) => {
     const statusFilter = await infraErrorCondition(conn, dataDir)
     const sql = `
       WITH expect_summary AS (
-        SELECT test_run_id, eval, test_name, bool_and(passed) AS all_expectations_passed
+        ${
+          hasParquet(dataDir, 'test-results')
+            ? `SELECT test_run_id, eval, test_name, bool_and(passed) AS all_expectations_passed
         FROM read_parquet('${dataDir}/test-results.parquet')
         ${statusFilter ? `WHERE ${statusFilter}` : ''}
-        GROUP BY test_run_id, eval, test_name
+        GROUP BY test_run_id, eval, test_name`
+            : EMPTY_EXPECT_SUMMARY
+        }
       ),
       per_test AS (
         SELECT
@@ -403,6 +427,9 @@ export async function queryTestRunSummaries(dataDir: string): Promise<TestRunSum
 
 export async function queryTestRunDetails(dataDir: string, testRunId: string): Promise<TestRunDetails> {
   validateRunId(testRunId)
+  if (!hasTestRunData(dataDir)) {
+    throw new Error(`Test run not found: ${testRunId}`)
+  }
   return withConnection(dataDir, async (conn) => {
     const existsRows = (
       await conn.runAndReadAll(
@@ -416,14 +443,19 @@ export async function queryTestRunDetails(dataDir: string, testRunId: string): P
       throw new Error(`Test run not found: ${testRunId}`)
     }
 
+    const hasResults = hasParquet(dataDir, 'test-results')
     const statusFilter = await infraErrorCondition(conn, dataDir)
     const summarySql = `
       WITH expect_summary AS (
-        SELECT test_run_id, test_name, bool_and(passed) AS all_expectations_passed
+        ${
+          hasResults
+            ? `SELECT test_run_id, test_name, bool_and(passed) AS all_expectations_passed
         FROM read_parquet('${dataDir}/test-results.parquet')
         WHERE test_run_id = $1
           ${statusFilter ? `AND ${statusFilter}` : ''}
-        GROUP BY test_run_id, test_name
+        GROUP BY test_run_id, test_name`
+            : EMPTY_EXPECT_SUMMARY
+        }
       )
       SELECT
         r.test_run_id,
@@ -452,22 +484,26 @@ export async function queryTestRunDetails(dataDir: string, testRunId: string): P
       await conn.runAndReadAll(summarySql, [testRunId])
     ).getRowObjects() as unknown as (TestRunDetailRow & { result?: string })[]
 
-    const expectationsSql = `
-      SELECT *
-      FROM read_parquet('${dataDir}/test-results.parquet')
-      WHERE test_run_id = $1
-      ORDER BY test_name, expect_type, expect_value
-    `
-    const allExpectations = (
-      await conn.runAndReadAll(expectationsSql, [testRunId])
-    ).getRowObjects() as unknown as (TestRunExpectationRow & {
+    type ExpectationQueryRow = TestRunExpectationRow & {
       confidence?: string
       reasoning?: string
       judge_model?: string
       judge_threshold?: number
       judge_score?: number
       rubric_file?: string
-    })[]
+    }
+    let allExpectations: ExpectationQueryRow[] = []
+    if (hasResults) {
+      const expectationsSql = `
+        SELECT *
+        FROM read_parquet('${dataDir}/test-results.parquet')
+        WHERE test_run_id = $1
+        ORDER BY test_name, expect_type, expect_value
+      `
+      allExpectations = (
+        await conn.runAndReadAll(expectationsSql, [testRunId])
+      ).getRowObjects() as unknown as ExpectationQueryRow[]
+    }
 
     // Build result-text lookup from summary rows
     const resultTextByTest = new Map<string, string>()
