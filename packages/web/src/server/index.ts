@@ -1,16 +1,11 @@
 import path from 'node:path'
-import { Hono } from 'hono'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import indexCss from '../../dist/client/index.css' with { type: 'file' }
 // Embedded client files — resolved to $bunfs paths when compiled as a standalone executable
 import _indexHtml from '../../dist/client/index.html' with { type: 'file' }
 import indexJs from '../../dist/client/index.js' with { type: 'file' }
-import { getAcilHistory, getAcilRunById } from './routes/acil'
-import { getPerTestAnalytics } from './routes/analytics'
-import { jsonErrorHandler } from './routes/error-handler'
-import { getScilHistory, getScilRunById } from './routes/scil'
-import { getTestRunById, getTestRuns } from './routes/test-runs'
+import { createApp } from './app'
 
 // default port
 const DEFAULT_PORT = 3099
@@ -37,18 +32,7 @@ const argv = await yargs(hideBin(Bun.argv))
 const port = argv.port
 const dataDir = argv['data-dir']
 
-const app = new Hono()
-
-app.onError(jsonErrorHandler)
-
-app.get('/api/health', (c) => c.json({ status: 'ok' }))
-app.get('/api/test-runs', (c) => getTestRuns(c, dataDir))
-app.get('/api/test-runs/:runId', (c) => getTestRunById(c, dataDir))
-app.get('/api/analytics/per-test', (c) => getPerTestAnalytics(c, dataDir))
-app.get('/api/scil', (c) => getScilHistory(c, dataDir))
-app.get('/api/scil/:runId', (c) => getScilRunById(c, dataDir))
-app.get('/api/acil', (c) => getAcilHistory(c, dataDir))
-app.get('/api/acil/:runId', (c) => getAcilRunById(c, dataDir))
+const app = createApp(dataDir)
 
 // Serve embedded static assets
 app.get('/index.js', () => new Response(Bun.file(indexJs)))
