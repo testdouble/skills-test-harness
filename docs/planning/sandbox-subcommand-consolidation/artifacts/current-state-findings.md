@@ -37,7 +37,10 @@ both originating identifiers.
 What was searched for and not found:
 
 - **No test file for `sandbox-setup.ts`.** Every other command module has a co-located `.test.ts`. This is a gap
-  against `docs/coding-standards/test-file-organization.md`, which states no per-file exemptions. See `C-6`.
+  against `docs/coding-standards/test-file-organization.md`, which documents co-location as the convention. Noted
+  during the review round: that standard does **not** contain language about exemptions, and it carries
+  `**Status:** proposed` rather than accepted, so it is a documented convention rather than an enforced rule. See
+  `C-6`.
 - **No status field on the sbx migration ADR.** `20260515000000-migrate-sandbox-cli-to-sbx.md` carries no
   `**Status:**` line, so it cannot be read as accepted, proposed, or superseded. The other ADR does carry one.
 - **No nested-command precedent anywhere in the repository.** See `C-3`.
@@ -140,9 +143,16 @@ What was searched for and not found:
   // sandbox.ts:45 — inside ensureSandboxExists, in a thrown SandboxError, when the sandbox is absent
   throw new SandboxError(`Sandbox "${SANDBOX_NAME}" not found. Run './build/skillwalker sandbox-setup' first.`, null)
   ```
-  No hint string in that package names `clean` or `shell`. The `sandbox.ts:45` message is the pre-check that
-  `openShell` and, transitively, `clean` and `sandbox-setup` all rely on, so it is the most frequently seen of the
-  three.
+  No hint string in that package names `clean` or `shell`.
+
+  **Corrected during the review round.** An earlier wording of this finding said the `sandbox.ts:45` message is the
+  pre-check that `openShell` and, transitively, `clean` and `sandbox-setup` rely on. That call graph is wrong:
+  `removeSandbox` (which `clean` calls) invokes `spawnSbx` directly and never calls `ensureSandboxExists`, and
+  `createSandbox` checks existence through a private `sandboxExists()` that never throws this message. The actual
+  callers of `ensureSandboxExists` are `openShell` (`lifecycle.ts:59`) and three paths outside this package:
+  `packages/execution/src/scil/loop.ts:45`, `packages/execution/src/acil/loop.ts:46`, and
+  `packages/execution/src/evals/run-evals.ts:32`. The frequency claim survives the correction and gets stronger — the
+  message gates the SCIL, ACIL, and eval runs, which are the project's main workflows.
 - **Raised by:** structural-analyst `S-4`, behavioral-analyst `B-5`.
 - **Confidence:** Verified.
 - **Bears on:** S-7, D-4.

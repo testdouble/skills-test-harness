@@ -155,12 +155,22 @@ Evidence about the code as it stands today lives in
   compiles from `packages/cli/index.ts` and bundles transitively, so the move is invisible to the build.
 - **Behavior impact:** Preserving. No observable change follows from where a file sits.
 - **Rejected alternatives:**
-  - Keep the three as flat files, renamed — rejected because the filesystem would then contradict the command
-    structure, and a reader looking for what `sandbox` dispatches to would have to read `sandbox.ts` to find out.
+  - **Leave `clean.ts` and `shell.ts` at their flat paths, rename `sandbox-setup.ts` to `setup.ts` in place, and have
+    the parent import all three flat.** This is strictly simpler: it produces the identical user-visible surface with
+    one file touched instead of five, and it makes the smallest possible diff against the registration risk the plan
+    names as its top item. It was not recorded when D-6 was first written; the Step 7 review round surfaced it, and
+    this entry was amended to carry it. It is rejected — but narrowly — because `C-4` establishes that the three
+    modules are already a cluster in the import graph, so the subdirectory records a cohesion that exists rather than
+    inventing one. **This is the one decision in the change that goes beyond the minimum the recorded reason
+    requires**, and it is the cheapest to reverse: the files move back and the parent's three import paths lose one
+    segment each.
   - Put the parent at `sandbox/index.ts` — rejected because this package already has an `index.ts` with an unrelated
     meaning, and a second one directory down invites confusion for no gain.
 - **Revisit criterion:** If a second nested parent command appears and a different layout serves both better.
-- **Dissent (if any):** None recorded.
+- **Dissent (if any):** `han-core:junior-developer` raised this as a `Category: YAGNI candidate` under the
+  symmetry/completeness anti-pattern, noting that the original rationale never ran the simpler-version test that every
+  other structural decision in this plan ran. Partly sustained: the alternative is now recorded above. The decision
+  stands on `C-4`, and the dissent is recorded rather than resolved away.
 - **Settles delta entry:** S-6, S-7.
 - **Dependent decisions:** D-7.
 - **Referenced in plan:** Target State, Surface Delta.
@@ -227,9 +237,14 @@ Evidence about the code as it stands today lives in
 - **Rationale:** This is not new scope. The change edits a literal that nothing currently pins, in the one module that
   is a standing gap against the project's own co-location standard. The test is how the edit is verified.
 - **Evidence:** `C-6` (no `sandbox-setup.test.ts` exists; the other seven modules all assert their `command` string as
-  an exact literal). `docs/coding-standards/test-file-organization.md` requires co-location and states no per-file
-  exemptions. The scope-justification floor applies: the boundary's silence about tests does not cut a necessity of
-  the work it does ask for.
+  an exact literal). `docs/coding-standards/test-file-organization.md` documents co-location as the project's
+  convention. **Corrected during the review round:** an earlier wording of this entry said that standard "states no
+  per-file exemptions." It contains no such language, and it carries `Status: proposed` rather than accepted, so it is
+  a documented convention this module was the sole gap against rather than a rule it violated. The decision does not
+  depend on the stronger reading — the scope-justification floor carries it: the boundary's silence about tests does
+  not cut a necessity of the work it does ask for, and verifying an edit to an unpinned literal is such a necessity.
+  During the build the test was also extended with a `--repo-root` default assertion, per the review round; see D-10's
+  sibling reasoning and `C-13`.
 - **Behavior impact:** Preserving.
 - **Rejected alternatives:**
   - Move and rename without adding a test — rejected because it would change an unpinned literal in the one module
@@ -239,3 +254,41 @@ Evidence about the code as it stands today lives in
 - **Settles delta entry:** S-9.
 - **Dependent decisions:** None.
 - **Referenced in plan:** Surface Delta.
+
+### D-10: An integration test guards command registration
+
+- **Question:** The plan named a mis-registered command as its top risk, then closed that risk with a manual check run
+  once at the end of Unit 1. Is that adequate, or does the change owe an automated guard?
+- **Decision:** Add `packages/cli/src/command-registration.integration.test.ts`. It spawns the CLI entry point as a
+  subprocess and asserts five things: `sandbox` is in the top-level command list; `clean`, `shell`, and
+  `sandbox-setup` are not; a removed flat name exits 1 with `Unknown argument: clean`; a bare `sandbox` lists all
+  three sub-commands and exits 1; and an unknown sub-command exits 1. It reads the command column of the help output,
+  not free text, so a description cannot be mistaken for a registration.
+
+  It asserts no success path. Those dispatch into `createSandbox`, `removeSandbox`, and `openShell`, which need a real
+  or faked `sbx`; every assertion here short-circuits inside Yargs before a handler runs, so the test needs no sandbox
+  and adds no flakiness. The `.integration.test.ts` suffix routes it to `vitest.integration.config.ts`, per
+  `docs/coding-standards/test-file-organization.md`, because spawning a subprocess crosses a real process boundary.
+- **Rationale:** The manual check leaves nothing behind for the next change. This passes the YAGNI evidence test on
+  the strongest available ground — a measurement rather than an argument. With the `sandbox` registration pointed at a
+  nonexistent module, all 938 unit tests pass and four of these five assertions fail. The failure mode is the plan's
+  own top-named risk with blast radius "the entire CLI," not a hypothetical.
+
+  It is also distinguishable from the deferrals this plan makes elsewhere. The barrel file, the builder
+  deduplication, the error-normalization asymmetry, and the exit-code defect are all untouched by the recorded reason.
+  Registration is what the recorded reason changes.
+- **Evidence:** The findings' `## Gaps` section (nothing exercises `index.ts`; every command test imports its module
+  directly with the delegate mocked). `C-2` (the import paths are plain string literals with no static check).
+  `han-core:test-engineer`, Step 7 review round. The 938-pass measurement was taken during the build, not assumed.
+- **Behavior impact:** Preserving. Adding a test changes nothing a user observes.
+- **Rejected alternatives:**
+  - Keep the manual check only — rejected because it verifies this change and guards nothing afterward, while the risk
+    it addresses persists for every future edit to `index.ts`.
+  - Cover the success paths too, with a fake `sbx` on `PATH` — rejected as a materially larger piece of work than a
+    command rename calls for. `C-14` already defers sandbox-lifecycle correctness. Recorded as an Open Item instead.
+- **Revisit criterion:** If a sandbox change ever needs dispatch-level coverage, the fake-`sbx` harness becomes worth
+  building and this test is where it attaches.
+- **Dissent (if any):** None recorded.
+- **Settles delta entry:** S-13.
+- **Dependent decisions:** None.
+- **Referenced in plan:** Surface Delta, Risks, Change Units, Review Findings.
