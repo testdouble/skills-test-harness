@@ -1,4 +1,4 @@
 export { SandboxError } from './src/errors.js'
-export { createSandbox, openShell, removeSandbox } from './src/lifecycle.js'
+export { createSandbox, openShell, removeSandbox, updateSandbox } from './src/lifecycle.js'
 export { ensureSandboxExists, execInSandbox, SANDBOX_NAME } from './src/sandbox.js'
 export type { SandboxResult } from './src/types.js'

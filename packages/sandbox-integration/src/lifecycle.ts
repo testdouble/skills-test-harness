@@ -1,6 +1,10 @@
 import { SandboxError } from './errors.js'
 import { ensureSandboxExists, listSandboxNames, SANDBOX_NAME, spawnSbx } from './sandbox.js'
 
+const CLAUDE_TEMPLATE_REPOSITORY = 'docker/sandbox-templates'
+const CLAUDE_TEMPLATE_TAG_PREFIX = 'claude-code'
+const TEMPLATE_ALREADY_REMOVED_MESSAGE = 'no template image'
+
 async function sandboxExists(): Promise<boolean> {
   return (await listSandboxNames()).includes(SANDBOX_NAME)
 }
@@ -17,8 +21,8 @@ async function drainStream(stream: ReadableStream<Uint8Array>): Promise<string> 
   return result
 }
 
-export async function removeSandbox(): Promise<void> {
-  const proc = spawnSbx(['rm', '--force', SANDBOX_NAME], { stdout: 'pipe', stderr: 'pipe' })
+async function runSbxCaptured(args: string[]): Promise<{ exitCode: number | null; output: string }> {
+  const proc = spawnSbx(args, { stdout: 'pipe', stderr: 'pipe' })
 
   const [stdoutCapture, stderrCapture] = await Promise.all([
     drainStream(proc.stdout as ReadableStream<Uint8Array>),
@@ -26,19 +30,59 @@ export async function removeSandbox(): Promise<void> {
   ])
   await proc.exited
 
-  if (proc.exitCode !== 0) {
-    throw new SandboxError(
-      `sbx rm failed (exit code ${proc.exitCode ?? 1}): ${stdoutCapture}${stderrCapture}`,
-      proc.exitCode,
-    )
+  return { exitCode: proc.exitCode, output: `${stdoutCapture}${stderrCapture}` }
+}
+
+export async function removeSandbox(): Promise<void> {
+  const { exitCode, output } = await runSbxCaptured(['rm', '--force', SANDBOX_NAME])
+
+  if (exitCode !== 0) {
+    throw new SandboxError(`sbx rm failed (exit code ${exitCode ?? 1}): ${output}`, exitCode)
   }
+}
+
+/**
+ * Image IDs of the cached Claude Code sandbox templates. `sbx` has no pull
+ * command, so removing these is what makes the next `sbx run` fetch the latest.
+ */
+async function listClaudeTemplateImageIds(): Promise<string[]> {
+  const { exitCode, output } = await runSbxCaptured(['template', 'ls'])
+
+  if (exitCode !== 0) {
+    throw new SandboxError(`sbx template ls failed (exit code ${exitCode ?? 1}): ${output}`, exitCode)
+  }
+
+  const ids = output
+    .split('\n')
+    .slice(1)
+    .map((line) => line.trim().split(/\s+/))
+    .filter(
+      ([repository, tag]) => repository === CLAUDE_TEMPLATE_REPOSITORY && tag?.startsWith(CLAUDE_TEMPLATE_TAG_PREFIX),
+    )
+    .map(([, , imageId]) => imageId)
+    .filter((imageId): imageId is string => imageId !== undefined)
+
+  return [...new Set(ids)]
+}
+
+async function removeTemplateImage(imageId: string): Promise<void> {
+  const { exitCode, output } = await runSbxCaptured(['template', 'rm', imageId])
+
+  // `sbx template ls` can list one image under several IDs. Removing the first
+  // removes them all, so a later ID reports that the image no longer exists.
+  if (exitCode === 0 || output.includes(TEMPLATE_ALREADY_REMOVED_MESSAGE)) return
+
+  throw new SandboxError(
+    `sbx template rm ${imageId} failed (exit code ${exitCode ?? 1}): ${output}\nRetry with \`./build/skillwalker sandbox update\`.`,
+    exitCode,
+  )
 }
 
 export async function createSandbox(repoRoot: string): Promise<void> {
   if (await sandboxExists()) {
     process.stderr.write(`Sandbox "${SANDBOX_NAME}" already exists. To recreate, run:\n`)
     process.stderr.write(`  sbx rm --force ${SANDBOX_NAME}\n`)
-    process.stderr.write(`  ./build/skillwalker sandbox setup\n`)
+    process.stderr.write(`  ./build/skillwalker sandbox create\n`)
     return
   }
 
@@ -53,6 +97,20 @@ export async function createSandbox(repoRoot: string): Promise<void> {
   await runProc.exited
 
   process.stderr.write(`\nSandbox "${SANDBOX_NAME}" is ready. You can now run tests.\n`)
+}
+
+export async function updateSandbox(repoRoot: string): Promise<void> {
+  if (await sandboxExists()) {
+    process.stderr.write(`Removing sandbox "${SANDBOX_NAME}"...\n`)
+    await removeSandbox()
+  }
+
+  for (const imageId of await listClaudeTemplateImageIds()) {
+    process.stderr.write(`Removing cached Claude Code template image ${imageId}...\n`)
+    await removeTemplateImage(imageId)
+  }
+
+  await createSandbox(repoRoot)
 }
 
 export async function openShell(): Promise<void> {

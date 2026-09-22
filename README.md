@@ -40,11 +40,15 @@ All commands run from the **repository root**.
 
    ```bash
    sbx login
-   ./build/skillwalker sandbox setup
+   ./build/skillwalker sandbox create
    ```
 
    Complete the login in the Claude TUI. If you aren't prompted, run `/login`.
    When setup finishes, exit with `/exit`.
+
+   To move to a newer Claude Code release later, run
+   `./build/skillwalker sandbox update`. It deletes the sandbox and recreates it
+   from the latest template, so you will log in again.
 
 You're ready. Now choose what you want to measure.
 

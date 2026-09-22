@@ -16,7 +16,7 @@ The `@testdouble/sandbox-integration` package is the single point of contact for
 No other package in Skillwalker spawns `sbx` processes directly. All Sandbox CLI access is funneled through this package, which provides two categories of functionality:
 
 1. **Sandbox execution** -- verifying the sandbox exists and running commands inside it (`ensureSandboxExists`, `execInSandbox`)
-2. **Lifecycle management** -- creating, removing, and opening interactive shells in the sandbox (`createSandbox`, `removeSandbox`, `openShell`)
+2. **Lifecycle management** -- creating, removing, and opening interactive shells in the sandbox (`createSandbox`, `updateSandbox`, `removeSandbox`, `openShell`)
 
 The package returns a clean `SandboxResult` type instead of exposing raw `Bun.spawn` process handles, giving consumers a stable interface decoupled from the process spawning implementation.
 
@@ -26,7 +26,7 @@ All public symbols are re-exported from the barrel file `index.ts`:
 
 ```typescript
 export { SANDBOX_NAME, ensureSandboxExists, execInSandbox } from './src/sandbox.js'
-export { createSandbox, removeSandbox, openShell } from './src/lifecycle.js'
+export { createSandbox, openShell, removeSandbox, updateSandbox } from './src/lifecycle.js'
 export { SandboxError } from './src/errors.js'
 export type { SandboxResult } from './src/types.js'
 ```
@@ -72,7 +72,7 @@ class SandboxError extends Error {
 async function ensureSandboxExists(): Promise<void>
 ```
 
-Pre-flight check that the sandbox is running. Runs `sbx ls --quiet` and verifies `SANDBOX_NAME` exactly matches one output line. Throws `SandboxError` with `exitCode: null` if the sandbox is not found, with a message directing the user to run `./build/skillwalker sandbox setup`.
+Pre-flight check that the sandbox is running. Runs `sbx ls --quiet` and verifies `SANDBOX_NAME` exactly matches one output line. Throws `SandboxError` with `exitCode: null` if the sandbox is not found, with a message directing the user to run `./build/skillwalker sandbox create`.
 
 **Consumers:**
 - `cli/src/commands/test-run.ts` -- before the per-eval test loop
@@ -110,7 +110,7 @@ async function createSandbox(repoRoot: string): Promise<void>
 
 Checks whether the sandbox already exists via an internal `sandboxExists()` helper (runs `sbx ls --quiet`). If found, prints a help message to stderr explaining how to recreate it, and returns early. Otherwise, spawns `sbx run --name claude-skills-skillwalker claude <repoRoot>` with inherited stdio for interactive OAuth login. Prints progress messages to stderr.
 
-**Consumer:** `cli/src/commands/sandbox/setup.ts`
+**Consumer:** `cli/src/commands/sandbox/create.ts`
 
 #### removeSandbox()
 
@@ -121,6 +121,22 @@ async function removeSandbox(): Promise<void>
 Runs `sbx rm --force claude-skills-skillwalker`. Drains stdout and stderr in parallel using a `drainStream` helper. Throws `SandboxError` with the process exit code and captured output on non-zero exit.
 
 **Consumer:** `cli/src/commands/sandbox/clean.ts` -- catches `SandboxError` and re-throws as `SkillwalkerError`
+
+#### updateSandbox()
+
+```typescript
+async function updateSandbox(repoRoot: string): Promise<void>
+```
+
+Replaces the sandbox with one built from the latest Claude Code template. `sbx` has no pull command and reuses a cached template image, so this function:
+
+1. Removes the sandbox with `removeSandbox()`, if it exists.
+2. Lists templates with `sbx template ls` and removes each cached image whose repository is `docker/sandbox-templates` and whose tag starts with `claude-code`, using `sbx template rm <image id>`.
+3. Calls `createSandbox(repoRoot)`, which makes `sbx run` fetch the current template.
+
+`sbx template ls` can list one image under several IDs, and removing the first ID removes them all. A later `rm` that reports `no template image` is therefore treated as already removed. Any other listing or removal failure throws `SandboxError`.
+
+**Consumer:** `cli/src/commands/sandbox/update.ts` -- catches `SandboxError` and re-throws as `SkillwalkerError`
 
 #### openShell()
 
@@ -146,7 +162,7 @@ Contains the `SandboxResult` interface (see Core Types above).
 flowchart TB
     subgraph cli["@testdouble/skillwalker-cli"]
         direction LR
-        commands["<b>commands/</b><br>sandbox/setup · sandbox/clean<br>sandbox/shell · test-run"]
+        commands["<b>commands/</b><br>sandbox/create · sandbox/clean<br>sandbox/shell · test-run"]
         scil["<b>scil/</b><br>loop"]
     end
 
@@ -155,7 +171,7 @@ flowchart TB
     subgraph si["@testdouble/sandbox-integration"]
         direction TB
         sandboxts["<b>sandbox.ts</b><br>ensureSandboxExists()<br>execInSandbox()<br>SANDBOX_NAME"]
-        lifecycle["<b>lifecycle.ts</b><br>createSandbox()<br>removeSandbox()<br>openShell()"]
+        lifecycle["<b>lifecycle.ts</b><br>createSandbox()<br>updateSandbox()<br>removeSandbox()<br>openShell()"]
         types["<b>types.ts</b><br>SandboxResult"]
         errors["<b>errors.ts</b><br>SandboxError"]
 
@@ -178,7 +194,8 @@ flowchart TB
 
 | Consumer | Imports |
 |----------|---------|
-| `cli/src/commands/sandbox/setup.ts` | `createSandbox` |
+| `cli/src/commands/sandbox/create.ts` | `createSandbox` |
+| `cli/src/commands/sandbox/update.ts` | `updateSandbox`, `SandboxError` |
 | `cli/src/commands/sandbox/clean.ts` | `removeSandbox`, `SANDBOX_NAME`, `SandboxError` |
 | `cli/src/commands/sandbox/shell.ts` | `openShell` |
 | `cli/src/commands/test-run.ts` | `ensureSandboxExists` |
@@ -189,7 +206,7 @@ flowchart TB
 
 | Scenario | Error Type | Behavior |
 |----------|------------|----------|
-| Sandbox not found by `ensureSandboxExists` | `SandboxError` (exitCode: `null`) | Thrown with message suggesting `./build/skillwalker sandbox setup` |
+| Sandbox not found by `ensureSandboxExists` | `SandboxError` (exitCode: `null`) | Thrown with message suggesting `./build/skillwalker sandbox create` |
 | `sbx rm` fails | `SandboxError` (exitCode: process code) | Thrown with stdout+stderr in message |
 | Non-zero exit from `execInSandbox` | No error thrown | Returned in `SandboxResult.exitCode`; caller decides |
 | `proc.exitCode` is null in `execInSandbox` | No error thrown | Defaults to `1` in `SandboxResult` |
@@ -202,7 +219,7 @@ Three test files with full coverage of the public API:
 |------|--------|
 | `src/errors.test.ts` | `SandboxError` construction, properties, inheritance |
 | `src/sandbox.test.ts` | `ensureSandboxExists`, `execInSandbox` |
-| `src/lifecycle.test.ts` | `removeSandbox`, `createSandbox`, `openShell` |
+| `src/lifecycle.test.ts` | `removeSandbox`, `createSandbox`, `updateSandbox`, `openShell` |
 
 ### Test Patterns
 
@@ -245,7 +262,7 @@ function makeStream(content: string): ReadableStream<Uint8Array> {
 | `src/types.ts` | `SandboxResult` interface |
 | `src/errors.ts` | `SandboxError` class |
 | `src/sandbox.ts` | `SANDBOX_NAME`, `ensureSandboxExists`, `execInSandbox` |
-| `src/lifecycle.ts` | `createSandbox`, `removeSandbox`, `openShell` |
+| `src/lifecycle.ts` | `createSandbox`, `updateSandbox`, `removeSandbox`, `openShell` |
 | `src/errors.test.ts` | Unit tests for `SandboxError` |
 | `src/sandbox.test.ts` | Unit tests for sandbox execution functions |
 | `src/lifecycle.test.ts` | Unit tests for lifecycle management functions |
