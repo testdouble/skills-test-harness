@@ -563,8 +563,10 @@ export async function queryTestRunDetails(dataDir: string, testRunId: string): P
         testName,
         rubricFile: agg.rubric_file!,
         model: agg.judge_model ?? 'unknown',
-        threshold: agg.judge_threshold ?? 1.0,
-        score: agg.judge_score ?? 0,
+        // DuckDB infers BIGINT for whole-number JSON values (e.g. a perfect score of 1),
+        // which returns a BigInt that JSON serialization rejects — coerce to number
+        threshold: Number(agg.judge_threshold ?? 1.0),
+        score: Number(agg.judge_score ?? 0),
         passed: agg.passed,
         resultText: resultTextByTest.get(testName),
         criteria: group.criteria,
