@@ -57,3 +57,13 @@ describe('sandbox sub-command registration', () => {
     expect(output).toContain('Unknown argument: bogus')
   })
 })
+
+describe('command handler errors', () => {
+  it('prints a domain error as a single Error line without help text', () => {
+    const { status, output } = runCli('test-eval', 'no-such-run-id')
+    expect(status).toBe(1)
+    expect(output).toMatch(/^Error: Test run directory not found:/m)
+    expect(output).not.toContain('Options:')
+    expect(output).not.toContain('RunNotFoundError')
+  })
+})

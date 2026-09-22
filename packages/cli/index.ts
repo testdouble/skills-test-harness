@@ -15,7 +15,14 @@ try {
     .command(await import('./src/commands/acil.js'))
     .demandCommand(1)
     .strict()
-    .showHelpOnFail(true)
+    // Rethrow handler errors to the catch below. Without this, yargs prints
+    // help and the raw error for them and exits before the catch runs.
+    .fail((message, error, cli) => {
+      if (error) throw error
+      cli.showHelp()
+      process.stderr.write(`\n${message}\n`)
+      process.exit(1)
+    })
     .parseAsync()
 } catch (err) {
   if (err instanceof SkillwalkerError || err instanceof SandboxError) {
