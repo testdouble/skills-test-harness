@@ -1,6 +1,5 @@
-import path from 'node:path'
 import { SandboxError } from './errors.js'
-import { ensureSandboxExists, listSandboxNames, SANDBOX_NAME, spawnSbx } from './sandbox.js'
+import { ensureSandboxExists, isWithin, listSandboxNames, SANDBOX_NAME, spawnSbx } from './sandbox.js'
 
 const CLAUDE_TEMPLATE_REPOSITORY = 'docker/sandbox-templates'
 const CLAUDE_TEMPLATE_TAG_PREFIX = 'claude-code'
@@ -77,11 +76,6 @@ async function removeTemplateImage(imageId: string): Promise<void> {
     `sbx template rm ${imageId} failed (exit code ${exitCode ?? 1}): ${output}\nRetry with \`./build/skillwalker sandbox update\`.`,
     exitCode,
   )
-}
-
-function isWithin(parent: string, child: string): boolean {
-  const relative = path.relative(parent, child)
-  return !relative.startsWith('..') && !path.isAbsolute(relative)
 }
 
 /**

@@ -1,3 +1,4 @@
+import path from 'node:path'
 import { SandboxError } from './errors.js'
 import type { SandboxResult } from './types.js'
 
@@ -6,6 +7,9 @@ export const SANDBOX_NAME = 'claude-skills-skillwalker'
 // `sbx exec` prints this and still exits 0 when the command cannot be started,
 // such as when its host path is not under one of the sandbox's workspaces.
 const EXEC_FAILED_MESSAGE = 'OCI runtime exec failed'
+
+// Workspaces mounted read-only may be listed with the same suffix `sbx run` takes.
+const READ_ONLY_SUFFIX = /:ro$/
 
 export function spawnSbx(args: string[], options: Parameters<typeof Bun.spawn>[1]) {
   try {
@@ -21,8 +25,8 @@ export function spawnSbx(args: string[], options: Parameters<typeof Bun.spawn>[1
   }
 }
 
-export async function listSandboxNames(): Promise<string[]> {
-  const proc = spawnSbx(['ls', '--quiet'], { stdout: 'pipe', stderr: 'pipe' })
+async function runSbxLs(args: string[]): Promise<string> {
+  const proc = spawnSbx(['ls', ...args], { stdout: 'pipe', stderr: 'pipe' })
   const [stdout, stderr] = await Promise.all([
     new Response(proc.stdout as ReadableStream).text(),
     new Response(proc.stderr as ReadableStream).text(),
@@ -37,16 +41,49 @@ export async function listSandboxNames(): Promise<string[]> {
   }
 
   return stdout
+}
+
+export async function listSandboxNames(): Promise<string[]> {
+  return (await runSbxLs(['--quiet']))
     .split('\n')
     .map((line) => line.trim())
     .filter((line) => line.length > 0)
 }
 
-export async function ensureSandboxExists(): Promise<void> {
-  const sandboxes = await listSandboxNames()
+interface SandboxListing {
+  name: string
+  workspaces: string[]
+}
 
-  if (!sandboxes.includes(SANDBOX_NAME)) {
+async function listSandboxes(): Promise<SandboxListing[]> {
+  const { sandboxes } = JSON.parse(await runSbxLs(['--json'])) as { sandboxes?: SandboxListing[] | null }
+  return sandboxes ?? []
+}
+
+export function isWithin(parent: string, child: string): boolean {
+  const relative = path.relative(parent, child)
+  return !relative.startsWith('..') && !path.isAbsolute(relative)
+}
+
+/**
+ * Throws unless the sandbox exists and mounts every path in `requiredPaths`.
+ * A sandbox created before a mount was added keeps its original workspaces
+ * until it is recreated.
+ */
+export async function ensureSandboxExists(requiredPaths: string[] = []): Promise<void> {
+  const sandbox = (await listSandboxes()).find(({ name }) => name === SANDBOX_NAME)
+
+  if (!sandbox) {
     throw new SandboxError(`Sandbox "${SANDBOX_NAME}" not found. Run './build/skillwalker sandbox create' first.`, null)
+  }
+
+  for (const requiredPath of requiredPaths) {
+    if (!sandbox.workspaces.some((workspace) => isWithin(workspace.replace(READ_ONLY_SUFFIX, ''), requiredPath))) {
+      throw new SandboxError(
+        `Sandbox "${SANDBOX_NAME}" does not mount ${requiredPath}.\nRun \`skillwalker sandbox update\` from the target repo to recreate it.`,
+        null,
+      )
+    }
   }
 }
 

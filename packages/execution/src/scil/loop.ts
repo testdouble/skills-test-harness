@@ -1,5 +1,6 @@
 import path from 'node:path'
 import { createInterface } from 'node:readline/promises'
+import { sandboxScriptsDir } from '@testdouble/claude-integration'
 import { ensureSandboxExists } from '@testdouble/sandbox-integration'
 import { getPhase } from '@testdouble/skillwalker-data'
 import { generateRunId } from '../test-runners/steps/step-4-generate-run-id.js'
@@ -42,7 +43,7 @@ export async function runScilLoop(config: ScilConfig): Promise<void> {
 
   // Ensure sandbox exists
   process.stderr.write('Checking sandbox...\n')
-  await ensureSandboxExists()
+  await ensureSandboxExists([sandboxScriptsDir])
 
   // Generate run ID and output directory
   const runId = generateRunId()

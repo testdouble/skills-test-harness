@@ -1,3 +1,4 @@
+import { sandboxScriptsDir } from '@testdouble/claude-integration'
 import { ensureSandboxExists } from '@testdouble/sandbox-integration'
 import { resolvePaths } from '../test-runners/steps/step-1-resolve-paths.js'
 import { validateConfig } from '../test-runners/steps/step-2-validate-config.js'
@@ -29,7 +30,7 @@ export async function runEvals(opts: RunEvalsOptions): Promise<RunEvalsResult> {
   const testRunId = generateRunId()
   process.stderr.write(`Run ID: ${testRunId}\n`)
   process.stderr.write('Checking sandbox...\n')
-  await ensureSandboxExists()
+  await ensureSandboxExists([sandboxScriptsDir])
   let totals = initTotals()
 
   for (const evalName of opts.evals) {

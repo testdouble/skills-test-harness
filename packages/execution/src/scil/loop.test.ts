@@ -47,6 +47,7 @@ vi.mock('node:readline/promises', () => ({
 }))
 
 import { createInterface } from 'node:readline/promises'
+import { sandboxScriptsDir } from '@testdouble/claude-integration'
 import { ensureSandboxExists } from '@testdouble/sandbox-integration'
 import { getPhase } from '@testdouble/skillwalker-data'
 import { generateRunId } from '../test-runners/steps/step-4-generate-run-id.js'
@@ -150,6 +151,12 @@ beforeEach(() => {
 })
 
 describe('runScilLoop', () => {
+  it('requires the sandbox to mount the sandbox scripts directory', async () => {
+    await runScilLoop(makeConfig({ maxIterations: 1, holdout: 0 }))
+
+    expect(ensureSandboxExists).toHaveBeenCalledWith([sandboxScriptsDir])
+  })
+
   // TP-003: early exit on perfect train accuracy (holdout=0)
   it('exits after one iteration when train accuracy is 1.0 and holdout is 0', async () => {
     await runScilLoop(makeConfig({ maxIterations: 5, holdout: 0 }))

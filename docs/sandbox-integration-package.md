@@ -69,10 +69,10 @@ class SandboxError extends Error {
 #### ensureSandboxExists()
 
 ```typescript
-async function ensureSandboxExists(): Promise<void>
+async function ensureSandboxExists(requiredPaths: string[] = []): Promise<void>
 ```
 
-Pre-flight check that the sandbox is running. Runs `sbx ls --quiet` and verifies `SANDBOX_NAME` exactly matches one output line. Throws `SandboxError` with `exitCode: null` if the sandbox is not found, with a message directing the user to run `./build/skillwalker sandbox create`.
+Pre-flight check that the sandbox exists and mounts what the run needs. Runs `sbx ls --json`, finds the entry named `SANDBOX_NAME`, and checks that every path in `requiredPaths` is inside one of its workspaces (a trailing `:ro` on a listed workspace is ignored). `runEvals` and the SCIL and ACIL loops pass `[sandboxScriptsDir]`. A sandbox created before the scripts mount was added keeps its old workspaces, so this check fails it before any test runs instead of at the first `sbx exec`. Throws `SandboxError` with `exitCode: null` if the sandbox is not found, with a message directing the user to run `./build/skillwalker sandbox create`.
 
 **Consumers:**
 - `cli/src/commands/test-run.ts` -- before the per-eval test loop
@@ -211,6 +211,7 @@ flowchart TB
 | Scenario | Error Type | Behavior |
 |----------|------------|----------|
 | Sandbox not found by `ensureSandboxExists` | `SandboxError` (exitCode: `null`) | Thrown with message suggesting `./build/skillwalker sandbox create` |
+| Required path not mounted, checked by `ensureSandboxExists` | `SandboxError` (exitCode: `null`) | Thrown naming the unmounted path, with a hint to run `skillwalker sandbox update` from the target repo |
 | `sbx rm` fails | `SandboxError` (exitCode: process code) | Thrown with stdout+stderr in message |
 | `sbx exec` prints `OCI runtime exec failed` (exits 0) | `SandboxError` (exitCode: process code) | Thrown with the sbx output and a hint to run `skillwalker sandbox update` from the target repo |
 | Non-zero exit from `execInSandbox` | No error thrown | Returned in `SandboxResult.exitCode`; caller decides |

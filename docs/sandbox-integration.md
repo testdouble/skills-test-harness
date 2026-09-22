@@ -98,7 +98,7 @@ export class SandboxError extends Error {
 
 #### ensureSandboxExists
 
-Pre-flight check that the sandbox is running. Runs `sbx ls --quiet` and verifies `SANDBOX_NAME` exactly matches one output line. Throws `SandboxError` with `exitCode: null` if not found.
+Pre-flight check that the sandbox exists and mounts what the run needs. Runs `sbx ls --json`, finds the entry named `SANDBOX_NAME`, and checks that every path in `requiredPaths` is inside one of its workspaces (a trailing `:ro` on a listed workspace is ignored). `runEvals` and the SCIL and ACIL loops pass `[sandboxScriptsDir]`. A sandbox created before the scripts mount was added keeps its old workspaces, so this check fails it before any test runs instead of at the first `sbx exec`. Throws `SandboxError` with `exitCode: null` if not found.
 
 Called by:
 - `commands/test-run.ts` — before the per-eval test loop
@@ -227,6 +227,7 @@ See [Cross-Runtime Meta Property Resolution](coding-standards/cross-runtime-meta
 | Scenario | Error Type | Behavior |
 |----------|------------|----------|
 | Sandbox not found by `ensureSandboxExists` | `SandboxError` (exitCode: `null`) | Thrown with message suggesting `./build/skillwalker sandbox create` |
+| Required path not mounted, checked by `ensureSandboxExists` | `SandboxError` (exitCode: `null`) | Thrown naming the unmounted path, with a hint to run `skillwalker sandbox update` from the target repo |
 | `sbx rm` fails | `SandboxError` (exitCode: process code) | Thrown with stdout+stderr in message |
 | `sbx exec` prints `OCI runtime exec failed` (exits 0) | `SandboxError` (exitCode: process code) | Thrown with the sbx output and a hint to run `skillwalker sandbox update` from the target repo |
 | Non-zero exit code from `execInSandbox` | No error thrown | Returned in `SandboxResult.exitCode`; caller decides |
@@ -285,6 +286,10 @@ If `ensureSandboxExists` throws `SandboxError`, run:
 
 1. `./build/skillwalker sandbox create` — creates the sandbox and completes OAuth
 2. Verify with `sbx ls --quiet` — should list `claude-skills-skillwalker`
+
+### Sandbox does not mount a required path
+
+If `ensureSandboxExists` reports that the sandbox does not mount a path, the sandbox predates that mount. From the target repo, run `./build/skillwalker sandbox update`, then verify with `sbx ls --json` that `claude-skills-skillwalker` lists both the target repo and the scripts directory.
 
 ### Sandbox already exists during setup
 
