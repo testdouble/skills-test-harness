@@ -1,3 +1,4 @@
+import { sandboxScriptsDir } from '@testdouble/claude-integration'
 import { createSandbox } from '@testdouble/sandbox-integration'
 import type { Argv } from 'yargs'
 
@@ -13,5 +14,5 @@ export function builder(yargs: Argv): Argv {
 }
 
 export async function handler(argv: Record<string, unknown>): Promise<void> {
-  await createSandbox(argv['repo-root'] as string)
+  await createSandbox(argv['repo-root'] as string, [sandboxScriptsDir])
 }

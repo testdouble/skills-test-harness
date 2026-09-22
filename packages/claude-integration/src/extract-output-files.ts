@@ -1,15 +1,13 @@
-import { resolveRelativePath } from '@testdouble/bun-helpers'
 import { execInSandbox } from '@testdouble/sandbox-integration'
+import { sandboxExtractScript } from './sandbox-scripts.js'
 
 export interface OutputFile {
   path: string
   content: string
 }
 
-const extractScript = resolveRelativePath(import.meta, '../sandbox-extract.sh', 'sandbox-extract.sh')
-
 export async function extractOutputFiles(debug: boolean): Promise<OutputFile[]> {
-  const { stdout } = await execInSandbox(extractScript, [], null, debug)
+  const { stdout } = await execInSandbox(sandboxExtractScript, [], null, debug)
 
   if (!stdout.trim()) return []
 

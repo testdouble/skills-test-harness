@@ -4,6 +4,10 @@ vi.mock('@testdouble/sandbox-integration', () => ({
   createSandbox: vi.fn(),
 }))
 
+vi.mock('@testdouble/claude-integration', () => ({
+  sandboxScriptsDir: '/skillwalker/build',
+}))
+
 import { createSandbox } from '@testdouble/sandbox-integration'
 import { builder, command, describe as commandDescribe, handler } from './create.js'
 
@@ -47,8 +51,8 @@ describe('sandbox create builder', () => {
 })
 
 describe('sandbox create handler', () => {
-  it('calls createSandbox with the resolved repo-root', async () => {
+  it('calls createSandbox with the resolved repo-root and the sandbox scripts directory', async () => {
     await handler({ 'repo-root': '/repo/root' })
-    expect(vi.mocked(createSandbox)).toHaveBeenCalledWith('/repo/root')
+    expect(vi.mocked(createSandbox)).toHaveBeenCalledWith('/repo/root', ['/skillwalker/build'])
   })
 })

@@ -1,3 +1,4 @@
+import { sandboxScriptsDir } from '@testdouble/claude-integration'
 import { SandboxError, updateSandbox } from '@testdouble/sandbox-integration'
 import { SkillwalkerError } from '@testdouble/skillwalker-execution'
 import type { Argv } from 'yargs'
@@ -15,7 +16,7 @@ export function builder(yargs: Argv): Argv {
 
 export async function handler(argv: Record<string, unknown>): Promise<void> {
   try {
-    await updateSandbox(argv['repo-root'] as string)
+    await updateSandbox(argv['repo-root'] as string, [sandboxScriptsDir])
   } catch (error) {
     if (error instanceof SandboxError) {
       throw new SkillwalkerError(error.message)

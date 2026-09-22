@@ -1,3 +1,4 @@
+import path from 'node:path'
 import { SandboxError } from './errors.js'
 import { ensureSandboxExists, listSandboxNames, SANDBOX_NAME, spawnSbx } from './sandbox.js'
 
@@ -78,7 +79,23 @@ async function removeTemplateImage(imageId: string): Promise<void> {
   )
 }
 
-export async function createSandbox(repoRoot: string): Promise<void> {
+function isWithin(parent: string, child: string): boolean {
+  const relative = path.relative(parent, child)
+  return !relative.startsWith('..') && !path.isAbsolute(relative)
+}
+
+/**
+ * `sbx run` arguments that mount `repoRoot` read-write and each extra workspace
+ * read-only. Extra workspaces already inside `repoRoot` are visible through it.
+ */
+function buildRunArgs(repoRoot: string, extraWorkspaces: string[]): string[] {
+  const extras = extraWorkspaces
+    .filter((workspace) => !isWithin(repoRoot, workspace))
+    .map((workspace) => `${workspace}:ro`)
+  return ['run', '--name', SANDBOX_NAME, 'claude', repoRoot, ...extras]
+}
+
+export async function createSandbox(repoRoot: string, extraWorkspaces: string[] = []): Promise<void> {
   if (await sandboxExists()) {
     process.stderr.write(`Sandbox "${SANDBOX_NAME}" already exists. To recreate, run:\n`)
     process.stderr.write(`  sbx rm --force ${SANDBOX_NAME}\n`)
@@ -89,7 +106,7 @@ export async function createSandbox(repoRoot: string): Promise<void> {
   process.stderr.write(`Creating sandbox "${SANDBOX_NAME}" with workspace ${repoRoot}...\n`)
   process.stderr.write(`Complete the OAuth login when Claude launches, then exit Claude.\n\n`)
 
-  const runProc = spawnSbx(['run', '--name', SANDBOX_NAME, 'claude', repoRoot], {
+  const runProc = spawnSbx(buildRunArgs(repoRoot, extraWorkspaces), {
     stdin: 'inherit',
     stdout: 'inherit',
     stderr: 'inherit',
@@ -99,7 +116,7 @@ export async function createSandbox(repoRoot: string): Promise<void> {
   process.stderr.write(`\nSandbox "${SANDBOX_NAME}" is ready. You can now run tests.\n`)
 }
 
-export async function updateSandbox(repoRoot: string): Promise<void> {
+export async function updateSandbox(repoRoot: string, extraWorkspaces: string[] = []): Promise<void> {
   if (await sandboxExists()) {
     process.stderr.write(`Removing sandbox "${SANDBOX_NAME}"...\n`)
     await removeSandbox()
@@ -110,7 +127,7 @@ export async function updateSandbox(repoRoot: string): Promise<void> {
     await removeTemplateImage(imageId)
   }
 
-  await createSandbox(repoRoot)
+  await createSandbox(repoRoot, extraWorkspaces)
 }
 
 export async function openShell(): Promise<void> {

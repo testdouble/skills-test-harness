@@ -1,8 +1,6 @@
-import { resolveRelativePath } from '@testdouble/bun-helpers'
 import { execInSandbox } from '@testdouble/sandbox-integration'
+import { sandboxRunScript } from './sandbox-scripts.js'
 import type { ClaudeRunOptions, ClaudeRunResult } from './types.js'
-
-const sandboxRunScript = resolveRelativePath(import.meta, '../sandbox-run.sh', 'sandbox-run.sh')
 
 export async function runClaude(options: ClaudeRunOptions): Promise<ClaudeRunResult> {
   const { model, prompt, pluginDirs = [], scaffold = null, debug = false } = options

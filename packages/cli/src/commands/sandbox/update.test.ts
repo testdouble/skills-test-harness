@@ -12,6 +12,10 @@ vi.mock('@testdouble/sandbox-integration', () => ({
   },
 }))
 
+vi.mock('@testdouble/claude-integration', () => ({
+  sandboxScriptsDir: '/skillwalker/build',
+}))
+
 import { SandboxError, updateSandbox } from '@testdouble/sandbox-integration'
 import { SkillwalkerError } from '@testdouble/skillwalker-execution'
 import { builder, command, describe as commandDescribe, handler } from './update.js'
@@ -58,7 +62,7 @@ describe('sandbox update builder', () => {
 describe('sandbox update handler', () => {
   it('calls updateSandbox with the resolved repo-root', async () => {
     await handler({ 'repo-root': '/repo/root' })
-    expect(vi.mocked(updateSandbox)).toHaveBeenCalledWith('/repo/root')
+    expect(vi.mocked(updateSandbox)).toHaveBeenCalledWith('/repo/root', ['/skillwalker/build'])
   })
 
   it('throws SkillwalkerError when updateSandbox throws SandboxError', async () => {
