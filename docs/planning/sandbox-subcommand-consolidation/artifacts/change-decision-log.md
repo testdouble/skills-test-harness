@@ -42,7 +42,7 @@ Evidence about the code as it stands today lives in
 - **Revisit criterion:** If someone reports a broken script or CI job that invoked a flat name, the aliases become
   cheap to add and this decision is worth reopening.
 - **Dissent (if any):** None recorded.
-- **Settles delta entry:** S-1, S-2, S-3.
+- **Settles delta entry:** S-1, S-2, S-3, S-4.
 - **Dependent decisions:** D-3, D-4.
 - **Referenced in plan:** Why This Change, Surface Delta, Behavior Changes.
 
@@ -66,8 +66,8 @@ Evidence about the code as it stands today lives in
 - **Revisit criterion:** If the underlying `createSandbox` function is ever renamed, the pairing argument for
   `create` returns.
 - **Dissent (if any):** None recorded.
-- **Settles delta entry:** S-3.
-- **Dependent decisions:** None.
+- **Settles delta entry:** S-8.
+- **Dependent decisions:** D-8.
 - **Referenced in plan:** Surface Delta, Behavior Changes.
 
 ### D-3: The rename reaches error strings, the Makefile, the README, and six docs files
@@ -93,7 +93,7 @@ Evidence about the code as it stands today lives in
     removed command, which is the worst of the three outcomes.
 - **Revisit criterion:** None. This is settled by the boundary.
 - **Dissent (if any):** None recorded.
-- **Settles delta entry:** S-7, S-8, S-9.
+- **Settles delta entry:** S-10, S-11.
 - **Dependent decisions:** D-4.
 - **Referenced in plan:** Surface Delta, Behavior Changes, Change Units.
 
@@ -122,6 +122,120 @@ Evidence about the code as it stands today lives in
     are records of their own moment, but it leaves a stale-reading consequence line with nothing pointing past it.
 - **Revisit criterion:** None.
 - **Dissent (if any):** None recorded.
-- **Settles delta entry:** S-10.
+- **Settles delta entry:** S-12.
 - **Dependent decisions:** None.
 - **Referenced in plan:** Surface Delta, Change Units.
+
+### D-6: The three children move into a `commands/sandbox/` subdirectory
+
+- **Question:** Do the three child modules stay as flat files in `packages/cli/src/commands/`, or move into a
+  subdirectory that mirrors the command nesting?
+- **Decision:** They move. The layout after the change is:
+  ```
+  packages/cli/src/commands/
+    sandbox.ts              # the parent, beside the directory rather than inside it
+    sandbox/
+      setup.ts              # was sandbox-setup.ts
+      setup.test.ts         # new, per D-8
+      clean.ts              # moved unmodified
+      clean.test.ts         # moved unmodified
+      shell.ts              # moved unmodified
+      shell.test.ts         # moved unmodified
+  ```
+  The parent sits beside `sandbox/` rather than at `sandbox/index.ts`. `./commands/sandbox.js` and
+  `./commands/sandbox/setup.js` are distinct ESM specifiers and do not collide.
+- **Rationale:** `C-4` establishes that the three modules are already a cluster — the only three that import nothing
+  from `../paths.js`, each depending on exactly one package. The subdirectory makes a cohesion that already exists in
+  the import graph visible in the filesystem, and it mirrors the command nesting being introduced. A second
+  `index.ts` one directory below the CLI entry point at `packages/cli/index.ts` was rejected as confusable with it.
+- **Evidence:** `C-4` (the existing cluster), `C-1` (the uniform contract the moved modules keep). The architect
+  verified that nothing depends on the flat layout: no glob or `readdir` scans `commands/`; `vitest.config.ts` and
+  `vitest.all.config.ts` both match `packages/*/src/**/*.test.ts` recursively, so moved and added test files are
+  collected with no config edit; `packages/cli/tsconfig.json` has no `include` allowlist; and `scripts/build.ts`
+  compiles from `packages/cli/index.ts` and bundles transitively, so the move is invisible to the build.
+- **Behavior impact:** Preserving. No observable change follows from where a file sits.
+- **Rejected alternatives:**
+  - Keep the three as flat files, renamed — rejected because the filesystem would then contradict the command
+    structure, and a reader looking for what `sandbox` dispatches to would have to read `sandbox.ts` to find out.
+  - Put the parent at `sandbox/index.ts` — rejected because this package already has an `index.ts` with an unrelated
+    meaning, and a second one directory down invites confusion for no gain.
+- **Revisit criterion:** If a second nested parent command appears and a different layout serves both better.
+- **Dissent (if any):** None recorded.
+- **Settles delta entry:** S-6, S-7.
+- **Dependent decisions:** D-7.
+- **Referenced in plan:** Target State, Surface Delta.
+
+### D-7: The parent module imports its children statically
+
+- **Question:** Does the `sandbox` parent load its three children with `await import(...)`, matching how `index.ts`
+  loads every command today, or with static imports?
+- **Decision:** Static imports. The parent module is pinned as:
+  ```ts
+  // packages/cli/src/commands/sandbox.ts
+  import type { Argv } from 'yargs'
+  import * as clean from './sandbox/clean.js'
+  import * as setup from './sandbox/setup.js'
+  import * as shell from './sandbox/shell.js'
+
+  export const command = 'sandbox'
+  export const describe = 'Manage the Test Sandbox'
+
+  export function builder(yargs: Argv): Argv {
+    return yargs.command(setup).command(clean).command(shell).demandCommand(1)
+  }
+
+  export async function handler(): Promise<void> {}
+  ```
+  `command` is the bare string `'sandbox'`, not `'sandbox <command>'`. `handler` is an empty async function that is
+  unreachable at runtime.
+- **Rationale:** Three separate reasons converge. First, a dynamic import inside `builder` would make this one
+  module's `builder` async while every other module's is `(yargs: Argv) => Argv`, breaking the uniform shape `C-1`
+  records for zero benefit. Second, `index.ts` already defers the whole subtree behind its own top-level
+  `await import(...)`, so a second dynamic layer buys no laziness — the three files load at the same moment either
+  way. Third, no finding asks for per-child lazy loading, so the simpler structure wins the simpler-version test.
+
+  The empty `handler` is required rather than chosen: `CommandModule` declares `handler` non-optional in the installed
+  `@types/yargs` 17.0.35, while `demandCommand(1)` in the builder means Yargs rejects a bare `sandbox` invocation
+  before dispatch ever reaches it. The bare `'sandbox'` command string is pinned from observed help output, not
+  preference.
+- **Evidence:** `C-1` (the uniform builder signature), `C-2` (the existing top-level dynamic import), `C-9` (the
+  probe, which exercised this exact chained-`.command()` shape under the same
+  `.demandCommand(1).strict().showHelpOnFail(true)` chain and rendered the help line as
+  `skillwalker sandbox  Manage the Test Sandbox`). The architect independently re-derived the `CommandModule` and
+  `CommandBuilder` type shapes from `@types/yargs` `index.d.ts` lines 987-1010 and 203 to confirm both the
+  required-`handler` claim and that `.command()` is generic over the `Argv` it is called on, so nothing ties it to the
+  top level. A second probe in this run confirmed the static namespace-import form runs.
+- **Behavior impact:** Preserving. The module is new; what a user observes is recorded at S-4.
+- **Rejected alternatives:**
+  - `await import(...)` inside `builder` — type-checks, since `CommandBuilder` permits a `Promise<Argv>` return, but
+    breaks the uniform builder signature for no gain.
+  - A shared `CommandModule` base type, or a barrel file re-exporting the three children — both deferred under YAGNI;
+    see the plan's `## Deferred (YAGNI)` section.
+- **Revisit criterion:** If a child module ever becomes expensive enough to load that deferring it matters.
+- **Dissent (if any):** None recorded.
+- **Settles delta entry:** S-5.
+- **Dependent decisions:** None.
+- **Referenced in plan:** Target State, Surface Delta.
+
+### D-8: The setup module gains the co-located test it never had
+
+- **Question:** S-8 changes the `command` literal in the one command module with no test. Does this change add one?
+- **Decision:** Yes. `packages/cli/src/commands/sandbox/setup.test.ts` follows the shape every other command test
+  uses: a `describe('sandbox setup command exports', ...)` block pinning `command === 'setup'` and a non-empty
+  `describe` string, and a `describe('sandbox setup handler', ...)` block asserting the handler calls `createSandbox`
+  with the resolved `--repo-root` value, with `@testdouble/sandbox-integration` mocked as `shell.test.ts` mocks it.
+- **Rationale:** This is not new scope. The change edits a literal that nothing currently pins, in the one module that
+  is a standing gap against the project's own co-location standard. The test is how the edit is verified.
+- **Evidence:** `C-6` (no `sandbox-setup.test.ts` exists; the other seven modules all assert their `command` string as
+  an exact literal). `docs/coding-standards/test-file-organization.md` requires co-location and states no per-file
+  exemptions. The scope-justification floor applies: the boundary's silence about tests does not cut a necessity of
+  the work it does ask for.
+- **Behavior impact:** Preserving.
+- **Rejected alternatives:**
+  - Move and rename without adding a test — rejected because it would change an unpinned literal in the one module
+    with no coverage, leaving the riskiest edit in the change as the only unverified one.
+- **Revisit criterion:** None.
+- **Dissent (if any):** None recorded.
+- **Settles delta entry:** S-9.
+- **Dependent decisions:** None.
+- **Referenced in plan:** Surface Delta.
