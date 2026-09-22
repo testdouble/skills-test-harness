@@ -16,7 +16,8 @@ Change this package when you need to touch the dashboard's Hono API server, the 
 - Compiled as a standalone Bun executable (`skillwalker-web`) with embedded client assets via Bun's `{ type: 'file' }` imports
 
 Key files:
-- `packages/web/src/server/index.ts` — Server entry point, CLI arg parsing, route registration, embedded asset serving
+- `packages/web/src/server/index.ts` — Server entry point, CLI arg parsing, embedded asset serving
+- `packages/web/src/server/app.ts` — `createApp(dataDir)`: the Hono app with the API routes and `jsonErrorHandler`
 - `packages/web/src/client/index.tsx` — Client entry point, router and page registration
 - `packages/web/src/server/routes/test-runs.ts` — Test run list and detail API endpoints
 - `packages/web/src/server/routes/scil.ts` — SCIL history and detail API endpoints
@@ -68,7 +69,8 @@ flowchart TB
 ### Backend
 | File | Purpose |
 |------|---------|
-| `packages/web/src/server/index.ts` | Server entry point — Yargs CLI, Hono app, route registration, embedded static asset serving, SPA fallback |
+| `packages/web/src/server/index.ts` | Server entry point — Yargs CLI, embedded static asset serving, SPA fallback |
+| `packages/web/src/server/app.ts` | `createApp(dataDir)` — Hono app with the API routes and `jsonErrorHandler` |
 | `packages/web/src/server/routes/test-runs.ts` | `getTestRuns` and `getTestRunById` handlers delegating to `queryTestRunSummaries` / `queryTestRunDetails` |
 | `packages/web/src/server/routes/scil.ts` | `getScilHistory` and `getScilRunById` handlers delegating to `queryScilHistory` / `queryScilRunDetails` |
 | `packages/web/src/server/routes/analytics.ts` | `getPerTestAnalytics` handler with optional `?eval=` query param filter |
@@ -209,7 +211,7 @@ interface ScilSummaryRow {
 
 #### Server Startup and Asset Embedding
 
-The server entry (`packages/web/src/server/index.ts`) uses Yargs to parse `--port` and `--data-dir` CLI arguments. It registers the API routes, a `jsonErrorHandler` via `app.onError` so unexpected errors reach the client as JSON, and the static asset routes. The client build output (`dist/client/`) is embedded using Bun's `import ... with { type: 'file' }` syntax, which resolves to `$bunfs` paths in compiled standalone executables. A SPA fallback (`/*`) serves `index.html` for all unmatched paths, enabling client-side routing.
+The server entry (`packages/web/src/server/index.ts`) uses Yargs to parse `--port` and `--data-dir` CLI arguments. It builds the app with `createApp(dataDir)` from `app.ts`, which registers the API routes and a `jsonErrorHandler` via `app.onError` so unexpected errors reach the client as JSON. The entry then adds the static asset routes. The client build output (`dist/client/`) is embedded using Bun's `import ... with { type: 'file' }` syntax, which resolves to `$bunfs` paths in compiled standalone executables. A SPA fallback (`/*`) serves `index.html` for all unmatched paths, enabling client-side routing.
 
 #### Route Handler Pattern
 
@@ -429,6 +431,7 @@ flowchart TB
 - `packages/web/src/server/routes/scil.test.ts` / `acil.test.ts` — Test the SCIL and ACIL history and detail handlers, including 404 for malformed run IDs
 - `packages/web/src/server/routes/error-handler.test.ts` — Tests that `jsonErrorHandler` logs the error and returns a JSON 500
 - `packages/web/src/server/routes/analytics.test.ts` — Tests `getPerTestAnalytics` including eval filter behavior
+- `packages/web/src/server/app.integration.test.ts` — Sends real requests through `createApp` against Parquet built from real JSONL, with nothing mocked. Covers whole-number scores, accuracies, and costs, which DuckDB returns as `BigInt` unless the query casts them, and an empty data directory
 
 ### Frontend
 - `packages/web/src/client/lib/fetch-json.test.ts` — Tests `fetchJson` with OK, non-OK JSON, and non-OK plain-text responses, using `vi.stubGlobal('fetch', ...)`

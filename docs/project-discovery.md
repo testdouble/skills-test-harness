@@ -30,6 +30,7 @@
 - Test (unit): `bun run vitest run`
 - Test (integration): `bun run vitest run --config vitest.integration.config.ts`
 - Test (all): `make test`
+- Test (compiled binary smoke): `make build && bun run test:smoke`
 - Build: `make build`
 - Dev server: `make dev`
 - Test file pattern: `*.test.ts`, `*.integration.test.ts`, `*.unit.test.ts`
