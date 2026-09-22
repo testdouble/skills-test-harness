@@ -24,7 +24,7 @@ At the end of every iteration, SCIL prints a progress summary. When the loop exi
 
 ```bash
 make build
-./build/skillwalker sandbox-setup
+./build/skillwalker sandbox setup
 ```
 
 ## Eval Requirements

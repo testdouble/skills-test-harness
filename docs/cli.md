@@ -2,7 +2,7 @@
 
 > **Tier 5 · Contributor reference.** Internal documentation for the `@testdouble/skillwalker-cli` package — the CLI layer only: Yargs command registration, argument and flag parsing, and path resolution from `process.cwd()`. If you're a user looking for what commands and flags to run, see [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md). For pipeline internals (test-run/test-eval steps, SCIL/ACIL loops, error hierarchy, path config), see [Execution Package](./execution.md).
 
-This page documents the CLI boundary: the eight commands the `skillwalker` binary exposes, how each command builder parses its arguments and flags, how paths are resolved once via `createPathConfig(process.cwd())`, and how `SkillwalkerError` is caught for clean exit. The CLI owns no pipeline logic — every command is a thin wrapper that delegates to `@testdouble/skillwalker-execution` (test-run, test-eval, SCIL, ACIL) or `@testdouble/sandbox-integration` (sandbox lifecycle). Pipeline implementation, the numbered step files, and all core types live in [Execution Package](./execution.md).
+This page documents the CLI boundary: the six top-level commands the `skillwalker` binary exposes, how each command builder parses its arguments and flags, how paths are resolved once via `createPathConfig(process.cwd())`, and how `SkillwalkerError` is caught for clean exit. The CLI owns no pipeline logic — every command is a thin wrapper that delegates to `@testdouble/skillwalker-execution` (test-run, test-eval, SCIL, ACIL) or `@testdouble/sandbox-integration` (sandbox lifecycle). Pipeline implementation, the numbered step files, and all core types live in [Execution Package](./execution.md).
 
 The `@testdouble/skillwalker-cli` package is the command-line entry point for Skillwalker. It is a thin Yargs wrapper that parses arguments, resolves paths from `process.cwd()`, and delegates all pipeline orchestration to `@testdouble/skillwalker-execution`.
 
@@ -12,7 +12,7 @@ The `@testdouble/skillwalker-cli` package is the command-line entry point for Sk
 
 ## Summary
 
-- Eight CLI commands exposed via the `skillwalker` binary: `test-run`, `test-eval`, `scil`, `acil`, `update-analytics-data`, `shell`, `clean`, and `sandbox-setup`
+- Six top-level commands exposed via the `skillwalker` binary: `test-run`, `test-eval`, `scil`, `acil`, `update-analytics-data`, and `sandbox`. The Test Sandbox lifecycle lives under `sandbox` as three sub-commands: `sandbox setup`, `sandbox clean`, and `sandbox shell`
 - All test execution happens inside a Test Sandbox via `@testdouble/sandbox-integration`, with Claude invoked through `@testdouble/claude-integration`
 - Two test runner types handle different test kinds: prompt tests (full Claude sessions) and skill-call tests (trigger detection with temporary stripped-down plugins)
 - The SCIL (Skill Call Improvement Loop) command iteratively improves skill descriptions by running evaluation cycles and using Claude to generate better descriptions
@@ -37,9 +37,10 @@ flowchart TB
     scil["scil"]
     acil["acil"]
     analytics["update-analytics"]
-    shell["shell"]
-    clean["clean"]
-    setup["sandbox-setup"]
+    sandbox["sandbox"]
+    setup["sandbox setup"]
+    clean["sandbox clean"]
+    shell["sandbox shell"]
 
     prompt["prompt runner<br>skill-call runner"]
     evals["skillwalker-evals<br>evaluate TestRun"]
@@ -55,9 +56,10 @@ flowchart TB
     dispatch --> scil --> scilsteps --> data
     dispatch --> acil --> acilsteps --> data
     dispatch --> analytics --> data
-    dispatch --> shell --> si
-    dispatch --> clean --> si
-    dispatch --> setup --> si
+    dispatch --> sandbox
+    sandbox --> setup --> si
+    sandbox --> clean --> si
+    sandbox --> shell --> si
 ```
 
 ## Key Files
@@ -71,9 +73,10 @@ flowchart TB
 | `packages/cli/src/commands/scil.ts` | `scil` command — entry point for the Skill Call Improvement Loop |
 | `packages/cli/src/commands/acil.ts` | `acil` command — entry point for the Agent Call Improvement Loop |
 | `packages/cli/src/commands/update-analytics.ts` | `update-analytics-data` command — imports JSONL to Parquet |
-| `packages/cli/src/commands/shell.ts` | `shell` command — opens interactive shell in Test Sandbox |
-| `packages/cli/src/commands/clean.ts` | `clean` command — removes the Test Sandbox |
-| `packages/cli/src/commands/sandbox-setup.ts` | `sandbox-setup` command — creates sandbox and authenticates via OAuth |
+| `packages/cli/src/commands/sandbox.ts` | `sandbox` parent command — registers the three sub-commands below |
+| `packages/cli/src/commands/sandbox/shell.ts` | `sandbox shell` sub-command — opens interactive shell in Test Sandbox |
+| `packages/cli/src/commands/sandbox/clean.ts` | `sandbox clean` sub-command — removes the Test Sandbox |
+| `packages/cli/src/commands/sandbox/setup.ts` | `sandbox setup` sub-command — creates sandbox and authenticates via OAuth |
 
 ## Core Types
 
@@ -90,7 +93,7 @@ Each command module in `packages/cli/src/commands/` is a thin Yargs wrapper that
 - **scil** — Calls `runScilLoop()` from the execution package for iterative skill description improvement
 - **acil** — Calls `runAcilLoop()` from the execution package for iterative agent description improvement
 - **update-analytics-data** — Calls the execution package's analytics ingestion
-- **shell** / **clean** / **sandbox-setup** — Delegate to `@testdouble/sandbox-integration` for sandbox lifecycle
+- **sandbox setup** / **sandbox clean** / **sandbox shell** — Delegate to `@testdouble/sandbox-integration` for sandbox lifecycle. The `sandbox` parent holds no logic of its own; it registers the three sub-commands and requires one of them
 
 See [execution.md](./execution.md) for implementation details of each pipeline (test-run steps, test-eval steps, SCIL loop, ACIL loop, concurrency pool, scoring, error hierarchy).
 
@@ -125,8 +128,9 @@ The CLI catches `SkillwalkerError` at the top level (`index.ts`) and writes the 
 - `packages/cli/src/commands/scil.test.ts` — Tests `scil` command builder and handler
 - `packages/cli/src/commands/acil.test.ts` — Tests `acil` command builder and handler
 - `packages/cli/src/commands/update-analytics.test.ts` — Tests `update-analytics-data` command
-- `packages/cli/src/commands/shell.test.ts` — Tests `shell` command
-- `packages/cli/src/commands/clean.test.ts` — Tests `clean` command
+- `packages/cli/src/commands/sandbox/setup.test.ts` — Tests `sandbox setup` sub-command
+- `packages/cli/src/commands/sandbox/clean.test.ts` — Tests `sandbox clean` sub-command
+- `packages/cli/src/commands/sandbox/shell.test.ts` — Tests `sandbox shell` sub-command
 
 ### Test Patterns
 
