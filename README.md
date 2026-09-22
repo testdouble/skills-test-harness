@@ -40,7 +40,7 @@ All commands run from the **repository root**.
 
    ```bash
    sbx login
-   ./build/skillwalker sandbox setup
+   ./build/skillwalker sandbox create
    ```
 
    Complete the login in the Claude TUI. If you aren't prompted, run `/login`.

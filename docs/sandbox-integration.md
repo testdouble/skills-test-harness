@@ -29,7 +29,7 @@ Key files:
 flowchart TB
     subgraph cli["@testdouble/skillwalker-cli"]
         direction LR
-        commands["<b>commands/</b><br>sandbox/clean · sandbox/shell<br>sandbox/setup · test-run"]
+        commands["<b>commands/</b><br>sandbox/clean · sandbox/shell<br>sandbox/create · test-run"]
         runners["<b>test-runners/</b><br>prompt/ · skill-call/"]
         scil["<b>scil/</b><br>loop · step-5 · step-7"]
     end
@@ -171,7 +171,7 @@ export async function createSandbox(repoRoot: string): Promise<void>
 
 Checks if the sandbox already exists via an internal `sandboxExists()` helper. If it does, prints a help message to stderr and returns. Otherwise, spawns `sbx run --name claude-skills-skillwalker claude <repoRoot>` with inherited stdio for interactive OAuth login.
 
-Called by `commands/sandbox/setup.ts`.
+Called by `commands/sandbox/create.ts`.
 
 #### removeSandbox
 
@@ -212,7 +212,7 @@ See [Cross-Runtime Meta Property Resolution](coding-standards/cross-runtime-meta
 
 | Scenario | Error Type | Behavior |
 |----------|------------|----------|
-| Sandbox not found by `ensureSandboxExists` | `SandboxError` (exitCode: `null`) | Thrown with message suggesting `./build/skillwalker sandbox setup` |
+| Sandbox not found by `ensureSandboxExists` | `SandboxError` (exitCode: `null`) | Thrown with message suggesting `./build/skillwalker sandbox create` |
 | `sbx rm` fails | `SandboxError` (exitCode: process code) | Thrown with stdout+stderr in message |
 | Non-zero exit code from `execInSandbox` | No error thrown | Returned in `SandboxResult.exitCode`; caller decides |
 | `execInSandbox` with `proc.exitCode` null | No error thrown | `exitCode` defaults to `1` in `SandboxResult` |
@@ -268,7 +268,7 @@ Modules under test are imported dynamically inside each `it` block via `await im
 
 If `ensureSandboxExists` throws `SandboxError`, run:
 
-1. `./build/skillwalker sandbox setup` — creates the sandbox and completes OAuth
+1. `./build/skillwalker sandbox create` — creates the sandbox and completes OAuth
 2. Verify with `sbx ls --quiet` — should list `claude-skills-skillwalker`
 
 ### Sandbox already exists during setup
@@ -276,7 +276,7 @@ If `ensureSandboxExists` throws `SandboxError`, run:
 `createSandbox` returns early with a help message. To recreate:
 
 1. `sbx rm --force claude-skills-skillwalker`
-2. `./build/skillwalker sandbox setup`
+2. `./build/skillwalker sandbox create`
 
 ### Tests fail with "Cannot read properties of undefined (reading 'exited')"
 

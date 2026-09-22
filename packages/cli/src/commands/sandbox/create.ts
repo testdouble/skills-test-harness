@@ -1,7 +1,7 @@
 import { createSandbox } from '@testdouble/sandbox-integration'
 import type { Argv } from 'yargs'
 
-export const command = 'setup'
+export const command = 'create'
 export const describe = 'Create a Test Sandbox and authenticate via OAuth for test runs'
 
 export function builder(yargs: Argv): Argv {

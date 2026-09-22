@@ -27,7 +27,7 @@ export async function listSandboxNames(): Promise<string[]> {
 
   if (proc.exitCode !== 0) {
     throw new SandboxError(
-      `Unable to list sandboxes with sbx (exit code ${proc.exitCode ?? 1}): ${stdout}${stderr}\nRun \`sbx login\`, then retry \`./build/skillwalker sandbox setup\`.`,
+      `Unable to list sandboxes with sbx (exit code ${proc.exitCode ?? 1}): ${stdout}${stderr}\nRun \`sbx login\`, then retry \`./build/skillwalker sandbox create\`.`,
       proc.exitCode,
     )
   }
@@ -42,7 +42,7 @@ export async function ensureSandboxExists(): Promise<void> {
   const sandboxes = await listSandboxNames()
 
   if (!sandboxes.includes(SANDBOX_NAME)) {
-    throw new SandboxError(`Sandbox "${SANDBOX_NAME}" not found. Run './build/skillwalker sandbox setup' first.`, null)
+    throw new SandboxError(`Sandbox "${SANDBOX_NAME}" not found. Run './build/skillwalker sandbox create' first.`, null)
   }
 }
 

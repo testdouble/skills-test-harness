@@ -1,7 +1,7 @@
 .PHONY: sandbox-setup sandbox-clean dev build web update-analytics-data test clear-data
 
 sandbox-setup: build
-	./build/skillwalker sandbox setup
+	./build/skillwalker sandbox create
 
 sandbox-clean:
 	sbx rm --force claude-skills-skillwalker

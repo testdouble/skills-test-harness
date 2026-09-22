@@ -5,7 +5,7 @@ vi.mock('@testdouble/sandbox-integration', () => ({
 }))
 
 import { createSandbox } from '@testdouble/sandbox-integration'
-import { builder, command, describe as commandDescribe, handler } from './setup.js'
+import { builder, command, describe as commandDescribe, handler } from './create.js'
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -16,9 +16,9 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-describe('sandbox setup command exports', () => {
+describe('sandbox create command exports', () => {
   it('exports the correct command string', () => {
-    expect(command).toBe('setup')
+    expect(command).toBe('create')
   })
 
   it('exports a non-empty describe string', () => {
@@ -27,7 +27,7 @@ describe('sandbox setup command exports', () => {
   })
 })
 
-describe('sandbox setup builder', () => {
+describe('sandbox create builder', () => {
   function buildOptions() {
     const options: Record<string, unknown> = {}
     const fakeYargs = {
@@ -46,7 +46,7 @@ describe('sandbox setup builder', () => {
   })
 })
 
-describe('sandbox setup handler', () => {
+describe('sandbox create handler', () => {
   it('calls createSandbox with the resolved repo-root', async () => {
     await handler({ 'repo-root': '/repo/root' })
     expect(vi.mocked(createSandbox)).toHaveBeenCalledWith('/repo/root')

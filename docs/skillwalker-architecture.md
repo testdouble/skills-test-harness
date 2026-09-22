@@ -78,7 +78,7 @@ flowchart LR
 
     cli --> exec
     cli -->|"update-analytics command"| data
-    cli -->|"sandbox setup/clean/shell sub-commands"| sandbox
+    cli -->|"sandbox create/clean/shell sub-commands"| sandbox
 
     exec --> data
     exec --> evals
@@ -115,7 +115,7 @@ The command-line entry point. A thin Yargs wrapper that parses arguments, resolv
 | `scil` | Iterative skill-call description improvement loop | `runScilLoop()` |
 | `acil` | Iterative agent-call description improvement loop | `runAcilLoop()` |
 | `update-analytics` | Import JSONL output to Parquet via DuckDB | `skillwalker-data` directly |
-| `sandbox setup` | Create the Test Sandbox | `sandbox-integration` directly |
+| `sandbox create` | Create the Test Sandbox | `sandbox-integration` directly |
 | `sandbox clean` | Remove the Test Sandbox | `sandbox-integration` directly |
 | `sandbox shell` | Open an interactive bash session in the Test Sandbox | `sandbox-integration` directly |
 

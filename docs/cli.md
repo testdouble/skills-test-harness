@@ -12,7 +12,7 @@ The `@testdouble/skillwalker-cli` package is the command-line entry point for Sk
 
 ## Summary
 
-- Six top-level commands exposed via the `skillwalker` binary: `test-run`, `test-eval`, `scil`, `acil`, `update-analytics-data`, and `sandbox`. The Test Sandbox lifecycle lives under `sandbox` as three sub-commands: `sandbox setup`, `sandbox clean`, and `sandbox shell`
+- Six top-level commands exposed via the `skillwalker` binary: `test-run`, `test-eval`, `scil`, `acil`, `update-analytics-data`, and `sandbox`. The Test Sandbox lifecycle lives under `sandbox` as three sub-commands: `sandbox create`, `sandbox clean`, and `sandbox shell`
 - All test execution happens inside a Test Sandbox via `@testdouble/sandbox-integration`, with Claude invoked through `@testdouble/claude-integration`
 - Two test runner types handle different test kinds: prompt tests (full Claude sessions) and skill-call tests (trigger detection with temporary stripped-down plugins)
 - The SCIL (Skill Call Improvement Loop) command iteratively improves skill descriptions by running evaluation cycles and using Claude to generate better descriptions
@@ -38,7 +38,7 @@ flowchart TB
     acil["acil"]
     analytics["update-analytics"]
     sandbox["sandbox"]
-    setup["sandbox setup"]
+    create["sandbox create"]
     clean["sandbox clean"]
     shell["sandbox shell"]
 
@@ -57,7 +57,7 @@ flowchart TB
     dispatch --> acil --> acilsteps --> data
     dispatch --> analytics --> data
     dispatch --> sandbox
-    sandbox --> setup --> si
+    sandbox --> create --> si
     sandbox --> clean --> si
     sandbox --> shell --> si
 ```
@@ -76,7 +76,7 @@ flowchart TB
 | `packages/cli/src/commands/sandbox.ts` | `sandbox` parent command — registers the three sub-commands below |
 | `packages/cli/src/commands/sandbox/shell.ts` | `sandbox shell` sub-command — opens interactive shell in Test Sandbox |
 | `packages/cli/src/commands/sandbox/clean.ts` | `sandbox clean` sub-command — removes the Test Sandbox |
-| `packages/cli/src/commands/sandbox/setup.ts` | `sandbox setup` sub-command — creates sandbox and authenticates via OAuth |
+| `packages/cli/src/commands/sandbox/create.ts` | `sandbox create` sub-command — creates sandbox and authenticates via OAuth |
 
 ## Core Types
 
@@ -93,7 +93,7 @@ Each command module in `packages/cli/src/commands/` is a thin Yargs wrapper that
 - **scil** — Calls `runScilLoop()` from the execution package for iterative skill description improvement
 - **acil** — Calls `runAcilLoop()` from the execution package for iterative agent description improvement
 - **update-analytics-data** — Calls the execution package's analytics ingestion
-- **sandbox setup** / **sandbox clean** / **sandbox shell** — Delegate to `@testdouble/sandbox-integration` for sandbox lifecycle. The `sandbox` parent holds no logic of its own; it registers the three sub-commands and requires one of them
+- **sandbox create** / **sandbox clean** / **sandbox shell** — Delegate to `@testdouble/sandbox-integration` for sandbox lifecycle. The `sandbox` parent holds no logic of its own; it registers the three sub-commands and requires one of them
 
 See [execution.md](./execution.md) for implementation details of each pipeline (test-run steps, test-eval steps, SCIL loop, ACIL loop, concurrency pool, scoring, error hierarchy).
 
@@ -128,7 +128,7 @@ The CLI catches `SkillwalkerError` at the top level (`index.ts`) and writes the 
 - `packages/cli/src/commands/scil.test.ts` — Tests `scil` command builder and handler
 - `packages/cli/src/commands/acil.test.ts` — Tests `acil` command builder and handler
 - `packages/cli/src/commands/update-analytics.test.ts` — Tests `update-analytics-data` command
-- `packages/cli/src/commands/sandbox/setup.test.ts` — Tests `sandbox setup` sub-command
+- `packages/cli/src/commands/sandbox/create.test.ts` — Tests `sandbox create` sub-command
 - `packages/cli/src/commands/sandbox/clean.test.ts` — Tests `sandbox clean` sub-command
 - `packages/cli/src/commands/sandbox/shell.test.ts` — Tests `sandbox shell` sub-command
 
