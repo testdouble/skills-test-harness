@@ -124,6 +124,8 @@ export async function execInSandbox(
 - stderr is drained in parallel via `new Response(stream).text()`. When `debug` is `true` and stderr is non-empty, it is written to `process.stderr`.
 - Both streams are fully captured regardless of the `debug` flag.
 
+`sbx exec` exits 0 even when it cannot start the command, printing `OCI runtime exec failed: ...` instead (for example, when the script's host path is outside every sandbox workspace). `execInSandbox` throws `SandboxError` when any stdout or stderr line starts with that message, pointing the user at `sandbox update`.
+
 **Consumers and their claude args patterns:**
 
 | Consumer | Key Args | Scaffold |
@@ -166,20 +168,22 @@ When a scaffold path is provided, it copies the scaffold into a fresh temp direc
 #### createSandbox
 
 ```typescript
-export async function createSandbox(repoRoot: string): Promise<void>
+export async function createSandbox(repoRoot: string, extraWorkspaces: string[] = []): Promise<void>
 ```
 
-Checks if the sandbox already exists via an internal `sandboxExists()` helper. If it does, prints a help message to stderr and returns. Otherwise, spawns `sbx run --name claude-skills-skillwalker claude <repoRoot>` with inherited stdio for interactive OAuth login.
+Checks if the sandbox already exists via an internal `sandboxExists()` helper. If it does, prints a help message to stderr and returns. Otherwise, spawns `sbx run --name claude-skills-skillwalker claude <repoRoot> [<extraWorkspace>:ro ...]` with inherited stdio for interactive OAuth login.
+
+`extraWorkspaces` are mounted read-only after `repoRoot` (`<path>:ro`); any already inside `repoRoot` are skipped. The CLI passes the directory holding `sandbox-run.sh` and `sandbox-extract.sh` (`sandboxScriptsDir` from `@testdouble/claude-integration`). `execInSandbox` runs those scripts by their host path, and the sandbox only sees host paths under a mounted workspace, so without this mount every test run fails whenever the target repo is not the skillwalker repo.
 
 Called by `commands/sandbox/create.ts`.
 
 #### updateSandbox
 
 ```typescript
-export async function updateSandbox(repoRoot: string): Promise<void>
+export async function updateSandbox(repoRoot: string, extraWorkspaces: string[] = []): Promise<void>
 ```
 
-Removes the sandbox if it exists, then removes every cached `docker/sandbox-templates` image tagged `claude-code*` (found with `sbx template ls`). Finally it calls `createSandbox`, so `sbx run` fetches the latest Claude Code template. `sbx` has no pull command, so deleting the cached image is the only way to get a newer one. An `rm` that reports `no template image` counts as already removed, because `sbx template ls` can list one image under several IDs. Any other listing or removal failure throws `SandboxError`.
+Removes the sandbox if it exists, then removes every cached `docker/sandbox-templates` image tagged `claude-code*` (found with `sbx template ls`). Finally it calls `createSandbox` with the same arguments, so `sbx run` fetches the latest Claude Code template. `sbx` has no pull command, so deleting the cached image is the only way to get a newer one. An `rm` that reports `no template image` counts as already removed, because `sbx template ls` can list one image under several IDs. Any other listing or removal failure throws `SandboxError`.
 
 Called by `commands/sandbox/update.ts`, which catches `SandboxError` and re-throws as `SkillwalkerError`.
 
@@ -224,6 +228,7 @@ See [Cross-Runtime Meta Property Resolution](coding-standards/cross-runtime-meta
 |----------|------------|----------|
 | Sandbox not found by `ensureSandboxExists` | `SandboxError` (exitCode: `null`) | Thrown with message suggesting `./build/skillwalker sandbox create` |
 | `sbx rm` fails | `SandboxError` (exitCode: process code) | Thrown with stdout+stderr in message |
+| `sbx exec` prints `OCI runtime exec failed` (exits 0) | `SandboxError` (exitCode: process code) | Thrown with the sbx output and a hint to run `skillwalker sandbox update` from the target repo |
 | Non-zero exit code from `execInSandbox` | No error thrown | Returned in `SandboxResult.exitCode`; caller decides |
 | `execInSandbox` with `proc.exitCode` null | No error thrown | `exitCode` defaults to `1` in `SandboxResult` |
 
@@ -232,7 +237,7 @@ See [Cross-Runtime Meta Property Resolution](coding-standards/cross-runtime-meta
 | Layer | Pattern |
 |-------|---------|
 | CLI commands (`clean.ts`) | Catches `SandboxError`, re-throws as `SkillwalkerError` |
-| Pre-flight checks (`test-run.ts`, `loop.ts`) | No catch — `SandboxError` propagates and crashes the process |
+| Pre-flight checks (`test-run.ts`, `loop.ts`) and test runners | No catch — `SandboxError` propagates to `cli/index.ts`, which prints `Error: <message>` and exits 1 |
 | Test runners (`prompt/`, `skill-call/`) | Checks `exitCode` on `SandboxResult`, increments failure counter |
 | LLM judge (`step-3b`) | Catches all errors, records `status: 'infrastructure-error'` in results |
 | SCIL step-5 | Catches errors per work-item, logs to stderr, continues |

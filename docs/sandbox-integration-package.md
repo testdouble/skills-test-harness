@@ -98,6 +98,8 @@ Primary execution function. Builds and spawns the command `sbx exec claude-skill
 - Both streams are fully captured regardless of the `debug` flag.
 - Does not throw on non-zero exit codes; the caller inspects `SandboxResult.exitCode`.
 
+`sbx exec` exits 0 even when it cannot start the command, printing `OCI runtime exec failed: ...` instead (for example, when the script's host path is outside every sandbox workspace). `execInSandbox` throws `SandboxError` when any stdout or stderr line starts with that message, pointing the user at `sandbox update`.
+
 **Consumer:** `claude-integration/src/run-claude.ts` imports `execInSandbox` as the execution primitive for all Claude invocations inside the sandbox.
 
 ### lifecycle.ts -- Lifecycle Management
@@ -105,10 +107,12 @@ Primary execution function. Builds and spawns the command `sbx exec claude-skill
 #### createSandbox()
 
 ```typescript
-async function createSandbox(repoRoot: string): Promise<void>
+async function createSandbox(repoRoot: string, extraWorkspaces: string[] = []): Promise<void>
 ```
 
-Checks whether the sandbox already exists via an internal `sandboxExists()` helper (runs `sbx ls --quiet`). If found, prints a help message to stderr explaining how to recreate it, and returns early. Otherwise, spawns `sbx run --name claude-skills-skillwalker claude <repoRoot>` with inherited stdio for interactive OAuth login. Prints progress messages to stderr.
+Checks whether the sandbox already exists via an internal `sandboxExists()` helper (runs `sbx ls --quiet`). If found, prints a help message to stderr explaining how to recreate it, and returns early. Otherwise, spawns `sbx run --name claude-skills-skillwalker claude <repoRoot> [<extraWorkspace>:ro ...]` with inherited stdio for interactive OAuth login. Prints progress messages to stderr.
+
+`extraWorkspaces` are mounted read-only after `repoRoot` (`<path>:ro`); any already inside `repoRoot` are skipped. The CLI passes the directory holding `sandbox-run.sh` and `sandbox-extract.sh` (`sandboxScriptsDir` from `@testdouble/claude-integration`). `execInSandbox` runs those scripts by their host path, and the sandbox only sees host paths under a mounted workspace, so without this mount every test run fails whenever the target repo is not the skillwalker repo.
 
 **Consumer:** `cli/src/commands/sandbox/create.ts`
 
@@ -125,14 +129,14 @@ Runs `sbx rm --force claude-skills-skillwalker`. Drains stdout and stderr in par
 #### updateSandbox()
 
 ```typescript
-async function updateSandbox(repoRoot: string): Promise<void>
+async function updateSandbox(repoRoot: string, extraWorkspaces: string[] = []): Promise<void>
 ```
 
 Replaces the sandbox with one built from the latest Claude Code template. `sbx` has no pull command and reuses a cached template image, so this function:
 
 1. Removes the sandbox with `removeSandbox()`, if it exists.
 2. Lists templates with `sbx template ls` and removes each cached image whose repository is `docker/sandbox-templates` and whose tag starts with `claude-code`, using `sbx template rm <image id>`.
-3. Calls `createSandbox(repoRoot)`, which makes `sbx run` fetch the current template.
+3. Calls `createSandbox(repoRoot, extraWorkspaces)`, which makes `sbx run` fetch the current template.
 
 `sbx template ls` can list one image under several IDs, and removing the first ID removes them all. A later `rm` that reports `no template image` is therefore treated as already removed. Any other listing or removal failure throws `SandboxError`.
 
@@ -208,6 +212,7 @@ flowchart TB
 |----------|------------|----------|
 | Sandbox not found by `ensureSandboxExists` | `SandboxError` (exitCode: `null`) | Thrown with message suggesting `./build/skillwalker sandbox create` |
 | `sbx rm` fails | `SandboxError` (exitCode: process code) | Thrown with stdout+stderr in message |
+| `sbx exec` prints `OCI runtime exec failed` (exits 0) | `SandboxError` (exitCode: process code) | Thrown with the sbx output and a hint to run `skillwalker sandbox update` from the target repo |
 | Non-zero exit from `execInSandbox` | No error thrown | Returned in `SandboxResult.exitCode`; caller decides |
 | `proc.exitCode` is null in `execInSandbox` | No error thrown | Defaults to `1` in `SandboxResult` |
 
