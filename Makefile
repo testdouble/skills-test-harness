@@ -1,8 +1,7 @@
-DUCKDB_PLATFORM := $(shell bun -e "process.stdout.write(process.platform + '-' + process.arch)")
-TESTS_DIR := $(shell pwd)
+.PHONY: sandbox-setup sandbox-clean dev build web update-analytics-data test clear-data
 
 sandbox-setup: build
-	./harness sandbox-setup
+	./build/harness sandbox-setup
 
 sandbox-clean:
 	sbx rm --force claude-skills-harness
@@ -15,21 +14,13 @@ dev:
 build:
 	bun install
 	cd packages/web && bun run build
-	cd packages/web && bun build ./src/server/index.ts --compile --outfile $(TESTS_DIR)/harness-web \
-		--external '@duckdb/node-bindings-*'
-	cd packages/cli && bun build ./index.ts --compile --outfile $(TESTS_DIR)/harness \
-		--external '@duckdb/node-bindings-*'
-	DUCKDB_DIR=$$(find node_modules/.bun -maxdepth 6 -name "duckdb.node" -path "*node-bindings-$(DUCKDB_PLATFORM)*" 2>/dev/null | head -1 | xargs dirname) && \
-	rm -rf node_modules/@duckdb/node-bindings-$(DUCKDB_PLATFORM) && \
-	mkdir -p node_modules/@duckdb && \
-	ln -sf $(TESTS_DIR)/$$DUCKDB_DIR node_modules/@duckdb/node-bindings-$(DUCKDB_PLATFORM) && \
-	cp $$DUCKDB_DIR/libduckdb.dylib $(TESTS_DIR)/libduckdb.dylib
+	bun run scripts/build.ts
 
 web: build
-	./harness-web
+	./build/harness-web
 
 update-analytics-data: build
-	./harness update-analytics-data
+	./build/harness update-analytics-data
 
 test:
 	bun run vitest run --config vitest.all.config.ts

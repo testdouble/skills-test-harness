@@ -24,7 +24,7 @@ At the end of every iteration, SCIL prints a progress summary. When the loop exi
 
 ```bash
 make build
-./harness sandbox-setup
+./build/harness sandbox-setup
 ```
 
 ## Test Suite Requirements
@@ -72,49 +72,49 @@ All commands are run from the `tests/` directory.
 **Basic run — infer skill from tests.json:**
 
 ```bash
-./harness scil --suite code-review
+./build/harness scil --suite code-review
 ```
 
 **Specify the target skill explicitly:**
 
 ```bash
-./harness scil --suite code-review --skill r-and-d:code-review
+./build/harness scil --suite code-review --skill r-and-d:code-review
 ```
 
 **Increase iterations:**
 
 ```bash
-./harness scil --suite code-review --max-iterations 10
+./build/harness scil --suite code-review --max-iterations 10
 ```
 
 **Auto-apply the best description without prompting:**
 
 ```bash
-./harness scil --suite code-review --apply
+./build/harness scil --suite code-review --apply
 ```
 
 **Hold out 40% of tests for validation:**
 
 ```bash
-./harness scil --suite code-review --holdout 0.4
+./build/harness scil --suite code-review --holdout 0.4
 ```
 
 **Run containers in parallel:**
 
 ```bash
-./harness scil --suite code-review --concurrency 3
+./build/harness scil --suite code-review --concurrency 3
 ```
 
 **Run each test multiple times and aggregate by majority vote:**
 
 ```bash
-./harness scil --suite code-review --runs-per-query 3
+./build/harness scil --suite code-review --runs-per-query 3
 ```
 
 **Debug mode — dump raw stream-json to stdout:**
 
 ```bash
-./harness scil --suite code-review --debug
+./build/harness scil --suite code-review --debug
 ```
 
 ## CLI Flags

@@ -72,7 +72,7 @@ For details on the skill's full workflow and criteria categories, see [Writing S
 Run all tests in your suite:
 
 ```bash
-./harness test-run --suite {skill-name}
+./build/harness test-run --suite {skill-name}
 ```
 
 This runs your skill against the prompt and scaffold inside the Test Sandbox. The LLM judge does not run yet — it evaluates stored output in the next step.
@@ -80,13 +80,13 @@ This runs your skill against the prompt and scaffold inside the Test Sandbox. Th
 **Tip:** To run a single test in isolation (useful for debugging):
 
 ```bash
-./harness test-run --suite {skill-name} --test "Prompt: some test name"
+./build/harness test-run --suite {skill-name} --test "Prompt: some test name"
 ```
 
 **Tip:** To see raw Claude output for troubleshooting:
 
 ```bash
-./harness test-run --suite {skill-name} --debug
+./build/harness test-run --suite {skill-name} --debug
 ```
 
 For the full list of CLI flags, see [CLI](../cli.md).
@@ -96,7 +96,7 @@ For the full list of CLI flags, see [CLI](../cli.md).
 Run the evaluation pipeline to have the LLM judge score your skill's output against the rubric:
 
 ```bash
-./harness test-eval
+./build/harness test-eval
 ```
 
 The `test-run` step captures Claude's output; `test-eval` scores it against your rubric. These are separate commands because the LLM judge consumes tokens — running a second Claude invocation to evaluate each test. Keeping them separate lets you run tests now and evaluate later when you have tokens to spare, or batch multiple test runs before evaluating them all at once.
@@ -110,7 +110,7 @@ For details on how the judge constructs its prompt, scores criteria, and handles
 Import your test run and evaluation results into the analytics database:
 
 ```bash
-./harness update-analytics-data
+./build/harness update-analytics-data
 ```
 
 This is idempotent — runs already imported are skipped. For more detail on analytics data and CLI queries, see [Analytics](analytics.md).
@@ -120,7 +120,7 @@ This is idempotent — runs already imported are skipped. For more detail on ana
 Launch the harness-web dashboard to inspect your test run and judge results:
 
 ```bash
-./harness-web
+./build/harness-web
 ```
 
 Open `http://localhost:3099` in your browser. Navigate to your test run to see per-criterion pass/fail results from the LLM judge, including the reasoning behind each score. For a full walkthrough of the dashboard, see [Viewing Results](viewing-results.md).

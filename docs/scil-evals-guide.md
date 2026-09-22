@@ -95,13 +95,13 @@ For the full field reference, see [Test Suite Reference](test-suite-reference.md
 Run the test suite to check current trigger accuracy:
 
 ```bash
-./harness test-run --suite code-review
+./build/harness test-run --suite code-review
 ```
 
 Then evaluate the results:
 
 ```bash
-./harness test-eval
+./build/harness test-eval
 ```
 
 The output shows each test with its pass/fail status. If some tests fail, that's expected — it means the skill description needs tuning, which is what SCIL does.
@@ -109,13 +109,13 @@ The output shows each test with its pass/fail status. If some tests fail, that's
 To run a single test in isolation (useful for debugging):
 
 ```bash
-./harness test-run --suite code-review --test "Skill Call: movie review"
+./build/harness test-run --suite code-review --test "Skill Call: movie review"
 ```
 
 To see raw Claude output for debugging:
 
 ```bash
-./harness test-run --suite code-review --debug
+./build/harness test-run --suite code-review --debug
 ```
 
 ## Step 3: Improve with SCIL
@@ -125,13 +125,13 @@ The `scil` command automates the evaluate-score-improve cycle. It reads your `sk
 ### Basic Run
 
 ```bash
-./harness scil --suite code-review
+./build/harness scil --suite code-review
 ```
 
 SCIL infers the target skill from the test suite. If the suite targets multiple skills, specify one explicitly:
 
 ```bash
-./harness scil --suite code-review --skill r-and-d:code-review
+./build/harness scil --suite code-review --skill r-and-d:code-review
 ```
 
 ### With Holdout Validation
@@ -139,7 +139,7 @@ SCIL infers the target skill from the test suite. If the suite targets multiple 
 Hold out a fraction of tests as a validation set to detect overfitting:
 
 ```bash
-./harness scil --suite code-review --holdout 0.4
+./build/harness scil --suite code-review --holdout 0.4
 ```
 
 The holdout set is not shown to the improvement prompt. The best iteration is selected by holdout accuracy, not training accuracy.
@@ -149,7 +149,7 @@ The holdout set is not shown to the improvement prompt. The best iteration is se
 Run multiple sandbox containers in parallel:
 
 ```bash
-./harness scil --suite code-review --concurrency 3
+./build/harness scil --suite code-review --concurrency 3
 ```
 
 ### Auto-Apply the Best Description
@@ -157,7 +157,7 @@ Run multiple sandbox containers in parallel:
 Skip the confirmation prompt and write the best description directly to SKILL.md:
 
 ```bash
-./harness scil --suite code-review --apply
+./build/harness scil --suite code-review --apply
 ```
 
 ### All CLI Flags

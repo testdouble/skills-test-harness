@@ -227,16 +227,16 @@ If the judge invocation fails (sandbox error, invalid JSON response, file read e
 
 ```bash
 # Run the test suite to produce output
-./harness test-run --suite code-review
+./build/harness test-run --suite code-review
 
 # Evaluate all expectations including llm-judge
-./harness test-eval
+./build/harness test-eval
 
 # Evaluate a specific run
-./harness test-eval <run-id>
+./build/harness test-eval <run-id>
 
 # Evaluate with debug output (shows sandbox stderr)
-./harness test-eval <run-id> --debug
+./build/harness test-eval <run-id> --debug
 ```
 
 ### Re-evaluating After Rubric Changes
@@ -248,7 +248,7 @@ Since `test-eval` re-evaluates from stored test output, you can edit a rubric fi
 vim tests/test-suites/code-review/rubrics/code-review-quality.md
 
 # Re-evaluate the same run
-./harness test-eval <run-id>
+./build/harness test-eval <run-id>
 ```
 
 ### Inspecting Results

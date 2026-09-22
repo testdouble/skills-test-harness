@@ -135,8 +135,8 @@ import { resolveRelativePath } from '@testdouble/bun-helpers'
 
 const sandboxRunScript = resolveRelativePath(
   import.meta,
-  '../sandbox-run.sh',                          // relative to source file (src/ → parent)
-  'packages/sandbox-integration/sandbox-run.sh'   // relative to compiled binary directory
+  '../sandbox-run.sh',   // relative to source file (src/ → parent)
+  'sandbox-run.sh'       // sits beside the compiled binary in build/
 )
 ```
 
@@ -144,14 +144,14 @@ The caller must pass `import.meta` directly because `import.meta` is scoped to t
 
 **Project references:**
 - `packages/bun-helpers/src/resolve.ts` — implementation of `currentDir` and `resolveRelativePath`
-- `packages/sandbox-integration/src/sandbox.ts` — uses `resolveRelativePath` to locate `sandbox-run.sh`
+- `packages/claude-integration/src/run-claude.ts` — uses `resolveRelativePath` to locate `sandbox-run.sh`
 - `packages/test-fixtures/load-fixtures.ts` — uses `currentDir` to locate the fixtures directory
 
 ### Handle Compiled Binary Path Resolution
 
 When the harness is compiled via `bun build --compile`, all modules are bundled into a single executable. In this context, `import.meta.dir` resolves to `/$bunfs/root` for every module — it does not preserve the original source file's directory. This means any path resolved relative to `import.meta.dir` will point to a nonexistent `$bunfs` virtual path.
 
-The `resolveRelativePath` helper handles this by accepting a second path (`compiledPath`) that is relative to the directory containing the compiled binary. The compiled binary's location is determined via `process.execPath`. The Makefile compiles binaries to the `tests/` directory (e.g., `tests/harness`), so `compiledPath` values are relative to `tests/`.
+The `resolveRelativePath` helper handles this by accepting a second path (`compiledPath`) that is relative to the directory containing the compiled binary. The compiled binary's location is determined via `process.execPath`. `scripts/build.ts` compiles binaries into `build/` and copies every runtime asset in beside them, so `compiledPath` is the asset's bare filename. Adding a new asset means listing it in that script's `RUNTIME_ASSETS` as well as passing its name here.
 
 **What to avoid:**
 
@@ -169,8 +169,8 @@ import { resolveRelativePath } from '@testdouble/bun-helpers'
 
 const script = resolveRelativePath(
   import.meta,
-  '../sandbox-run.sh',                          // works in source mode
-  'packages/sandbox-integration/sandbox-run.sh'   // works in compiled binary
+  '../sandbox-run.sh',   // works in source mode
+  'sandbox-run.sh'       // works in compiled binary
 )
 ```
 

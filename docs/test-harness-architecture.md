@@ -18,13 +18,13 @@ The test harness is a monorepo workspace that executes AI skill evaluations insi
 - All Claude invocations happen inside a named Test Sandbox (`claude-skills-harness`), providing filesystem isolation and reproducibility
 
 Key files:
-- `packages/cli/index.ts` — CLI entry point (compiled to `./harness` binary)
+- `packages/cli/index.ts` — CLI entry point (compiled to `./build/harness` binary)
 - `packages/execution/index.ts` — Execution orchestration (test-run, test-eval, SCIL/ACIL pipelines)
 - `packages/data/index.ts` — Shared data layer (types, config parsing, JSONL I/O, DuckDB analytics)
 - `packages/evals/index.ts` — Evaluation logic (boolean evals + LLM judge)
 - `packages/claude-integration/index.ts` — Claude CLI execution API (options, plugin dirs, error handling)
 - `packages/sandbox-integration/index.ts` — Test Sandbox execution API
-- `packages/web/src/server/index.ts` — Web dashboard server (compiled to `./harness-web` binary)
+- `packages/web/src/server/index.ts` — Web dashboard server (compiled to `./build/harness-web` binary)
 
 ## Architecture
 
@@ -142,7 +142,7 @@ test-fixtures ──────▶ bun-helpers    (devDependency of cli, execut
 
 ### @testdouble/harness-cli (`packages/cli/`)
 
-The command-line entry point. A thin Yargs wrapper that parses arguments, resolves paths from `process.cwd()`, and delegates all real work to `harness-execution`. Compiled to a `./harness` binary via `bun build --compile`.
+The command-line entry point. A thin Yargs wrapper that parses arguments, resolves paths from `process.cwd()`, and delegates all real work to `harness-execution`. Compiled to a `./build/harness` binary by `scripts/build.ts`.
 
 **Boundary:** Command parsing, path resolution from `process.cwd()`, and Yargs configuration live here. The CLI owns no pipeline logic, no test runners, no SCIL/ACIL steps — it calls `runTestSuite()`, `runTestEval()`, `runScilLoop()`, and `runAcilLoop()` from `harness-execution` and passes path values as parameters. Direct package dependencies beyond `harness-execution` exist only for commands that don't go through the execution layer: `sandbox-integration` (shell, clean, sandbox-setup) and `harness-data` (update-analytics).
 
@@ -277,7 +277,7 @@ The `sandbox-run.sh` script runs inside the container: if a scaffold path is pro
 
 ### @testdouble/harness-web (`packages/web/`)
 
-The dashboard layer. A Hono HTTP server with an embedded React SPA for viewing test results and analytics. Compiled to a `./harness-web` binary.
+The dashboard layer. A Hono HTTP server with an embedded React SPA for viewing test results and analytics. Compiled to a `./build/harness-web` binary.
 
 **Boundary:** All HTTP routing, API response formatting, and UI rendering lives here. The web package is a pure read-only adapter — it queries `harness-data` for all data and never writes to JSONL, Parquet, or the filesystem. It has zero direct DuckDB or evaluation logic.
 

@@ -6,10 +6,7 @@
 /analytics/
 node_modules/
 logs/
-harness-web
-harness
-duckdb.node
-libduckdb.dylib
+/build/
 progress.txt
 deferred.txt
 test-plan.md

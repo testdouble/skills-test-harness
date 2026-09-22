@@ -103,8 +103,8 @@ After extracting scripts, you can:
 
 2. **Run existing evals** if the skill has a test suite:
    ```bash
-   ./harness test-run --suite {skill-name}
-   ./harness test-eval
+   ./build/harness test-run --suite {skill-name}
+   ./build/harness test-eval
    ```
 
 3. **Write evals** if the skill doesn't have a test suite yet:

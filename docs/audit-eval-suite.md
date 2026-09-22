@@ -63,8 +63,8 @@ The skill walks through a 5-step process with no interview pauses:
 Run the fix commands in the report's repair order, then re-run the audit until it reports no findings, then run the suite:
 
 ```bash
-./harness test-run --suite {name}
-./harness test-eval
+./build/harness test-run --suite {name}
+./build/harness test-eval
 ```
 
 ## References

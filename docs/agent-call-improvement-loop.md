@@ -24,7 +24,7 @@ At the end of every iteration, ACIL prints a progress summary. When the loop exi
 
 ```bash
 make build
-./harness sandbox-setup
+./build/harness sandbox-setup
 ```
 
 ## Test Suite Requirements

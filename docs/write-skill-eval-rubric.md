@@ -144,17 +144,17 @@ After generating the rubric, you can:
 
 1. **Run the tests** to produce output for the judge to evaluate:
    ```bash
-   ./harness test-run --suite {skill-name}
+   ./build/harness test-run --suite {skill-name}
    ```
 
 2. **Evaluate results** including the llm-judge expectations:
    ```bash
-   ./harness test-eval
+   ./build/harness test-eval
    ```
 
 3. **Inspect judge results** in `output/{run-id}/test-results.jsonl` — look for `llm-judge` rows (per-criterion pass/fail with reasoning) and `llm-judge-aggregate` rows (overall score vs. threshold).
 
-4. **Iterate on criteria** — if criteria are too strict or too lenient, re-run `/write-skill-eval-rubric` to update them, then re-evaluate with `./harness test-eval <run-id>` (re-evaluates without re-running the test).
+4. **Iterate on criteria** — if criteria are too strict or too lenient, re-run `/write-skill-eval-rubric` to update them, then re-evaluate with `./build/harness test-eval <run-id>` (re-evaluates without re-running the test).
 
 For details on how the llm-judge system works, see [LLM Judge Evaluation](llm-judge.md).
 

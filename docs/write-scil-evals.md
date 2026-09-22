@@ -109,12 +109,12 @@ After generating the test suite, you can:
 
 1. **Run the tests** to check trigger accuracy:
    ```bash
-   ./harness test-run --suite {skill-name}
+   ./build/harness test-run --suite {skill-name}
    ```
 
 2. **Evaluate results**:
    ```bash
-   ./harness test-eval
+   ./build/harness test-eval
    ```
 
 3. **Run SCIL** to iteratively improve the skill's trigger description based on eval results. See [Skill Call Improvement Loop](skill-call-improvement-loop.md).

@@ -2,7 +2,7 @@
 
 > **Tier 4 · Skill/agent authors querying analytics directly, plus contributors.** This is the column-level reference for the analytics Parquet tables — every field, type, join key, and example query. Run [Analytics](getting-started/analytics.md) first if you haven't imported a run yet.
 
-Use this page to query the analytics tables directly: every Parquet file's columns and types, how to join them, and ready-to-run example queries. The test harness stores analytics data as eight Parquet files in `analytics/data/`. These are written by `./harness update-analytics-data`, which converts JSONL output files to Parquet using DuckDB. The conversion is idempotent — runs already present in the Parquet files are skipped.
+Use this page to query the analytics tables directly: every Parquet file's columns and types, how to join them, and ready-to-run example queries. The test harness stores analytics data as eight Parquet files in `analytics/data/`. These are written by `./build/harness update-analytics-data`, which converts JSONL output files to Parquet using DuckDB. The conversion is idempotent — runs already present in the Parquet files are skipped.
 
 ---
 
@@ -43,7 +43,7 @@ Note: `run_timestamp` is not stored as a column. Derive it from `test_run_id` vi
 
 ## Table: `analytics/data/test-results.parquet`
 
-One row per expectation evaluated. Written by `./harness test-eval`.
+One row per expectation evaluated. Written by `./build/harness test-eval`.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -65,7 +65,7 @@ Note: Only `llm-judge-aggregate` rows with `passed: false` count toward test fai
 
 ## Table: `analytics/data/output-files.parquet`
 
-One row per output file captured from the sandbox after a test case runs. Written by `./harness test-run` when skills or agents write files to the filesystem.
+One row per output file captured from the sandbox after a test case runs. Written by `./build/harness test-run` when skills or agents write files to the filesystem.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -80,7 +80,7 @@ This table is consumed by `queryTestRunDetails()` to populate the `outputFiles` 
 
 ## Table: `analytics/data/scil-iteration.parquet`
 
-One row per SCIL iteration. Written by `./harness scil`.
+One row per SCIL iteration. Written by `./build/harness scil`.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -98,7 +98,7 @@ One row per SCIL iteration. Written by `./harness scil`.
 
 ## Table: `analytics/data/scil-summary.parquet`
 
-One row per SCIL run. Written by `./harness scil`.
+One row per SCIL run. Written by `./build/harness scil`.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -113,7 +113,7 @@ Note: The source `scil-summary.json` file also contains an `iterations` array wi
 
 ## Table: `analytics/data/acil-iteration.parquet`
 
-One row per ACIL iteration. Written by `./harness acil`.
+One row per ACIL iteration. Written by `./build/harness acil`.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -131,7 +131,7 @@ One row per ACIL iteration. Written by `./harness acil`.
 
 ## Table: `analytics/data/acil-summary.parquet`
 
-One row per ACIL run. Written by `./harness acil`.
+One row per ACIL run. Written by `./build/harness acil`.
 
 | Field | Type | Description |
 |-------|------|-------------|
