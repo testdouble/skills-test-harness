@@ -1,6 +1,6 @@
 import crypto from 'node:crypto'
 import { existsSync } from 'node:fs'
-import { readdir, readFile, rename, unlink, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, readFile, rename, unlink, writeFile } from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
 import { type DuckDBConnection, DuckDBInstance } from '@duckdb/node-api'
@@ -164,6 +164,8 @@ export async function updateAllParquet({
     { name: 'test-results', glob: `${outputDir}/*/test-results.jsonl`, parquet: `${dataDir}/test-results.parquet` },
     { name: 'output-files', glob: `${outputDir}/*/output-files.jsonl`, parquet: `${dataDir}/output-files.parquet` },
   ]
+
+  await mkdir(dataDir, { recursive: true })
 
   const updated: string[] = []
 
