@@ -1,4 +1,4 @@
-import { exitWithResult, runTestEval } from '@testdouble/harness-execution'
+import { exitWithResult, runTestEval } from '@testdouble/skillwalker-execution'
 import type { Argv } from 'yargs'
 import { outputDir, testsDir } from '../paths.js'
 

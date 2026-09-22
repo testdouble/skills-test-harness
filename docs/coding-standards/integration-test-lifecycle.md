@@ -23,7 +23,7 @@ All TypeScript integration test files (`*.integration.test.ts`) and their associ
 
 ## Background
 
-The harness runs integration tests separately from unit tests using a dedicated Vitest config with an extended 30-second timeout. Integration tests create real files on disk and query real DuckDB instances rather than using mocks, because the patterns under test (JSONL-to-Parquet conversion, analytics queries, file-system operations) depend heavily on I/O behavior that mocks cannot faithfully replicate.
+Skillwalker runs integration tests separately from unit tests using a dedicated Vitest config with an extended 30-second timeout. Integration tests create real files on disk and query real DuckDB instances rather than using mocks, because the patterns under test (JSONL-to-Parquet conversion, analytics queries, file-system operations) depend heavily on I/O behavior that mocks cannot faithfully replicate.
 
 A recurring problem in integration test suites is leaked resources — temp directories that accumulate across runs, database handles left open, or tests that pass individually but fail when run in parallel because they share state. The lifecycle patterns in this standard prevent these issues by enforcing per-test isolation through `beforeEach`/`afterEach` hooks and a shared helper module for resource creation.
 
@@ -64,7 +64,7 @@ describe('importJsonlToParquet', () => {
 })
 
 // Don't use a shared directory across tests without per-test isolation
-const tmpDir = '/tmp/harness-tests'  // ← parallel tests collide, no cleanup guarantee
+const tmpDir = '/tmp/skillwalker-tests'  // ← parallel tests collide, no cleanup guarantee
 ```
 
 **Project references:**
@@ -138,7 +138,7 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 
 export async function makeTmpDir(): Promise<string> {
-  return mkdtemp(path.join(tmpdir(), 'harness-test-'))
+  return mkdtemp(path.join(tmpdir(), 'skillwalker-test-'))
 }
 
 export async function writeJsonl(filePath: string, records: unknown[]): Promise<void> {

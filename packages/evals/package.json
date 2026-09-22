@@ -1,10 +1,10 @@
 {
-  "name": "@testdouble/harness-evals",
+  "name": "@testdouble/skillwalker-evals",
   "version": "0.1.0",
   "private": true,
   "module": "index.ts",
   "dependencies": {
-    "@testdouble/harness-data": "workspace:*",
+    "@testdouble/skillwalker-data": "workspace:*",
     "@testdouble/claude-integration": "workspace:*"
   },
   "devDependencies": {

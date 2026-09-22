@@ -4,13 +4,13 @@ vi.mock('node:fs/promises', () => ({
   readFile: vi.fn(),
   writeFile: vi.fn().mockResolvedValue(undefined),
 }))
-vi.mock('@testdouble/harness-data', async (importOriginal) => {
+vi.mock('@testdouble/skillwalker-data', async (importOriginal) => {
   const actual = (await importOriginal()) as Record<string, unknown>
   return { ...actual }
 })
 
 import { readFile, writeFile } from 'node:fs/promises'
-import { HarnessError } from '../lib/errors.js'
+import { SkillwalkerError } from '../lib/errors.js'
 import { applyDescription } from './step-8-apply-description.js'
 
 beforeEach(() => {
@@ -42,26 +42,26 @@ describe('applyDescription (ACIL)', () => {
   })
 
   // TP-007 (T8): throws on no frontmatter
-  it('throws HarnessError when no frontmatter found', async () => {
+  it('throws SkillwalkerError when no frontmatter found', async () => {
     vi.mocked(readFile).mockResolvedValue('No frontmatter here, just text')
 
-    await expect(applyDescription('/agent.md', 'new')).rejects.toThrow(HarnessError)
+    await expect(applyDescription('/agent.md', 'new')).rejects.toThrow(SkillwalkerError)
   })
 
-  it('throws HarnessError with file path in message when no frontmatter', async () => {
+  it('throws SkillwalkerError with file path in message when no frontmatter', async () => {
     vi.mocked(readFile).mockResolvedValue('No frontmatter')
 
     await expect(applyDescription('/repo/agents/gap-analyzer.md', 'new')).rejects.toThrow(/gap-analyzer\.md/)
   })
 
   // TP-008 (T9): throws on no description field in frontmatter
-  it('throws HarnessError when frontmatter has no description field', async () => {
+  it('throws SkillwalkerError when frontmatter has no description field', async () => {
     vi.mocked(readFile).mockResolvedValue('---\nname: gap-analyzer\nmodel: opus\n---\n\nBody')
 
-    await expect(applyDescription('/agent.md', 'new')).rejects.toThrow(HarnessError)
+    await expect(applyDescription('/agent.md', 'new')).rejects.toThrow(SkillwalkerError)
   })
 
-  it('throws HarnessError with file path when description field missing', async () => {
+  it('throws SkillwalkerError with file path when description field missing', async () => {
     vi.mocked(readFile).mockResolvedValue('---\nname: my-agent\n---\n\nBody')
 
     await expect(applyDescription('/repo/agents/my-agent.md', 'new')).rejects.toThrow(/my-agent\.md/)

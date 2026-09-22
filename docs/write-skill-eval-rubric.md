@@ -17,7 +17,7 @@ Use this skill when you need to:
 - You need skill-call (trigger accuracy) tests — this skill produces **rubric files and llm-judge expectations only**. Use `/write-scil-evals` for trigger accuracy testing.
 - You need a project fixture for the skill to act on — build it first with `/build-skill-eval-scaffold`.
 - You're writing rubrics for an agent rather than a skill — use `/write-agent-eval-rubric` instead.
-- You want to run the harness or judge — this skill configures the rubric but does not run tests or invoke the judge.
+- You want to run Skillwalker or judge — this skill configures the rubric but does not run tests or invoke the judge.
 
 ## Usage
 
@@ -144,17 +144,17 @@ After generating the rubric, you can:
 
 1. **Run the tests** to produce output for the judge to evaluate:
    ```bash
-   ./build/harness test-run --suite {skill-name}
+   ./build/skillwalker test-run --suite {skill-name}
    ```
 
 2. **Evaluate results** including the llm-judge expectations:
    ```bash
-   ./build/harness test-eval
+   ./build/skillwalker test-eval
    ```
 
 3. **Inspect judge results** in `output/{run-id}/test-results.jsonl` — look for `llm-judge` rows (per-criterion pass/fail with reasoning) and `llm-judge-aggregate` rows (overall score vs. threshold).
 
-4. **Iterate on criteria** — if criteria are too strict or too lenient, re-run `/write-skill-eval-rubric` to update them, then re-evaluate with `./build/harness test-eval <run-id>` (re-evaluates without re-running the test).
+4. **Iterate on criteria** — if criteria are too strict or too lenient, re-run `/write-skill-eval-rubric` to update them, then re-evaluate with `./build/skillwalker test-eval <run-id>` (re-evaluates without re-running the test).
 
 For details on how the llm-judge system works, see [LLM Judge Evaluation](llm-judge.md).
 
@@ -165,7 +165,7 @@ For details on how the llm-judge system works, see [LLM Judge Evaluation](llm-ju
 - [LLM Judge Evaluation](llm-judge.md) — judge mechanics: prompt construction, scoring, output format, error handling
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context for the judge
 - [Script Extraction](script-extraction.md) — the `/script-extraction` skill: hardening skills by extracting mechanical steps into scripts
-- [Test Harness README](../README.md) — prerequisites, setup, and running tests
+- [Skillwalker README](../README.md) — prerequisites, setup, and running tests
 
 ---
 

@@ -1,4 +1,4 @@
-import type { ParsedRunMetrics, RunTotals } from '@testdouble/harness-data'
+import type { ParsedRunMetrics, RunTotals } from '@testdouble/skillwalker-data'
 
 export type { RunTotals }
 

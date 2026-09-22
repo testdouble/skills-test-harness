@@ -11,9 +11,9 @@ Change this package when you need to touch the dashboard's Hono API server, the 
 ## Overview
 
 - Full-stack package with a Hono API server (Bun runtime) and a React 19 + Tailwind v4 SPA client, built with Vite 8
-- Server delegates all data queries to `@testdouble/harness-data` — route handlers are thin wrappers that forward a `dataDir` path and return JSON
+- Server delegates all data queries to `@testdouble/skillwalker-data` — route handlers are thin wrappers that forward a `dataDir` path and return JSON
 - Client uses React Router v7 for SPA navigation across five pages: Test Run History, Test Run Detail, SCIL History, SCIL Detail, and Per-Test Analytics
-- Compiled as a standalone Bun executable (`harness-web`) with embedded client assets via Bun's `{ type: 'file' }` imports
+- Compiled as a standalone Bun executable (`skillwalker-web`) with embedded client assets via Bun's `{ type: 'file' }` imports
 
 Key files:
 - `packages/web/src/server/index.ts` — Server entry point, CLI arg parsing, route registration, embedded asset serving
@@ -24,41 +24,43 @@ Key files:
 
 ## Architecture
 
-```
-                    Browser (React SPA)
-                    +-------------------+
-                    |   NavBar          |
-                    |   +-------------+ |
-                    |   | React Router| |
-                    |   | /           |------> TestRunHistory
-                    |   | /runs/:id   |------> TestRunDetail
-                    |   | /scil       |------> ScilHistory
-                    |   | /scil/:id   |------> ScilDetail
-                    |   | /analytics  |------> PerTestAnalytics
-                    |   +------+------+ |
-                    +----------+--------+
-                               |
-                          fetch /api/*
-                               |
-                               v
-                    +-------------------+
-                    |   Hono Server     |
-                    |   (Bun runtime)   |
-                    +---+-------+---+---+
-                        |       |   |
-                        v       v   v
-               test-runs.ts  scil.ts  analytics.ts
-                        |       |   |
-                        v       v   v
-                    +-------------------+
-                    | @testdouble/      |
-                    | harness-data      |
-                    | (DuckDB queries)  |
-                    +-------------------+
-                               |
-                               v
-                    analytics/ directory
-                    (Parquet files)
+```mermaid
+flowchart TB
+    subgraph browser["Browser (React SPA)"]
+        direction TB
+        navbar["NavBar"]
+        router["React Router"]
+
+        p1["TestRunHistory"]
+        p2["TestRunDetail"]
+        p3["ScilHistory"]
+        p4["ScilDetail"]
+        p5["PerTestAnalytics"]
+
+        router -->|"/"| p1
+        router -->|"/runs/:id"| p2
+        router -->|"/scil"| p3
+        router -->|"/scil/:id"| p4
+        router -->|"/analytics"| p5
+    end
+
+    server["<b>Hono Server</b><br>(Bun runtime)"]
+
+    route1["test-runs.ts"]
+    route2["scil.ts"]
+    route3["analytics.ts"]
+
+    data["<b>@testdouble/skillwalker-data</b><br>(DuckDB queries)"]
+    parquet["<b>analytics/</b> directory<br>(Parquet files)"]
+
+    browser -->|"fetch /api/*"| server
+    server --> route1
+    server --> route2
+    server --> route3
+    route1 --> data
+    route2 --> data
+    route3 --> data
+    data --> parquet
 ```
 
 ## Key Files
@@ -86,7 +88,7 @@ Key files:
 ### Infrastructure
 | File | Purpose |
 |------|---------|
-| `packages/web/package.json` | Package config — `bin.harness-web` points to server entry, workspace dependency on `@testdouble/harness-data` |
+| `packages/web/package.json` | Package config — `bin.skillwalker-web` points to server entry, workspace dependency on `@testdouble/skillwalker-data` |
 | `packages/web/vite.config.ts` | Vite build config — Tailwind v4 plugin, React plugin, deterministic output filenames in `dist/client/` |
 | `packages/web/tsconfig.json` | TypeScript config — ESNext target, bundler module resolution, `bun-types`, React JSX |
 | `packages/web/index.html` | HTML shell — Inter font preconnect, `#root` mount point, module script entry |
@@ -95,7 +97,7 @@ Key files:
 
 ### Backend
 
-The server route handlers use Hono's `Context` type and delegate to `@testdouble/harness-data` query functions. The route modules themselves define no custom types — all data shapes are defined in the `harness-data` package.
+The server route handlers use Hono's `Context` type and delegate to `@testdouble/skillwalker-data` query functions. The route modules themselves define no custom types — all data shapes are defined in the `skillwalker-data` package.
 
 ### Frontend
 
@@ -211,7 +213,7 @@ The server entry (`packages/web/src/server/index.ts`) uses Yargs to parse `--por
 
 #### Route Handler Pattern
 
-All three route modules follow the same pattern: receive a Hono `Context` and a `dataDir` string, call the corresponding `@testdouble/harness-data` query function, and return the result via `c.json()`. Error handling distinguishes "not found" errors (returned as 404 JSON) from unexpected errors (re-thrown). The SCIL routes additionally handle missing Parquet files by returning empty results or 404.
+All three route modules follow the same pattern: receive a Hono `Context` and a `dataDir` string, call the corresponding `@testdouble/skillwalker-data` query function, and return the result via `c.json()`. Error handling distinguishes "not found" errors (returned as 404 JSON) from unexpected errors (re-thrown). The SCIL routes additionally handle missing Parquet files by returning empty results or 404.
 
 ```typescript
 // packages/web/src/server/routes/test-runs.ts — typical handler pattern
@@ -331,27 +333,56 @@ Aggregates data across all test runs with:
 
 ### Component Hierarchy
 
-```
-BrowserRouter
-└── div.min-h-screen
-    ├── NavBar
-    └── Routes
-        ├── / ──────────── TestRunHistory
-        ├── /runs/:runId ─ TestRunDetail
-        │                  ├── SectionHeader
-        │                  ├── SuiteBadge
-        │                  ├── LlmJudgeSection
-        │                  │   ├── CollapsibleOutput
-        │                  │   └── CriteriaTable
-        │                  ├── OutputFilesSection
-        │                  └── (tables)
-        ├── /scil ──────── ScilHistory
-        ├── /scil/:runId ─ ScilDetail
-        │                  ├── SectionHeader
-        │                  ├── AccuracyBadge
-        │                  └── TrainResultsTable
-        └── /analytics ─── PerTestAnalytics
-                           └── DonutChart
+```mermaid
+flowchart TB
+    router["BrowserRouter"]
+    shell["div.min-h-screen"]
+    nav["NavBar"]
+    routes["Routes"]
+
+    r1["<b>/</b><br>TestRunHistory"]
+    r2["<b>/runs/:runId</b><br>TestRunDetail"]
+    r3["<b>/scil</b><br>ScilHistory"]
+    r4["<b>/scil/:runId</b><br>ScilDetail"]
+    r5["<b>/analytics</b><br>PerTestAnalytics"]
+
+    d1["SectionHeader"]
+    d2["SuiteBadge"]
+    d3["LlmJudgeSection"]
+    d3a["CollapsibleOutput"]
+    d3b["CriteriaTable"]
+    d4["OutputFilesSection"]
+    d5["(tables)"]
+
+    s1["SectionHeader"]
+    s2["AccuracyBadge"]
+    s3["TrainResultsTable"]
+
+    a1["DonutChart"]
+
+    router --> shell
+    shell --> nav
+    shell --> routes
+
+    routes --> r1
+    routes --> r2
+    routes --> r3
+    routes --> r4
+    routes --> r5
+
+    r2 --> d1
+    r2 --> d2
+    r2 --> d3
+    d3 --> d3a
+    d3 --> d3b
+    r2 --> d4
+    r2 --> d5
+
+    r4 --> s1
+    r4 --> s2
+    r4 --> s3
+
+    r5 --> a1
 ```
 
 ### Routing
@@ -393,19 +424,19 @@ BrowserRouter
 ## Testing
 
 ### Backend
-- `packages/web/src/server/routes/test-runs.test.ts` — Tests `getTestRuns` and `getTestRunById` with mocked `harness-data` query functions
+- `packages/web/src/server/routes/test-runs.test.ts` — Tests `getTestRuns` and `getTestRunById` with mocked `skillwalker-data` query functions
 - `packages/web/src/server/routes/scil.test.ts` — Tests `getScilHistory` and `getScilRunById` including missing Parquet file handling
 - `packages/web/src/server/routes/analytics.test.ts` — Tests `getPerTestAnalytics` including suite filter behavior
 
 ### Test Patterns
-- All tests mock `@testdouble/harness-data` at the module level using `vi.mock()` with inline factory functions
+- All tests mock `@testdouble/skillwalker-data` at the module level using `vi.mock()` with inline factory functions
 - A `makeMockContext()` factory creates mock Hono `Context` objects with configurable `param` and `query` accessors
 - Tests verify both the happy path (data returned) and error paths (not found, unexpected errors, non-Error throwables)
 - `beforeEach` clears all mocks between tests via `vi.clearAllMocks()`
 
 ## Related References
 
-- [Test Harness Architecture](./test-harness-architecture.md) — System architecture, package boundaries, data flow, and dependency graph for the full harness monorepo
+- [Skillwalker Architecture](./skillwalker-architecture.md) — System architecture, package boundaries, data flow, and dependency graph for the full Skillwalker monorepo
 - [Parquet Schema](./parquet-schema.md) — Schema definitions for the analytics Parquet files queried by the data layer
 - [LLM Judge](./llm-judge.md) — LLM judge evaluation system whose results are displayed in the Test Run Detail page
 - [Data Package](./data.md) — Shared data layer: types, DuckDB queries, and analytics functions consumed by the web server

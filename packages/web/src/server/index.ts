@@ -18,7 +18,7 @@ const DEFAULT_PORT = 3099
 const indexHtml = _indexHtml as unknown as string
 
 const argv = await yargs(hideBin(Bun.argv))
-  .scriptName('harness-web')
+  .scriptName('skillwalker-web')
   .option('port', {
     type: 'number',
     description: 'Port to listen on',
@@ -55,4 +55,4 @@ app.get('/index.css', () => new Response(Bun.file(indexCss)))
 app.get('/*', () => new Response(Bun.file(indexHtml)))
 
 Bun.serve({ fetch: app.fetch, port })
-console.log(`harness-web listening on port ${port}`)
+console.log(`skillwalker-web listening on port ${port}`)

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@testdouble/sandbox-integration', () => ({
   removeSandbox: vi.fn(),
-  SANDBOX_NAME: 'claude-skills-harness',
+  SANDBOX_NAME: 'claude-skills-skillwalker',
   SandboxError: class SandboxError extends Error {
     exitCode: number | null
     constructor(message: string, exitCode: number | null) {
@@ -13,8 +13,8 @@ vi.mock('@testdouble/sandbox-integration', () => ({
   },
 }))
 
-import { SandboxError, removeSandbox } from '@testdouble/sandbox-integration'
-import { HarnessError } from '@testdouble/harness-execution'
+import { removeSandbox, SandboxError } from '@testdouble/sandbox-integration'
+import { SkillwalkerError } from '@testdouble/skillwalker-execution'
 import { command, describe as commandDescribe, handler } from './clean.js'
 
 beforeEach(() => {
@@ -48,15 +48,15 @@ describe('clean handler', () => {
   it('logs success message on successful removal', async () => {
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
     await handler()
-    expect(logSpy).toHaveBeenCalledWith('Removed sandbox: claude-skills-harness')
+    expect(logSpy).toHaveBeenCalledWith('Removed sandbox: claude-skills-skillwalker')
     logSpy.mockRestore()
   })
 
-  it('throws HarnessError when removeSandbox throws SandboxError', async () => {
+  it('throws SkillwalkerError when removeSandbox throws SandboxError', async () => {
     vi.mocked(removeSandbox).mockRejectedValue(
       new SandboxError('Test Sandbox rm failed (exit code 1): error output', 1),
     )
 
-    await expect(handler()).rejects.toThrow(HarnessError)
+    await expect(handler()).rejects.toThrow(SkillwalkerError)
   })
 })

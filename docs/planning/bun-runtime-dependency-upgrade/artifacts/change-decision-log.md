@@ -354,7 +354,7 @@ Cross-referencing invariants:
   major is its own unit so it can be reverted alone. The units land as one pull request with one commit per unit,
   each commit carrying its manifest edits and `bun.lock` together; reverting a unit is `git revert <sha>`, then
   `bun install --frozen-lockfile`, then the gate. The gate includes `bun --version`, `git status --porcelain bun.lock`
-  after `make build`, and `./harness --help` run from the repo root. Version literals are the newest as of
+  after `make build`, and `./skillwalker --help` run from the repo root. Version literals are the newest as of
   2026-09-21; a `bun install` on build day may resolve newer patches within the carets, and proofs naming an exact
   version are minimums.
 - **Rationale:** A root `bun update --latest` changes nothing in workspace packages, and a per-workspace

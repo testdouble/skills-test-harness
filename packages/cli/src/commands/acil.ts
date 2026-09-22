@@ -1,5 +1,5 @@
-import type { AcilConfig } from '@testdouble/harness-execution'
-import { HarnessError, runAcilLoop } from '@testdouble/harness-execution'
+import type { AcilConfig } from '@testdouble/skillwalker-execution'
+import { runAcilLoop, SkillwalkerError } from '@testdouble/skillwalker-execution'
 import type { Argv } from 'yargs'
 import { outputDir, testsDir } from '../paths.js'
 
@@ -37,27 +37,27 @@ export async function handler(argv: Record<string, unknown>): Promise<void> {
   const apply = argv.apply as boolean
 
   if (isNaN(maxIterations) || !isFinite(maxIterations) || maxIterations < 1) {
-    throw new HarnessError('--max-iterations must be a finite number >= 1')
+    throw new SkillwalkerError('--max-iterations must be a finite number >= 1')
   }
 
   if (isNaN(runsPerQuery) || !isFinite(runsPerQuery) || runsPerQuery < 1) {
-    throw new HarnessError('--runs-per-query must be a finite number >= 1')
+    throw new SkillwalkerError('--runs-per-query must be a finite number >= 1')
   }
 
   if (isNaN(concurrency) || !isFinite(concurrency) || concurrency < 1) {
-    throw new HarnessError('--concurrency must be a finite number >= 1')
+    throw new SkillwalkerError('--concurrency must be a finite number >= 1')
   }
 
   if (isNaN(holdout) || holdout < 0 || holdout >= 1.0) {
-    throw new HarnessError('--holdout must be >= 0 and < 1.0')
+    throw new SkillwalkerError('--holdout must be >= 0 and < 1.0')
   }
 
   if (agent !== undefined && !/^[a-z0-9-]+:[a-z0-9-]+$/.test(agent)) {
-    throw new HarnessError('--agent must be in plugin:agent format (e.g. my-plugin:my-agent)')
+    throw new SkillwalkerError('--agent must be in plugin:agent format (e.g. my-plugin:my-agent)')
   }
 
   if (!apply && !process.stdin.isTTY) {
-    throw new HarnessError('Non-interactive environment detected. Use --apply to auto-apply without prompting.')
+    throw new SkillwalkerError('Non-interactive environment detected. Use --apply to auto-apply without prompting.')
   }
 
   const config: AcilConfig = {

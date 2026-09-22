@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@testdouble/harness-data', () => ({
+vi.mock('@testdouble/skillwalker-data', () => ({
   resolvePromptPath: vi.fn().mockReturnValue('/resolved/prompt.md'),
   readPromptFile: vi.fn().mockResolvedValue('prompt content'),
   parseStreamJsonLines: vi.fn().mockReturnValue([]),
 }))
-vi.mock('@testdouble/harness-evals', () => ({
+vi.mock('@testdouble/skillwalker-evals', () => ({
   evaluateSkillCall: vi.fn().mockReturnValue(true),
 }))
 vi.mock('@testdouble/claude-integration', () => ({
@@ -13,8 +13,8 @@ vi.mock('@testdouble/claude-integration', () => ({
 }))
 
 import { runClaude } from '@testdouble/claude-integration'
-import { parseStreamJsonLines, readPromptFile, resolvePromptPath } from '@testdouble/harness-data'
-import { evaluateSkillCall } from '@testdouble/harness-evals'
+import { parseStreamJsonLines, readPromptFile, resolvePromptPath } from '@testdouble/skillwalker-data'
+import { evaluateSkillCall } from '@testdouble/skillwalker-evals'
 import type { RunEvalOptions } from './step-5-run-eval.js'
 import { runEval } from './step-5-run-eval.js'
 import type { ScilTestCase } from './types.js'

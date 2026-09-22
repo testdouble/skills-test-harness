@@ -4,7 +4,7 @@
 export { runAcilLoop } from './src/acil/loop.js'
 export type { AcilConfig } from './src/acil/types.js'
 // Errors (needed by CLI for top-level catch)
-export { ConfigNotFoundError, HarnessError, RunNotFoundError } from './src/lib/errors.js'
+export { ConfigNotFoundError, RunNotFoundError, SkillwalkerError } from './src/lib/errors.js'
 export type { PathConfig } from './src/lib/path-config.js'
 // Path config (needed by CLI to construct paths from process.cwd())
 export { createPathConfig } from './src/lib/path-config.js'

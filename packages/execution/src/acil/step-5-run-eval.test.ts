@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@testdouble/harness-data', () => ({
+vi.mock('@testdouble/skillwalker-data', () => ({
   resolvePromptPath: vi.fn(),
   readPromptFile: vi.fn(),
   parseStreamJsonLines: vi.fn(),
 }))
-vi.mock('@testdouble/harness-evals', () => ({
+vi.mock('@testdouble/skillwalker-evals', () => ({
   evaluateAgentCall: vi.fn(),
 }))
 vi.mock('@testdouble/claude-integration', () => ({
@@ -13,8 +13,8 @@ vi.mock('@testdouble/claude-integration', () => ({
 }))
 
 import { runClaude } from '@testdouble/claude-integration'
-import { parseStreamJsonLines, readPromptFile, resolvePromptPath } from '@testdouble/harness-data'
-import { evaluateAgentCall } from '@testdouble/harness-evals'
+import { parseStreamJsonLines, readPromptFile, resolvePromptPath } from '@testdouble/skillwalker-data'
+import { evaluateAgentCall } from '@testdouble/skillwalker-evals'
 import { runEval } from './step-5-run-eval.js'
 import type { AcilTestCase } from './types.js'
 

@@ -5,12 +5,12 @@ vi.mock('node:fs/promises', () => ({
   writeFile: vi.fn().mockResolvedValue(undefined),
 }))
 
-vi.mock('@testdouble/harness-data', () => ({
+vi.mock('@testdouble/skillwalker-data', () => ({
   ensureOutputDir: vi.fn().mockResolvedValue(undefined),
 }))
 
 import { appendFile, writeFile } from 'node:fs/promises'
-import { ensureOutputDir } from '@testdouble/harness-data'
+import { ensureOutputDir } from '@testdouble/skillwalker-data'
 import { writeIterationOutput, writeSummaryOutput } from './step-9-write-output.js'
 import type { IterationResult, QueryResult } from './types.js'
 

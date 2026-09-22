@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Validate a test suite directory the way the harness will before a run.
+# Validate a test suite directory the way Skillwalker will before a run.
 #
 # Usage: validate-suite.sh {suite-dir}
 #
@@ -17,7 +17,7 @@
 #                     wrap one finding per line: `error {test-name-or-file} {message}`
 #   findings: none    when nothing was found
 #
-# Checks (mirroring the harness's own load-time validation):
+# Checks (mirroring Skillwalker's own load-time validation):
 #   tests.json parses; top-level `plugins` is a non-empty array; `tests` is an array
 #   every test has name, type (skill-prompt|skill-call|agent-call|agent-prompt),
 #     promptFile, and a non-empty expect array

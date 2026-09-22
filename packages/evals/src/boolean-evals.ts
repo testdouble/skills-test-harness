@@ -1,5 +1,5 @@
-import type { ExpectationResult, StreamJsonEvent, TestExpectation } from '@testdouble/harness-data'
-import { getAgentInvocations, getResultText, getSkillInvocations } from '@testdouble/harness-data'
+import type { ExpectationResult, StreamJsonEvent, TestExpectation } from '@testdouble/skillwalker-data'
+import { getAgentInvocations, getResultText, getSkillInvocations } from '@testdouble/skillwalker-data'
 
 export function evaluateResultContains(value: string, events: StreamJsonEvent[]): boolean {
   const r = getResultText(events)

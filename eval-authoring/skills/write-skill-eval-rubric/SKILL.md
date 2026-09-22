@@ -9,11 +9,11 @@ Produce the rubric an LLM judge scores the target skill's run against, and attac
 
 ## Constraints
 
-- Every criterion is one bullet stating one checkable claim BECAUSE the harness parses each bullet as a separate criterion and the judge scores them independently; a compound bullet fails on its weakest clause.
+- Every criterion is one bullet stating one checkable claim BECAUSE Skillwalker parses each bullet as a separate criterion and the judge scores them independently; a compound bullet fails on its weakest clause.
 - When a scaffold exists, criteria name its concrete files, functions, or lines BECAUSE the judge can only verify what it can point at in the transcript.
 - Never remove or reword an existing criterion unless the user asks BECAUSE the threshold was tuned against the existing set, and changing it changes what passes.
 - Propose a `result-contains` string only for text the skill's own template or instructions guarantee BECAUSE a deterministic check fails the whole test on any variation, whereas a judge criterion is one of many.
-- Reference only rubric files and scaffolds that exist on disk BECAUSE the harness validates both before a run and refuses the suite otherwise.
+- Reference only rubric files and scaffolds that exist on disk BECAUSE Skillwalker validates both before a run and refuses the suite otherwise.
 - Keep interview turns compact: the draft, then the question.
 
 ## Step 1: Identify the target skill
@@ -102,5 +102,5 @@ Wait for the user to confirm.
 ## Step 7: Write and validate
 
 1. Write the rubric file, create or edit `tests.json` (append to `expect` arrays; append new entries to `tests`; a new file is `{ "plugins": ["{plugin}"], "tests": [ … ] }`), and write any new prompt files.
-2. Run `${CLAUDE_SKILL_DIR}/scripts/validate-suite.sh tests/test-suites/{skill}`. It re-checks what the harness checks at load time (rubric and prompt files exist, rubric has bullet criteria, threshold in range, scaffolds exist) and prints one finding per line between `findings-start` and `findings-end`. Fix every finding and re-run until `errors: 0`.
+2. Run `${CLAUDE_SKILL_DIR}/scripts/validate-suite.sh tests/test-suites/{skill}`. It re-checks what Skillwalker checks at load time (rubric and prompt files exist, rubric has bullet criteria, threshold in range, scaffolds exist) and prints one finding per line between `findings-start` and `findings-end`. Fix every finding and re-run until `errors: 0`.
 3. Report: the files created and modified, the criteria counts, and the tests that now carry the rubric.

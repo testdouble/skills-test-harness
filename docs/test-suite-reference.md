@@ -1,8 +1,8 @@
 # Test Suite Reference
 
-> **Tier 2 · All harness users.** The complete `tests.json` field reference: directory layout, test types, expectation types, and validation rules. Assumes you know what a test suite is — if not, start with [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md).
+> **Tier 2 · All Skillwalker users.** The complete `tests.json` field reference: directory layout, test types, expectation types, and validation rules. Assumes you know what a test suite is — if not, start with [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md).
 
-Look up any `tests.json` field, test type, or expectation type here. Each test suite lives in its own directory under `tests/test-suites/` and is defined by a `tests.json` file; this page documents every key the harness reads and the validation it enforces before a run starts.
+Look up any `tests.json` field, test type, or expectation type here. Each test suite lives in its own directory under `tests/test-suites/` and is defined by a `tests.json` file; this page documents every key Skillwalker reads and the validation it enforces before a run starts.
 
 ## Directory Layout
 
@@ -173,7 +173,7 @@ Use agent-call tests to verify that a user prompt correctly triggers (or does no
 
 ### agent-prompt
 
-Sends the prompt to Claude with all plugins from the `plugins` array loaded, and wraps the prompt with forced agent delegation. The harness prepends "Use the {agent} agent to accomplish the following task:" to ensure the specified agent is invoked. The `agentFile` field identifies the target agent in `plugin:agent` format.
+Sends the prompt to Claude with all plugins from the `plugins` array loaded, and wraps the prompt with forced agent delegation. Skillwalker prepends "Use the {agent} agent to accomplish the following task:" to ensure the specified agent is invoked. The `agentFile` field identifies the target agent in `plugin:agent` format.
 
 Use agent-prompt tests to verify that an agent completes successfully and produces meaningful output when given a task. These tests support scaffold, model, and llm-judge expectations just like skill-prompt tests.
 
@@ -271,7 +271,7 @@ Evaluates skill output against a rubric of criteria using a second Claude invoca
 | `model` | string | no | `"opus"` | Claude model used as the judge |
 | `threshold` | number | no | `1.0` | Fraction of criteria that must pass (0.0–1.0) for the expectation to pass |
 
-The rubric file must exist at `test-suites/{suite}/rubrics/{rubricFile}` — the harness validates this at load time.
+The rubric file must exist at `test-suites/{suite}/rubrics/{rubricFile}` — Skillwalker validates this at load time.
 
 For the full details on writing rubrics, judge mechanics, scoring, and output format, see [LLM Judge Evaluation](llm-judge.md). For a step-by-step guide to building rubric evals, see [Building Rubric Evals](rubric-evals-guide.md).
 
@@ -287,7 +287,7 @@ Please review the code in this project and let me know about any issues you find
 
 ## Validation
 
-The harness validates the test suite configuration before running any tests:
+Skillwalker validates the test suite configuration before running any tests:
 
 - Every `promptFile` must exist in the suite's `prompts/` directory
 - Every `scaffold` must point to an existing directory under `scaffolds/`

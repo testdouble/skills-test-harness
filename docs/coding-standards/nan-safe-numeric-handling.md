@@ -14,7 +14,7 @@
 
 ## Introduction
 
-This coding standard defines how numeric values that may be `NaN` are handled across the harness codebase — particularly accuracy scores, percentages, and metrics that derive from division or optional fields.
+This coding standard defines how numeric values that may be `NaN` are handled across the Skillwalker codebase — particularly accuracy scores, percentages, and metrics that derive from division or optional fields.
 
 ### Purpose
 
@@ -22,7 +22,7 @@ This coding standard defines how numeric values that may be `NaN` are handled ac
 
 ### Scope
 
-All TypeScript code in the harness workspace that performs numeric comparisons, formatting, or accumulation on values that could be `NaN` — most commonly `testAccuracy` and `trainAccuracy` fields derived from division where the denominator may be zero or the value may be absent.
+All TypeScript code in the Skillwalker workspace that performs numeric comparisons, formatting, or accumulation on values that could be `NaN` — most commonly `testAccuracy` and `trainAccuracy` fields derived from division where the denominator may be zero or the value may be absent.
 
 ## Background
 

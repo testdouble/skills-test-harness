@@ -51,7 +51,7 @@ tests/test-suites/{agent-name}/
 Scaffold files are designed to look like a real project written by a real developer. Signals (bugs, security flaws, architectural issues) are planted naturally — no `BUG HERE` comments or test-fixture markers.
 
 The following are excluded from scaffolds:
-- `.git` directory — the test harness auto-initializes a git repo with `git init` and commits all files
+- `.git` directory — Skillwalker auto-initializes a git repo with `git init` and commits all files
 - Lock files (`package-lock.json`, `Gemfile.lock`, `go.sum`) — unless they serve as a specific signal
 - Dependency directories (`node_modules`, `vendor`, `__pycache__`)
 
@@ -85,7 +85,7 @@ If the analysis reveals the agent does not operate on project files (e.g., it qu
 
 `--for trigger` builds a scaffold for `agent-call` tests instead of `agent-prompt` tests. The difference is what gets planted and where.
 
-In a `agent-call` test the harness replaces the agent's body with a no-op, so nothing inside the scaffold is ever analyzed. The only thing the scaffold can change is the decision to call the agent, and that decision is made from the prompt plus what Claude can see before the call: the auto-loaded `CLAUDE.md`, `README.md`, top-level file and directory names, and any file the prompt names explicitly. Trigger cues live in those places.
+In a `agent-call` test Skillwalker replaces the agent's body with a no-op, so nothing inside the scaffold is ever analyzed. The only thing the scaffold can change is the decision to call the agent, and that decision is made from the prompt plus what Claude can see before the call: the auto-loaded `CLAUDE.md`, `README.md`, top-level file and directory names, and any file the prompt names explicitly. Trigger cues live in those places.
 
 The skill derives cues from the agent description's "use when" clauses and "does not … use X" boundaries, plus the sibling descriptions in the same plugin, and asks for each cue's **direction**: does its presence mean Claude should delegate to the agent, or that a sibling should handle it instead? One scaffold carries one context; the counterpart (cues absent, or pointing at a sibling) is a second run. Scaffold names take a `-context-project` suffix, and the short-file warnings from the validator are expected in this mode.
 
@@ -112,12 +112,12 @@ After generating the scaffold, you can:
 
 2. **Run the tests** to produce output for the judge to evaluate:
    ```bash
-   ./build/harness test-run --suite {agent-name}
+   ./build/skillwalker test-run --suite {agent-name}
    ```
 
 3. **Evaluate results**:
    ```bash
-   ./build/harness test-eval
+   ./build/skillwalker test-eval
    ```
 
 ## References
@@ -128,7 +128,7 @@ After generating the scaffold, you can:
 - [Writing Agent Eval Rubrics](write-agent-eval-rubric.md) — the `/write-agent-eval-rubric` skill: workflow, criteria categories, output format
 - [Building Skill Eval Scaffolds](build-skill-eval-scaffold.md) — the equivalent skill for skill-based scaffold generation
 - [Writing Agent-Call Evals](write-acil-evals.md) — the `/write-acil-evals` skill: workflow, prompt categories, output format
-- [Test Harness README](../README.md) — prerequisites, setup, and running tests
+- [Skillwalker README](../README.md) — prerequisites, setup, and running tests
 
 ---
 

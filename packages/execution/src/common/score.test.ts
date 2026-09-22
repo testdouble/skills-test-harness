@@ -1,4 +1,4 @@
-import type { IterationResult, QueryResult } from '@testdouble/harness-data'
+import type { IterationResult, QueryResult } from '@testdouble/skillwalker-data'
 import { describe, expect, it } from 'vitest'
 import { scoreResults, selectBestIteration } from './score.js'
 

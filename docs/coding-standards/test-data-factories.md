@@ -11,7 +11,7 @@
 
 ## Introduction
 
-This coding standard defines how test data is constructed in test files across the harness monorepo, covering factory functions, shared fixtures, inline builders, and module-level mock constants.
+This coding standard defines how test data is constructed in test files across the Skillwalker monorepo, covering factory functions, shared fixtures, inline builders, and module-level mock constants.
 
 ### Purpose
 
@@ -169,7 +169,7 @@ When fixture data is needed across workspace packages or is too large for inline
 
 ```typescript
 // packages/cli/src/test-runners/steps/fixtures.ts — directory-level shared fixtures
-import type { TestSuiteConfig, ParsedRunMetrics } from '@testdouble/harness-data'
+import type { TestSuiteConfig, ParsedRunMetrics } from '@testdouble/skillwalker-data'
 import mockTestSuiteConfigJson from '@testdouble/test-fixtures/cli/test-runners/steps/mock-test-suite-config.json'
 import mockParsedMetricsJson from '@testdouble/test-fixtures/cli/test-runners/steps/mock-parsed-metrics.json'
 

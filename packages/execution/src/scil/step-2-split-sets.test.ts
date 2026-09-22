@@ -1,4 +1,4 @@
-import type { TestCase } from '@testdouble/harness-data'
+import type { TestCase } from '@testdouble/skillwalker-data'
 import { describe, expect, it } from 'vitest'
 import { splitSets } from './step-2-split-sets.js'
 

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@testdouble/harness-execution', () => ({
+vi.mock('@testdouble/skillwalker-execution', () => ({
   runTestEval: vi.fn(),
   exitWithResult: vi.fn(),
 }))
@@ -9,7 +9,7 @@ vi.mock('../paths.js', () => ({
   testsDir: '/mock-tests',
 }))
 
-import { exitWithResult, runTestEval } from '@testdouble/harness-execution'
+import { exitWithResult, runTestEval } from '@testdouble/skillwalker-execution'
 import { builder, command, describe as commandDescribe, handler } from './test-eval.js'
 
 beforeEach(() => {

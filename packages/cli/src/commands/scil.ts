@@ -1,5 +1,5 @@
-import type { ScilConfig } from '@testdouble/harness-execution'
-import { runScilLoop } from '@testdouble/harness-execution'
+import type { ScilConfig } from '@testdouble/skillwalker-execution'
+import { runScilLoop } from '@testdouble/skillwalker-execution'
 import type { Argv } from 'yargs'
 import { outputDir, testsDir } from '../paths.js'
 

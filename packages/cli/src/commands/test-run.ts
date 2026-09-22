@@ -1,4 +1,4 @@
-import { exitWithResult, runTestSuite } from '@testdouble/harness-execution'
+import { exitWithResult, runTestSuite } from '@testdouble/skillwalker-execution'
 import type { Argv } from 'yargs'
 import { getAllTestSuites, outputDir, testsDir } from '../paths.js'
 

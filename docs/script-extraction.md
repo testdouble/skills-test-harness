@@ -89,7 +89,7 @@ Each classification requires two pieces of evidence:
 
 ## Skill-Building Patterns Referenced During Extraction
 
-When classifying and rewriting steps, the skill works with three skill-authoring patterns. These are documented in the separate skills plugin repository that this harness tests, not in this repo — there is no in-repo URL for them:
+When classifying and rewriting steps, the skill works with three skill-authoring patterns. These are documented in the separate skills plugin repository that Skillwalker tests, not in this repo — there is no in-repo URL for them:
 
 - **Context injection commands** — bang-backtick syntax for injecting runtime data into a SKILL.md; relevant when classifying context injection operations.
 - **Script execution instructions** — how script invocations should be written in a SKILL.md so the model runs them reliably.
@@ -103,8 +103,8 @@ After extracting scripts, you can:
 
 2. **Run existing evals** if the skill has a test suite:
    ```bash
-   ./build/harness test-run --suite {skill-name}
-   ./build/harness test-eval
+   ./build/skillwalker test-run --suite {skill-name}
+   ./build/skillwalker test-eval
    ```
 
 3. **Write evals** if the skill doesn't have a test suite yet:
@@ -118,7 +118,7 @@ After extracting scripts, you can:
 - [Writing Skill-Call Evals](write-scil-evals.md) — the `/write-scil-evals` skill: workflow, prompt categories, output format
 - [Writing Skill Eval Rubrics](write-skill-eval-rubric.md) — the `/write-skill-eval-rubric` skill: workflow, criteria categories, output format
 - [Building Skill Eval Scaffolds](build-skill-eval-scaffold.md) — the `/build-skill-eval-scaffold` skill: analysis, signal planning, scaffold generation
-- [Test Harness README](../README.md) — prerequisites, setup, and running tests
+- [Skillwalker README](../README.md) — prerequisites, setup, and running tests
 
 ---
 

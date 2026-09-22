@@ -27,7 +27,7 @@ All TypeScript step-based pipelines in `packages/execution/src/`. Currently four
 
 ## Background
 
-The harness performs several multi-step workflows — running test suites, evaluating results, and iteratively improving skill or agent descriptions. Early implementations put all logic in the command handler, making handlers difficult to test and reason about. Extracting each operation into a numbered step file solved three problems: (1) individual steps could be tested with focused unit tests, (2) the orchestrator test could verify call order without re-testing step internals, and (3) step numbering made the execution sequence visible in the file listing.
+Skillwalker performs several multi-step workflows — running test suites, evaluating results, and iteratively improving skill or agent descriptions. Early implementations put all logic in the command handler, making handlers difficult to test and reason about. Extracting each operation into a numbered step file solved three problems: (1) individual steps could be tested with focused unit tests, (2) the orchestrator test could verify call order without re-testing step internals, and (3) step numbering made the execution sequence visible in the file listing.
 
 The numbered prefix (`step-N-`) is a file-system convention, not a runtime mechanism. Steps are imported and called explicitly by the orchestrator — there is no dynamic step discovery or auto-registration. This keeps the control flow explicit and easy to trace.
 
@@ -96,7 +96,7 @@ export function resolvePaths(suite: string): { testSuiteDir: string } {
 ```typescript
 // step-2-validate-config.ts — exports validateConfig
 import path from 'node:path'
-import { TEST_CONFIG_FILENAME } from '@testdouble/harness-data'
+import { TEST_CONFIG_FILENAME } from '@testdouble/skillwalker-data'
 import { ConfigNotFoundError } from '../../lib/errors.js'
 
 export async function validateConfig(testSuiteDir: string): Promise<{ configFilePath: string }> {

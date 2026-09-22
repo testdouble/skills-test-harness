@@ -10,9 +10,9 @@ Produce the prompts and `tests.json` entries that measure whether Claude delegat
 ## Constraints
 
 - Never modify or remove an existing test entry BECAUSE the existing entries are the baseline an ACIL run scores the description against; changing them changes the baseline silently.
-- Every entry carries an explicit `expect` array with `{ "agent-call": true }` or `{ "agent-call": false }` BECAUSE an omitted `expect` falls back to harness defaults without a warning.
-- A prompt file contains only the prompt text — no frontmatter, no heading — BECAUSE the harness sends the file verbatim as the user's message.
-- Set `scaffold` on a test only when `tests/test-suites/{suite}/scaffolds/{name}/` already exists BECAUSE the harness validates every scaffold before a run and refuses the whole suite otherwise.
+- Every entry carries an explicit `expect` array with `{ "agent-call": true }` or `{ "agent-call": false }` BECAUSE an omitted `expect` falls back to Skillwalker defaults without a warning.
+- A prompt file contains only the prompt text — no frontmatter, no heading — BECAUSE Skillwalker sends the file verbatim as the user's message.
+- Set `scaffold` on a test only when `tests/test-suites/{suite}/scaffolds/{name}/` already exists BECAUSE Skillwalker validates every scaffold before a run and refuses the whole suite otherwise.
 - Every new prompt filename is unique within `prompts/` BECAUSE two tests sharing a file cannot be edited independently.
 - Keep interview turns compact: the ask, the guidance for each category, then wait.
 
@@ -95,5 +95,5 @@ Wait for the user to confirm.
 ## Step 8: Write and validate
 
 1. Create or edit `tests/test-suites/{suite}/tests.json` and write each prompt file under `tests/test-suites/{suite}/prompts/`.
-2. Run `${CLAUDE_SKILL_DIR}/scripts/validate-suite.sh tests/test-suites/{suite}`. It re-checks what the harness checks at load time (prompt files exist and are non-empty, scaffolds and rubrics exist, every entry has `expect`, `agentFile` is present and well-formed) and prints one finding per line between `findings-start` and `findings-end`. Fix every finding and re-run until `errors: 0`.
+2. Run `${CLAUDE_SKILL_DIR}/scripts/validate-suite.sh tests/test-suites/{suite}`. It re-checks what Skillwalker checks at load time (prompt files exist and are non-empty, scaffolds and rubrics exist, every entry has `expect`, `agentFile` is present and well-formed) and prints one finding per line between `findings-start` and `findings-end`. Fix every finding and re-run until `errors: 0`.
 3. Report: the files created and modified, the counts by category, and any test still waiting on a scaffold with the exact build command.

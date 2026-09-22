@@ -5,7 +5,7 @@ vi.mock('node:fs/promises', () => ({
 }))
 
 import { readFile } from 'node:fs/promises'
-import { HarnessError } from '../lib/errors.js'
+import { SkillwalkerError } from '../lib/errors.js'
 import { readSkill } from './step-3-read-skill.js'
 
 beforeEach(() => {
@@ -33,7 +33,7 @@ Body text.` as any,
 
   it('throws when no frontmatter is present', async () => {
     vi.mocked(readFile).mockResolvedValue('No frontmatter here.' as any)
-    await expect(readSkill('/path/SKILL.md')).rejects.toThrow(HarnessError)
+    await expect(readSkill('/path/SKILL.md')).rejects.toThrow(SkillwalkerError)
   })
 
   it('parses multi-line block scalar description (folded > style)', async () => {

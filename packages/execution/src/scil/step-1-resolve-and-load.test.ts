@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@testdouble/harness-data', () => ({
+vi.mock('@testdouble/skillwalker-data', () => ({
   readTestSuiteConfig: vi.fn(),
   TEST_CONFIG_FILENAME: 'tests.json',
 }))
@@ -9,8 +9,8 @@ vi.mock('node:fs', () => ({
 }))
 
 import { existsSync } from 'node:fs'
-import { readTestSuiteConfig } from '@testdouble/harness-data'
-import { HarnessError } from '../lib/errors.js'
+import { readTestSuiteConfig } from '@testdouble/skillwalker-data'
+import { SkillwalkerError } from '../lib/errors.js'
 import { resolveAndLoad } from './step-1-resolve-and-load.js'
 
 function makeSkillCallTest(name: string, skillFile: string, value: boolean) {
@@ -82,7 +82,7 @@ describe('resolveAndLoad', () => {
     })
 
     await expect(resolveAndLoad('my-suite', 'r-and-d:code-review', '/mock/tests', '/repo')).rejects.toThrow(
-      HarnessError,
+      SkillwalkerError,
     )
   })
 
@@ -95,7 +95,7 @@ describe('resolveAndLoad', () => {
     })
 
     await expect(resolveAndLoad('my-suite', 'r-and-d:code-review', '/mock/tests', '/repo')).rejects.toThrow(
-      HarnessError,
+      SkillwalkerError,
     )
   })
 
@@ -129,7 +129,7 @@ describe('resolveAndLoad', () => {
       ],
     })
 
-    await expect(resolveAndLoad('my-suite', undefined, '/mock/tests', '/repo')).rejects.toThrow(HarnessError)
+    await expect(resolveAndLoad('my-suite', undefined, '/mock/tests', '/repo')).rejects.toThrow(SkillwalkerError)
   })
 
   // TP-007: Throws when multiple skills found during inference
@@ -142,7 +142,7 @@ describe('resolveAndLoad', () => {
       ],
     })
 
-    await expect(resolveAndLoad('my-suite', undefined, '/mock/tests', '/repo')).rejects.toThrow(HarnessError)
+    await expect(resolveAndLoad('my-suite', undefined, '/mock/tests', '/repo')).rejects.toThrow(SkillwalkerError)
   })
 
   // TP-018: Inferred skill — throws when inferred SKILL.md does not exist
@@ -153,7 +153,7 @@ describe('resolveAndLoad', () => {
       tests: [makeSkillCallTest('t1', 'r-and-d:code-review', true)],
     })
 
-    await expect(resolveAndLoad('my-suite', undefined, '/mock/tests', '/repo')).rejects.toThrow(HarnessError)
+    await expect(resolveAndLoad('my-suite', undefined, '/mock/tests', '/repo')).rejects.toThrow(SkillwalkerError)
   })
 
   // TP-019: Filters to skill-call type tests only

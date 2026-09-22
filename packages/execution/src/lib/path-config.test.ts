@@ -8,9 +8,9 @@ describe('createPathConfig', () => {
     expect(config.testsDir).toBe('/my/root')
   })
 
-  it('sets harnessDir to packages under root', () => {
+  it('sets skillwalkerDir to packages under root', () => {
     const config = createPathConfig('/my/root')
-    expect(config.harnessDir).toBe(path.join('/my/root', 'packages'))
+    expect(config.skillwalkerDir).toBe(path.join('/my/root', 'packages'))
   })
 
   it('sets outputDir to output under root', () => {

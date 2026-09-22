@@ -1,9 +1,9 @@
-import { readTestSuiteConfig, validateScaffolds } from '@testdouble/harness-data'
+import { readTestSuiteConfig, validateScaffolds } from '@testdouble/skillwalker-data'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { HarnessError } from '../../lib/errors.js'
+import { SkillwalkerError } from '../../lib/errors.js'
 import { readConfig } from './step-3-read-config.js'
 
-vi.mock('@testdouble/harness-data', () => ({
+vi.mock('@testdouble/skillwalker-data', () => ({
   readTestSuiteConfig: vi.fn(),
   validateScaffolds: vi.fn(),
 }))
@@ -34,17 +34,17 @@ describe('readConfig', () => {
     expect(result.tests[0].name).toBe('test-b')
   })
 
-  it('throws HarnessError when testFilter matches no tests', async () => {
+  it('throws SkillwalkerError when testFilter matches no tests', async () => {
     vi.mocked(readTestSuiteConfig).mockResolvedValue(makeConfig(['test-a', 'test-b']))
 
-    await expect(readConfig('/path/config.json', '/path/suite', 'nonexistent')).rejects.toThrow(HarnessError)
+    await expect(readConfig('/path/config.json', '/path/suite', 'nonexistent')).rejects.toThrow(SkillwalkerError)
     await expect(readConfig('/path/config.json', '/path/suite', 'nonexistent')).rejects.toThrow('nonexistent')
   })
 
-  it('throws HarnessError with the error message when readTestSuiteConfig throws (TP-001)', async () => {
+  it('throws SkillwalkerError with the error message when readTestSuiteConfig throws (TP-001)', async () => {
     vi.mocked(readTestSuiteConfig).mockRejectedValue(new Error('Invalid JSON in config file'))
 
-    await expect(readConfig('/path/config.json', '/path/suite', undefined)).rejects.toThrow(HarnessError)
+    await expect(readConfig('/path/config.json', '/path/suite', undefined)).rejects.toThrow(SkillwalkerError)
     await expect(readConfig('/path/config.json', '/path/suite', undefined)).rejects.toThrow(
       'Invalid JSON in config file',
     )
@@ -57,13 +57,13 @@ describe('readConfig', () => {
     expect(vi.mocked(validateScaffolds)).toHaveBeenCalledWith('/path/suite', config)
   })
 
-  it('throws HarnessError when validateScaffolds throws', async () => {
+  it('throws SkillwalkerError when validateScaffolds throws', async () => {
     vi.mocked(readTestSuiteConfig).mockResolvedValue(makeConfig(['test-a']))
     vi.mocked(validateScaffolds).mockImplementation(() => {
       throw new Error('Scaffold directory not found: /path/scaffolds/missing')
     })
 
-    await expect(readConfig('/path/config.json', '/path/suite', undefined)).rejects.toThrow(HarnessError)
+    await expect(readConfig('/path/config.json', '/path/suite', undefined)).rejects.toThrow(SkillwalkerError)
     await expect(readConfig('/path/config.json', '/path/suite', undefined)).rejects.toThrow(
       'Scaffold directory not found',
     )

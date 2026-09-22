@@ -1,27 +1,27 @@
 import { describe, expect, it } from 'vitest'
-import { ConfigNotFoundError, HarnessError, RunNotFoundError } from './errors.js'
+import { ConfigNotFoundError, RunNotFoundError, SkillwalkerError } from './errors.js'
 
-describe('HarnessError', () => {
+describe('SkillwalkerError', () => {
   it('is an instance of Error', () => {
-    const err = new HarnessError('something broke')
+    const err = new SkillwalkerError('something broke')
     expect(err).toBeInstanceOf(Error)
   })
 
-  it('has name set to HarnessError', () => {
-    const err = new HarnessError('something broke')
-    expect(err.name).toBe('HarnessError')
+  it('has name set to SkillwalkerError', () => {
+    const err = new SkillwalkerError('something broke')
+    expect(err.name).toBe('SkillwalkerError')
   })
 
   it('preserves the message', () => {
-    const err = new HarnessError('something broke')
+    const err = new SkillwalkerError('something broke')
     expect(err.message).toBe('something broke')
   })
 })
 
 describe('ConfigNotFoundError', () => {
-  it('is an instance of HarnessError', () => {
+  it('is an instance of SkillwalkerError', () => {
     const err = new ConfigNotFoundError('/some/path/tests.json')
-    expect(err).toBeInstanceOf(HarnessError)
+    expect(err).toBeInstanceOf(SkillwalkerError)
   })
 
   it('has name set to ConfigNotFoundError', () => {
@@ -36,9 +36,9 @@ describe('ConfigNotFoundError', () => {
 })
 
 describe('RunNotFoundError', () => {
-  it('is an instance of HarnessError', () => {
+  it('is an instance of SkillwalkerError', () => {
     const err = new RunNotFoundError('/output/run-1')
-    expect(err).toBeInstanceOf(HarnessError)
+    expect(err).toBeInstanceOf(SkillwalkerError)
   })
 
   it('has name set to RunNotFoundError', () => {

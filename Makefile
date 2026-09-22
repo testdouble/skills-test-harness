@@ -1,10 +1,10 @@
 .PHONY: sandbox-setup sandbox-clean dev build web update-analytics-data test clear-data
 
 sandbox-setup: build
-	./build/harness sandbox-setup
+	./build/skillwalker sandbox-setup
 
 sandbox-clean:
-	sbx rm --force claude-skills-harness
+	sbx rm --force claude-skills-skillwalker
 
 dev:
 	bun install
@@ -17,10 +17,10 @@ build:
 	bun run scripts/build.ts
 
 web: build
-	./build/harness-web
+	./build/skillwalker-web
 
 update-analytics-data: build
-	./build/harness update-analytics-data
+	./build/skillwalker update-analytics-data
 
 test:
 	bun run vitest run --config vitest.all.config.ts

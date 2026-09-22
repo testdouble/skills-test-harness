@@ -1,4 +1,4 @@
-import { queryAcilHistory, queryAcilRunDetails } from '@testdouble/harness-data'
+import { queryAcilHistory, queryAcilRunDetails } from '@testdouble/skillwalker-data'
 import type { Context } from 'hono'
 
 export async function getAcilHistory(c: Context, dataDir: string): Promise<Response> {

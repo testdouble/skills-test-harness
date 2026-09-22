@@ -34,7 +34,7 @@ export function TestRunHistory(): JSX.Element {
   if (!runs || runs.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 text-[#4f4f4f]">
-        No test runs found. Run tests with: harness run-test --suite &lt;name&gt;
+        No test runs found. Run tests with: skillwalker run-test --suite &lt;name&gt;
       </div>
     )
   }

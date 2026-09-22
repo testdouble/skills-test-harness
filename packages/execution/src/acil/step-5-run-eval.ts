@@ -1,8 +1,8 @@
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { runClaude } from '@testdouble/claude-integration'
-import { parseStreamJsonLines, readPromptFile, resolvePromptPath } from '@testdouble/harness-data'
-import { evaluateAgentCall } from '@testdouble/harness-evals'
+import { parseStreamJsonLines, readPromptFile, resolvePromptPath } from '@testdouble/skillwalker-data'
+import { evaluateAgentCall } from '@testdouble/skillwalker-evals'
 import type { AcilQueryResult, AcilTestCase } from './types.js'
 
 export interface RunEvalOptions {

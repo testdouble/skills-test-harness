@@ -9,7 +9,7 @@
 - ADRs: `docs/adrs/`
 - README: `README.md`
 
-## testdouble-harness (Workspace Root)
+## testdouble-skillwalker (Workspace Root)
 
 - Root: repository root
 - Language: TypeScript (ESNext target, strict mode)
@@ -36,36 +36,36 @@
 
 ### Workspace Packages
 
-#### @testdouble/harness-cli
+#### @testdouble/skillwalker-cli
 
 - Root: `packages/cli/`
 - Dependency manifest: `packages/cli/package.json`
 - CLI framework: Yargs
-- Compiled binary: `harness`
-- Depends on: `@testdouble/harness-execution`, `@testdouble/harness-data`, `@testdouble/sandbox-integration`, `@testdouble/claude-integration` (workspace)
+- Compiled binary: `skillwalker`
+- Depends on: `@testdouble/skillwalker-execution`, `@testdouble/skillwalker-data`, `@testdouble/sandbox-integration`, `@testdouble/claude-integration` (workspace)
 - Test directory: co-located in `packages/cli/src/`
 
-#### @testdouble/harness-execution
+#### @testdouble/skillwalker-execution
 
 - Root: `packages/execution/`
 - Dependency manifest: `packages/execution/package.json`
 - Owns: test-run pipeline, test-eval pipeline, SCIL/ACIL improvement loops, error hierarchy, path config
-- Depends on: `@testdouble/harness-data`, `@testdouble/harness-evals`, `@testdouble/claude-integration`, `@testdouble/sandbox-integration` (workspace)
+- Depends on: `@testdouble/skillwalker-data`, `@testdouble/skillwalker-evals`, `@testdouble/claude-integration`, `@testdouble/sandbox-integration` (workspace)
 - Test directory: co-located in `packages/execution/src/`
 
-#### @testdouble/harness-data
+#### @testdouble/skillwalker-data
 
 - Root: `packages/data/`
 - Dependency manifest: `packages/data/package.json`
 - DB: DuckDB (`@duckdb/node-api`)
 - Test directory: co-located in `packages/data/src/`
 
-#### @testdouble/harness-evals
+#### @testdouble/skillwalker-evals
 
 - Root: `packages/evals/`
 - Dependency manifest: `packages/evals/package.json`
 - Owns: boolean evals, LLM judge scoring, rubric parsing
-- Depends on: `@testdouble/harness-data`, `@testdouble/claude-integration` (workspace)
+- Depends on: `@testdouble/skillwalker-data`, `@testdouble/claude-integration` (workspace)
 - Test directory: co-located in `packages/evals/src/`
 
 #### @testdouble/claude-integration
@@ -83,7 +83,7 @@
 - Owns: Test Sandbox lifecycle, command execution
 - Depends on: `@testdouble/bun-helpers` (workspace)
 
-#### @testdouble/harness-web
+#### @testdouble/skillwalker-web
 
 - Root: `packages/web/`
 - Dependency manifest: `packages/web/package.json`
@@ -91,8 +91,8 @@
 - Frontend: React 19 + React Router 7
 - CSS: Tailwind CSS v4
 - Build: Vite 8 (`@vitejs/plugin-react`, `@tailwindcss/vite`)
-- Compiled binary: `harness-web`
-- Depends on: `@testdouble/harness-data` (workspace)
+- Compiled binary: `skillwalker-web`
+- Depends on: `@testdouble/skillwalker-data` (workspace)
 - Test directory: co-located in `packages/web/src/`
 
 #### @testdouble/bun-helpers
@@ -109,7 +109,7 @@
 
 ### Infrastructure
 
-- Build output: `build/` (compiled `harness` and `harness-web` binaries plus their runtime assets)
+- Build output: `build/` (compiled `skillwalker` and `skillwalker-web` binaries plus their runtime assets)
 - Native library: `libduckdb.dylib` (platform-specific, copied into `build/` beside the binaries)
 - Analytics store: `analytics/` (Parquet files)
 - Test output: `output/` (timestamped JSONL run data)
@@ -118,7 +118,7 @@
 
 ### Documentation
 
-- `docs/test-harness-architecture.md` — System architecture, package boundaries, data flow, and dependency graph
+- `docs/skillwalker-architecture.md` — System architecture, package boundaries, data flow, and dependency graph
 - `docs/sandbox-integration.md` — Test Sandbox API, lifecycle, and consumer patterns
 - `docs/llm-judge.md` — LLM-as-judge evaluation approach
 - `docs/parquet-schema.md` — DuckDB/Parquet table schemas

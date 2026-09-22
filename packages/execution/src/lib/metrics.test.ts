@@ -1,4 +1,4 @@
-import type { RunTotals } from '@testdouble/harness-data'
+import type { RunTotals } from '@testdouble/skillwalker-data'
 import { describe, expect, it } from 'vitest'
 import { accumulateTotals } from './metrics.js'
 

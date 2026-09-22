@@ -13,7 +13,7 @@ Agent trigger accuracy measures whether Claude correctly delegates tasks to your
 1. Write your test configuration using the `/write-acil-evals` skill
 2. Run the test suite to measure current trigger accuracy
 3. Import the results into the analytics database
-4. View the results in the harness-web dashboard
+4. View the results in the skillwalker-web dashboard
 
 ## Step 1: Write your test configuration
 
@@ -47,21 +47,21 @@ For details on the skill's full workflow and prompt category conventions, see [W
 Run all tests in your suite:
 
 ```bash
-./build/harness test-run --suite {agent-name}
+./build/skillwalker test-run --suite {agent-name}
 ```
 
-The harness executes each prompt inside the Test Sandbox, records whether your agent was delegated to, and prints a pass/fail summary.
+Skillwalker executes each prompt inside the Test Sandbox, records whether your agent was delegated to, and prints a pass/fail summary.
 
 **Tip:** To run a single test in isolation (useful for debugging):
 
 ```bash
-./build/harness test-run --suite {agent-name} --test "Agent Call: some test name"
+./build/skillwalker test-run --suite {agent-name} --test "Agent Call: some test name"
 ```
 
 **Tip:** To see raw Claude output for troubleshooting:
 
 ```bash
-./build/harness test-run --suite {agent-name} --debug
+./build/skillwalker test-run --suite {agent-name} --debug
 ```
 
 For the full list of CLI flags, see [CLI](../cli.md).
@@ -71,17 +71,17 @@ For the full list of CLI flags, see [CLI](../cli.md).
 Import your test run results into the analytics database:
 
 ```bash
-./build/harness update-analytics-data
+./build/skillwalker update-analytics-data
 ```
 
 This is idempotent — runs already imported are skipped. For more detail on analytics data and CLI queries, see [Analytics](analytics.md).
 
 ## Step 4: View your results
 
-Launch the harness-web dashboard to inspect your test run:
+Launch the skillwalker-web dashboard to inspect your test run:
 
 ```bash
-./build/harness-web
+./build/skillwalker-web
 ```
 
 Open `http://localhost:3099` in your browser. You'll see your test run in the Test Run History page, and can click through to see per-test pass/fail results. For a full walkthrough of the dashboard, see [Viewing Results](viewing-results.md).

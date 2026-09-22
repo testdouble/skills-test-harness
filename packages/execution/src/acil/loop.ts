@@ -1,8 +1,8 @@
 import path from 'node:path'
 import { createInterface } from 'node:readline/promises'
-import { getPhase } from '@testdouble/harness-data'
 import { ensureSandboxExists } from '@testdouble/sandbox-integration'
-import { HarnessError } from '../lib/errors.js'
+import { getPhase } from '@testdouble/skillwalker-data'
+import { SkillwalkerError } from '../lib/errors.js'
 import { generateRunId } from '../test-runners/steps/step-4-generate-run-id.js'
 import { resolveAndLoad } from './step-1-resolve-and-load.js'
 import { splitSets } from './step-2-split-sets.js'
@@ -141,7 +141,7 @@ export async function runAcilLoop(config: AcilConfig): Promise<void> {
   // Select best iteration
   const best = selectBestIteration(iterations, config.holdout)
   if (!best) {
-    throw new HarnessError('No iterations completed — cannot select best iteration')
+    throw new SkillwalkerError('No iterations completed — cannot select best iteration')
   }
 
   // Step 10: Print final summary

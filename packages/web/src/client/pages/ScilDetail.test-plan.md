@@ -6,7 +6,7 @@
 |-----------|-------|
 | Scope type | Specific files |
 | Files analyzed | 3 |
-| Branch | test-harness/skill-call-improvement-loop |
+| Branch | skillwalker/skill-call-improvement-loop |
 | Language | TypeScript / TSX |
 | Test framework | vitest |
 

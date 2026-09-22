@@ -20,7 +20,7 @@ When a `switch` statement covers a discriminated union (e.g., `TestExpectation['
 
 ### Scope
 
-All TypeScript `switch` statements in the harness workspace that dispatch on a discriminated union's tag field (typically a `type` property). The most common case is expectation type dispatch in the evals package, but the pattern applies anywhere a union is switched on.
+All TypeScript `switch` statements in the Skillwalker workspace that dispatch on a discriminated union's tag field (typically a `type` property). The most common case is expectation type dispatch in the evals package, but the pattern applies anywhere a union is switched on.
 
 ## Background
 

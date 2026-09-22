@@ -1,12 +1,12 @@
-# Data Package (`@testdouble/harness-data`)
+# Data Package (`@testdouble/skillwalker-data`)
 
 > **Tier 5 · Contributor reference.** Internal documentation for the `packages/data` package. If you're a user looking to query analytics data, see [Analytics](getting-started/analytics.md).
 
-The shared data layer every other harness package depends on. Change this package when you need to touch a type that flows through the pipeline, the `tests.json` parser, JSONL I/O, the DuckDB analytics queries, stream-JSON parsing, SCIL/ACIL train/test splitting, or skill/agent frontmatter manipulation.
+The shared data layer every other Skillwalker package depends on. Change this package when you need to touch a type that flows through the pipeline, the `tests.json` parser, JSONL I/O, the DuckDB analytics queries, stream-JSON parsing, SCIL/ACIL train/test splitting, or skill/agent frontmatter manipulation.
 
 What this package owns:
 
-- All TypeScript types that flow through the harness pipeline: test configuration, stream events, expectation results, analytics query shapes, and SCIL/ACIL domain types
+- All TypeScript types that flow through Skillwalker pipeline: test configuration, stream events, expectation results, analytics query shapes, and SCIL/ACIL domain types
 - Configuration parsing that reads `tests.json`, normalizes expectation shorthand formats into discriminated union types, validates scaffolds, and defaults model to `"sonnet"`
 - DuckDB analytics for JSONL-to-Parquet import and SQL-based queries over test run summaries, per-test details, and SCIL/ACIL improvement history
 - Stream-JSON parsing, JSONL read/write, SCIL train/test set splitting, skill description frontmatter manipulation, re-evaluation markers, and run status tracking
@@ -24,74 +24,39 @@ Key files:
 
 ## Architecture
 
-```
-                    tests.json
-                        |
-                        v
-              +-------------------+
-              |    config.ts      |     readTestSuiteConfig()
-              |  parse & validate |     resolvePromptPath()
-              +--------+----------+     readPromptFile()
-                       |                buildTestCaseId()
-                       v                validateScaffolds()
-              +-------------------+
-              |    types.ts       |     TestCase, TestExpectation,
-              |  shared contracts |     StreamJsonEvent, TestResultRecord,
-              +--------+----------+     ScilTestCase, PerTestRow, ...
-                       |
-          +------------+-------------+
-          |            |             |
-          v            v             v
-  +--------------+ +----------+ +-----------------+
-  | jsonl-writer | | jsonl-   | | stream-parser   |
-  | append to    | | reader   | | parse stream    |
-  | output/      | | read     | | JSON, extract   |
-  | JSONL files  | | JSONL    | | metrics & skills |
-  | (incl.       | |          | |                 |
-  | output-files)| |          | |                 |
-  +--------------+ +----------+ +-----------------+
-          |
-          v
-  +-------------------+     +-------------------+
-  |   analytics.ts    |<--->|   connection.ts    |
-  | importJsonl       |     | withConnection()   |
-  | ToParquet()       |     | cached DuckDB      |
-  | queryPerTest()    |     | instances           |
-  | queryTestRun      |     +-------------------+
-  | Summaries()       |
-  | queryTestRun      |
-  | Details()         |
-  +-------------------+
-          |
-          v
-  +-------------------+     +-------------------+
-  |   run-status.ts   |     | re-eval-marker.ts |
-  | queryScilHistory  |     | track re-evaluated|
-  | queryScilRun      |     | run IDs on disk   |
-  | Details()         |     +-------------------+
-  | queryAcilHistory  |
-  | queryAcilRun      |
-  | Details()         |
-  +-------------------+
+```mermaid
+flowchart TB
+    tests["tests.json"]
 
-  +-------------------+     +-------------------+     +-------------------+
-  |   scil-split.ts   |     |  scil-prompt.ts   |     |  acil-prompt.ts   |
-  | splitSets()       |     | buildImprovement  |     | buildAcilImprove  |
-  | stratified train/ |     | Prompt()          |     | mentPrompt()      |
-  | test holdout      |     +-------------------+     +-------------------+
-  +-------------------+
-                             +-------------------+
-                             |   phase.ts        |
-                             | getPhase()        |
-                             | getPhaseInstr()   |
-                             +-------------------+
+    config["<b>config.ts</b> — parse &amp; validate<br>readTestSuiteConfig() · resolvePromptPath()<br>readPromptFile() · buildTestCaseId() · validateScaffolds()"]
+    types["<b>types.ts</b> — shared contracts<br>TestCase · TestExpectation · StreamJsonEvent<br>TestResultRecord · ScilTestCase · PerTestRow · ..."]
 
-  +-------------------+
-  | skill-frontmatter |
-  | .ts               |
-  | parse/replace     |
-  | YAML descriptions |
-  +-------------------+
+    writer["<b>jsonl-writer</b><br>append to output/<br>JSONL files<br>(incl. output-files)"]
+    reader["<b>jsonl-reader</b><br>read JSONL"]
+    stream["<b>stream-parser</b><br>parse stream JSON,<br>extract metrics &amp; skills"]
+
+    analytics["<b>analytics.ts</b><br>importJsonlToParquet()<br>queryPerTest()<br>queryTestRunSummaries()<br>queryTestRunDetails()"]
+    connection["<b>connection.ts</b><br>withConnection()<br>cached DuckDB instances"]
+
+    status["<b>run-status.ts</b><br>queryScilHistory() · queryScilRunDetails()<br>queryAcilHistory() · queryAcilRunDetails()"]
+    marker["<b>re-eval-marker.ts</b><br>track re-evaluated run IDs on disk"]
+
+    split["<b>scil-split.ts</b><br>splitSets()<br>stratified train/test holdout"]
+    scilprompt["<b>scil-prompt.ts</b><br>buildImprovementPrompt()"]
+    acilprompt["<b>acil-prompt.ts</b><br>buildAcilImprovementPrompt()"]
+    phase["<b>phase.ts</b><br>getPhase() · getPhaseInstr()"]
+    frontmatter["<b>skill-frontmatter.ts</b><br>parse/replace YAML descriptions"]
+
+    tests --> config --> types
+    types --> writer
+    types --> reader
+    types --> stream
+    writer --> analytics
+    analytics <--> connection
+    analytics --> status
+    status --- marker
+    split --- scilprompt --- acilprompt
+    phase --- frontmatter
 ```
 
 ## Key Files
@@ -303,7 +268,7 @@ Two functions control the phased iteration strategy used by both SCIL and ACIL:
   - **Transition:** Combine strongest elements from best-performing iterations while experimenting
   - **Converge:** Make targeted, surgical edits. When train accuracy is perfect and holdout failures exist, the specific failing queries are included in the prompt
 
-The `Phase` type (`'explore' | 'transition' | 'converge'`) is exported and used in iteration result types throughout the harness.
+The `Phase` type (`'explore' | 'transition' | 'converge'`) is exported and used in iteration result types throughout Skillwalker.
 
 ### Skill Frontmatter Manipulation (`skill-frontmatter.ts`)
 
@@ -351,7 +316,7 @@ Tracks which test runs have been re-evaluated via a `.re-evaluated-runs.json` fi
 
 ## Related References
 
-- [Test Harness Architecture](./test-harness-architecture.md) — System architecture, package boundaries, and data flow
+- [Skillwalker Architecture](./skillwalker-architecture.md) — System architecture, package boundaries, and data flow
 - [Parquet Schema Reference](./parquet-schema.md) — Column-level schema for all Parquet tables
 - [Test Suite Reference](./test-suite-reference.md) — Format and semantics of `tests.json` files
 - [SCIL Improvement Loop](./skill-call-improvement-loop.md) — How SCIL uses train/test splits and iterative description refinement
@@ -363,5 +328,5 @@ Tracks which test runs have been re-evaluated via a `.re-evaluated-runs.json` fi
 
 ---
 
-**Next:** [Test Harness Architecture](./test-harness-architecture.md) — see how this package fits into the package dependency graph and data flow.
+**Next:** [Skillwalker Architecture](./skillwalker-architecture.md) — see how this package fits into the package dependency graph and data flow.
 **Related:** [Parquet Schema Reference](./parquet-schema.md) — column-level schema for the analytics tables this package imports and queries.

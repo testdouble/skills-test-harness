@@ -2,9 +2,9 @@
 
 > **Tier 5 · Contributor reference.** Internal documentation for the `@testdouble/sandbox-integration` package — the sandbox API, the `sandbox-run.sh` script, error handling, and test patterns. If you're a user who just needs the sandbox set up before running tests, see [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md).
 
-This page tells you how the harness talks to Docker Sandboxes via `sbx`: the functions you call to create, verify, run inside, and tear down the Test Sandbox; what `sandbox-run.sh` does inside the sandbox; how errors propagate to each consumer; and how to mock `Bun.spawn` when testing this package. For the typed public-API deep dive, see [Sandbox Integration Package](sandbox-integration-package.md).
+This page tells you how Skillwalker talks to Docker Sandboxes via `sbx`: the functions you call to create, verify, run inside, and tear down the Test Sandbox; what `sandbox-run.sh` does inside the sandbox; how errors propagate to each consumer; and how to mock `Bun.spawn` when testing this package. For the typed public-API deep dive, see [Sandbox Integration Package](sandbox-integration-package.md).
 
-Centralized package for all Test Sandbox interactions in the test harness — creating, removing, and executing commands inside sandboxes.
+Centralized package for all Test Sandbox interactions in Skillwalker — creating, removing, and executing commands inside sandboxes.
 
 - **Last Updated:** 2026-05-15
 - **Authors:**
@@ -12,7 +12,7 @@ Centralized package for all Test Sandbox interactions in the test harness — cr
 
 ## Summary
 
-- The `@testdouble/sandbox-integration` package is the single point of contact for all Sandbox CLI commands in the test harness. No other package spawns `sbx` processes directly.
+- The `@testdouble/sandbox-integration` package is the single point of contact for all Sandbox CLI commands in Skillwalker. No other package spawns `sbx` processes directly.
 - Provides two categories of functions: **sandbox execution** (`ensureSandboxExists`, `execInSandbox`) for running Claude inside the sandbox, and **lifecycle management** (`createSandbox`, `removeSandbox`, `openShell`) for managing the sandbox itself.
 - Uses Docker Desktop sandboxes (not traditional containers) via the `sbx` CLI subcommands.
 - Returns a clean `SandboxResult` type instead of exposing raw `Bun.spawn` process handles.
@@ -25,41 +25,31 @@ Key files:
 
 ## Architecture
 
-```
-                         ┌──────────────────────────────────────────┐
-                         │          @testdouble/harness-cli         │
-                         │                                          │
-                         │  commands/        test-runners/   scil/  │
-                         │  ┌──────────┐    ┌────────────┐  ┌────┐ │
-                         │  │clean     │    │prompt/     │  │loop│ │
-                         │  │shell     │    │skill-call/ │  │s5  │ │
-                         │  │sandbox-  │    │            │  │s7  │ │
-                         │  │ setup    │    │            │  │    │ │
-                         │  │test-run  │    │            │  │    │ │
-                         │  └────┬─────┘    └─────┬──────┘  └──┬─┘ │
-                         │       │                │            │    │
-                         └───────┼────────────────┼────────────┼────┘
-                                 │                │            │
-                    ┌────────────▼────────────────▼────────────▼──────┐
-                    │       @testdouble/sandbox-integration            │
-                    │                                                 │
-                    │  ┌─────────────────┐   ┌────────────────────┐  │
-                    │  │   sandbox.ts     │   │   lifecycle.ts      │ │
-                    │  │                 │   │                    │  │
-                    │  │ ensureSandbox   │   │ createSandbox()    │  │
-                    │  │  Exists()      │◄──│ removeSandbox()    │  │
-                    │  │ execInSandbox() │   │ openShell()        │  │
-                    │  │ SANDBOX_NAME   │   │                    │  │
-                    │  └───────┬─────────┘   └────────────────────┘  │
-                    │          │                                      │
-                    │          ▼                                      │
-                    │   sandbox-run.sh                                │
-                    │   (runs inside Docker)                          │
-                    └────────────────────────────────────────────────┘
-                                       │
-                                       ▼
-                              Docker Desktop Sandbox
-                              "claude-skills-harness"
+```mermaid
+flowchart TB
+    subgraph cli["@testdouble/skillwalker-cli"]
+        direction LR
+        commands["<b>commands/</b><br>clean · shell<br>sandbox-setup · test-run"]
+        runners["<b>test-runners/</b><br>prompt/ · skill-call/"]
+        scil["<b>scil/</b><br>loop · step-5 · step-7"]
+    end
+
+    subgraph si["@testdouble/sandbox-integration"]
+        direction TB
+        sandboxts["<b>sandbox.ts</b><br>ensureSandboxExists()<br>execInSandbox()<br>SANDBOX_NAME"]
+        lifecycle["<b>lifecycle.ts</b><br>createSandbox()<br>removeSandbox()<br>openShell()"]
+        runsh["<b>sandbox-run.sh</b><br>(runs inside Docker)"]
+
+        lifecycle --> sandboxts
+        sandboxts --> runsh
+    end
+
+    docker["Docker Desktop Sandbox<br><i>claude-skills-skillwalker</i>"]
+
+    commands --> si
+    runners --> si
+    scil --> si
+    runsh --> docker
 ```
 
 ## Key Files
@@ -100,7 +90,7 @@ export class SandboxError extends Error {
 
 | Constant | Value | Description |
 |----------|-------|-------------|
-| `SANDBOX_NAME` | `'claude-skills-harness'` | Name of the Docker Desktop sandbox used for all test execution |
+| `SANDBOX_NAME` | `'claude-skills-skillwalker'` | Name of the Docker Desktop sandbox used for all test execution |
 
 ## Implementation Details
 
@@ -127,7 +117,7 @@ export async function execInSandbox(
 ): Promise<SandboxResult>
 ```
 
-**Command built:** `sbx exec claude-skills-harness <sandboxRunScript> <scaffoldPath> ...claudeArgs`
+**Command built:** `sbx exec claude-skills-skillwalker <sandboxRunScript> <scaffoldPath> ...claudeArgs`
 
 **Output handling:**
 - stdout is streamed chunk-by-chunk via a `ReadableStream` reader. When `debug` is `true`, each chunk is also written to `process.stdout` in real time.
@@ -179,7 +169,7 @@ When a scaffold path is provided, it copies the scaffold into a fresh temp direc
 export async function createSandbox(repoRoot: string): Promise<void>
 ```
 
-Checks if the sandbox already exists via an internal `sandboxExists()` helper. If it does, prints a help message to stderr and returns. Otherwise, spawns `sbx run --name claude-skills-harness claude <repoRoot>` with inherited stdio for interactive OAuth login.
+Checks if the sandbox already exists via an internal `sandboxExists()` helper. If it does, prints a help message to stderr and returns. Otherwise, spawns `sbx run --name claude-skills-skillwalker claude <repoRoot>` with inherited stdio for interactive OAuth login.
 
 Called by `commands/sandbox-setup.ts`.
 
@@ -189,9 +179,9 @@ Called by `commands/sandbox-setup.ts`.
 export async function removeSandbox(): Promise<void>
 ```
 
-Runs `sbx rm --force claude-skills-harness`. Drains stdout and stderr in parallel. Throws `SandboxError` with the process exit code on failure.
+Runs `sbx rm --force claude-skills-skillwalker`. Drains stdout and stderr in parallel. Throws `SandboxError` with the process exit code on failure.
 
-Called by `commands/clean.ts`, which catches `SandboxError` and re-throws as `HarnessError`.
+Called by `commands/clean.ts`, which catches `SandboxError` and re-throws as `SkillwalkerError`.
 
 #### openShell
 
@@ -199,7 +189,7 @@ Called by `commands/clean.ts`, which catches `SandboxError` and re-throws as `Ha
 export async function openShell(): Promise<void>
 ```
 
-Calls `ensureSandboxExists()` first, then spawns `sbx exec -it claude-skills-harness bash` with inherited stdio for an interactive debugging session.
+Calls `ensureSandboxExists()` first, then spawns `sbx exec -it claude-skills-skillwalker bash` with inherited stdio for an interactive debugging session.
 
 Called by `commands/shell.ts`.
 
@@ -222,7 +212,7 @@ See [Cross-Runtime Meta Property Resolution](coding-standards/cross-runtime-meta
 
 | Scenario | Error Type | Behavior |
 |----------|------------|----------|
-| Sandbox not found by `ensureSandboxExists` | `SandboxError` (exitCode: `null`) | Thrown with message suggesting `./build/harness sandbox-setup` |
+| Sandbox not found by `ensureSandboxExists` | `SandboxError` (exitCode: `null`) | Thrown with message suggesting `./build/skillwalker sandbox-setup` |
 | `sbx rm` fails | `SandboxError` (exitCode: process code) | Thrown with stdout+stderr in message |
 | Non-zero exit code from `execInSandbox` | No error thrown | Returned in `SandboxResult.exitCode`; caller decides |
 | `execInSandbox` with `proc.exitCode` null | No error thrown | `exitCode` defaults to `1` in `SandboxResult` |
@@ -231,7 +221,7 @@ See [Cross-Runtime Meta Property Resolution](coding-standards/cross-runtime-meta
 
 | Layer | Pattern |
 |-------|---------|
-| CLI commands (`clean.ts`) | Catches `SandboxError`, re-throws as `HarnessError` |
+| CLI commands (`clean.ts`) | Catches `SandboxError`, re-throws as `SkillwalkerError` |
 | Pre-flight checks (`test-run.ts`, `loop.ts`) | No catch — `SandboxError` propagates and crashes the process |
 | Test runners (`prompt/`, `skill-call/`) | Checks `exitCode` on `SandboxResult`, increments failure counter |
 | LLM judge (`step-3b`) | Catches all errors, records `status: 'infrastructure-error'` in results |
@@ -278,15 +268,15 @@ Modules under test are imported dynamically inside each `it` block via `await im
 
 If `ensureSandboxExists` throws `SandboxError`, run:
 
-1. `./build/harness sandbox-setup` — creates the sandbox and completes OAuth
-2. Verify with `sbx ls --quiet` — should list `claude-skills-harness`
+1. `./build/skillwalker sandbox-setup` — creates the sandbox and completes OAuth
+2. Verify with `sbx ls --quiet` — should list `claude-skills-skillwalker`
 
 ### Sandbox already exists during setup
 
 `createSandbox` returns early with a help message. To recreate:
 
-1. `sbx rm --force claude-skills-harness`
-2. `./build/harness sandbox-setup`
+1. `sbx rm --force claude-skills-skillwalker`
+2. `./build/skillwalker sandbox-setup`
 
 ### Tests fail with "Cannot read properties of undefined (reading 'exited')"
 

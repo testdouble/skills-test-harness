@@ -11,7 +11,7 @@
 
 ## Introduction
 
-This coding standard defines how data transformations and test data construction use immutable patterns throughout the test harness codebase.
+This coding standard defines how data transformations and test data construction use immutable patterns throughout Skillwalker codebase.
 
 ### Purpose
 
@@ -23,7 +23,7 @@ All TypeScript source and test files under `packages/*/src/` — both production
 
 ## Background
 
-The test harness accumulates metrics across test runs, threads configuration through multi-step pipelines, and reuses fixture data across many test cases. In each of these scenarios, mutating an input object would silently corrupt downstream consumers. Early in development, a totals-accumulation function mutated its input, which caused cascading incorrect metrics when the same totals object was passed to multiple accumulation calls. Adopting a return-new-object convention eliminated that bug category entirely.
+Skillwalker accumulates metrics across test runs, threads configuration through multi-step pipelines, and reuses fixture data across many test cases. In each of these scenarios, mutating an input object would silently corrupt downstream consumers. Early in development, a totals-accumulation function mutated its input, which caused cascading incorrect metrics when the same totals object was passed to multiple accumulation calls. Adopting a return-new-object convention eliminated that bug category entirely.
 
 Spread-based test data variation complements this by ensuring that shared fixtures (like `mockTestSuiteConfig` or `defaultTotals`) remain stable across test cases even when individual tests need slightly different configurations.
 

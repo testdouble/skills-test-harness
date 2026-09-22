@@ -1,7 +1,7 @@
 import { SandboxError } from './errors.js'
 import type { SandboxResult } from './types.js'
 
-export const SANDBOX_NAME = 'claude-skills-harness'
+export const SANDBOX_NAME = 'claude-skills-skillwalker'
 
 export function spawnSbx(args: string[], options: Parameters<typeof Bun.spawn>[1]) {
   try {
@@ -27,7 +27,7 @@ export async function listSandboxNames(): Promise<string[]> {
 
   if (proc.exitCode !== 0) {
     throw new SandboxError(
-      `Unable to list sandboxes with sbx (exit code ${proc.exitCode ?? 1}): ${stdout}${stderr}\nRun \`sbx login\`, then retry \`./build/harness sandbox-setup\`.`,
+      `Unable to list sandboxes with sbx (exit code ${proc.exitCode ?? 1}): ${stdout}${stderr}\nRun \`sbx login\`, then retry \`./build/skillwalker sandbox-setup\`.`,
       proc.exitCode,
     )
   }
@@ -42,7 +42,7 @@ export async function ensureSandboxExists(): Promise<void> {
   const sandboxes = await listSandboxNames()
 
   if (!sandboxes.includes(SANDBOX_NAME)) {
-    throw new SandboxError(`Sandbox "${SANDBOX_NAME}" not found. Run './build/harness sandbox-setup' first.`, null)
+    throw new SandboxError(`Sandbox "${SANDBOX_NAME}" not found. Run './build/skillwalker sandbox-setup' first.`, null)
   }
 }
 

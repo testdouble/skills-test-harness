@@ -1,8 +1,8 @@
 # Claude Integration
 
-> **Tier 5 · Contributor reference.** Internal documentation for the `packages/claude-integration` package; there is no user-facing equivalent. If you arrived here as a user, start at the [Test Harness README](../README.md).
+> **Tier 5 · Contributor reference.** Internal documentation for the `packages/claude-integration` package; there is no user-facing equivalent. If you arrived here as a user, start at the [Skillwalker README](../README.md).
 
-Change this package when you need to touch how the harness invokes Claude inside the Test Sandbox — the CLI flag construction, plugin-directory resolution, output-file extraction, or the sandbox shell scripts. It wraps the Claude CLI behind a programmatic TypeScript API so test runners and eval pipelines never construct CLI arguments directly.
+Change this package when you need to touch how Skillwalker invokes Claude inside the Test Sandbox — the CLI flag construction, plugin-directory resolution, output-file extraction, or the sandbox shell scripts. It wraps the Claude CLI behind a programmatic TypeScript API so test runners and eval pipelines never construct CLI arguments directly.
 
 - **Last Updated:** 2026-05-15
 - **Authors:**
@@ -25,32 +25,26 @@ Key files:
 
 ## Architecture
 
-```
-  ┌─────────────────────────────┐    ┌──────────────────────────────┐
-  │   @testdouble/harness-cli   │    │    @testdouble/evals         │
-  │                             │    │                              │
-  │  test-runners/  scil/       │    │  llm-judge-eval.ts           │
-  └──────────┬──────────────────┘    └──────────────┬───────────────┘
-             │                                      │
-             │  runClaude(options)                   │  runClaude(options)
-             ▼                                      ▼
-  ┌──────────────────────────────────────────────────────────────────┐
-  │              @testdouble/claude-integration                      │
-  │                                                                  │
-  │  runClaude()           resolvePluginDirs()      ClaudeError      │
-  │  ┌────────────────┐    ┌──────────────────┐    ┌──────────────┐  │
-  │  │ Build CLI args │    │ Resolve plugin   │    │ Error with   │  │
-  │  │ Delegate to    │    │ paths against    │    │ exit code    │  │
-  │  │ execInSandbox  │    │ repo root        │    │              │  │
-  │  └───────┬────────┘    └──────────────────┘    └──────────────┘  │
-  └──────────┼───────────────────────────────────────────────────────┘
-             │  execInSandbox(script, args, scaffold, debug)
-             ▼
-  ┌──────────────────────────────────────────────────────────────────┐
-  │              @testdouble/sandbox-integration                      │
-  │                                                                  │
-  │  sandbox-run.sh ──▶ Test Sandbox ──▶ claude CLI                │
-  └──────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    cli["<b>@testdouble/skillwalker-cli</b><br>test-runners/ · scil/"]
+    evals["<b>@testdouble/evals</b><br>llm-judge-eval.ts"]
+
+    subgraph ci["@testdouble/claude-integration"]
+        direction LR
+        run["<b>runClaude()</b><br>Build CLI args<br>Delegate to execInSandbox"]
+        plugins["<b>resolvePluginDirs()</b><br>Resolve plugin paths<br>against repo root"]
+        errs["<b>ClaudeError</b><br>Error with exit code"]
+    end
+
+    subgraph si["@testdouble/sandbox-integration"]
+        direction LR
+        script["sandbox-run.sh"] --> box["Test Sandbox"] --> claude["claude CLI"]
+    end
+
+    cli -->|"runClaude(options)"| run
+    evals -->|"runClaude(options)"| run
+    run -->|"execInSandbox(script, args, scaffold, debug)"| script
 ```
 
 ## Key Files
@@ -193,7 +187,7 @@ All tests mock `@testdouble/sandbox-integration` and `@testdouble/bun-helpers` a
 ## Related References
 
 - [Sandbox Integration](./sandbox-integration.md) - The underlying sandbox execution layer that `runClaude` delegates to
-- [Test Harness Architecture](./test-harness-architecture.md) — System architecture showing how claude-integration fits into the package dependency graph
+- [Skillwalker Architecture](./skillwalker-architecture.md) — System architecture showing how claude-integration fits into the package dependency graph
 - [CLI Package](./cli.md) — CLI commands that invoke `runClaude()` for test execution and SCIL
 - [Evals Package](./evals.md) — Evaluation engine that invokes `runClaude()` for LLM judge assessments
 - [Bun Helpers](./bun-helpers.md) — Cross-runtime path resolution utilities used by this package

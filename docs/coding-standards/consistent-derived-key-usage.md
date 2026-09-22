@@ -24,11 +24,11 @@ When a JSONL record is keyed by a derived identifier (e.g., `buildTestCaseId(sui
 
 ### Scope
 
-All TypeScript code in the harness workspace that persists or queries JSONL records using derived keys. The canonical example is `buildTestCaseId`, but the principle applies to any key derivation function used across write/read boundaries.
+All TypeScript code in the Skillwalker workspace that persists or queries JSONL records using derived keys. The canonical example is `buildTestCaseId`, but the principle applies to any key derivation function used across write/read boundaries.
 
 ## Background
 
-The test harness persists output files to `output-files.jsonl` with a `test_name` field built via `buildTestCaseId(suite, test.name)`, which produces a slugified composite key (e.g., `"test-engineer-Agent-Prompt-test-plan-for-go-security-project"`). When `llm-judge-eval.ts` was written, it looked up output files using the raw `test.name` (e.g., `"Agent Prompt: test plan for go-security-project"`). The keys never matched, so `loadOutputFiles` silently returned an empty map for every test. All file-scoped rubric criteria auto-failed with "Output file was not produced by the agent" — even though the files were correctly extracted and stored.
+Skillwalker persists output files to `output-files.jsonl` with a `test_name` field built via `buildTestCaseId(suite, test.name)`, which produces a slugified composite key (e.g., `"test-engineer-Agent-Prompt-test-plan-for-go-security-project"`). When `llm-judge-eval.ts` was written, it looked up output files using the raw `test.name` (e.g., `"Agent Prompt: test plan for go-security-project"`). The keys never matched, so `loadOutputFiles` silently returned an empty map for every test. All file-scoped rubric criteria auto-failed with "Output file was not produced by the agent" — even though the files were correctly extracted and stored.
 
 The bug was a one-liner to fix but took significant investigation to find, because no error was raised. The empty map was a valid return value (it means "no files produced"), making the mismatch indistinguishable from a legitimate empty result.
 

@@ -1,5 +1,5 @@
-import { HarnessError } from '@testdouble/harness-execution'
 import { removeSandbox, SANDBOX_NAME, SandboxError } from '@testdouble/sandbox-integration'
+import { SkillwalkerError } from '@testdouble/skillwalker-execution'
 import type { Argv } from 'yargs'
 
 export const command = 'clean'
@@ -15,7 +15,7 @@ export async function handler(): Promise<void> {
     console.log(`Removed sandbox: ${SANDBOX_NAME}`)
   } catch (error) {
     if (error instanceof SandboxError) {
-      throw new HarnessError(error.message)
+      throw new SkillwalkerError(error.message)
     }
     throw error
   }

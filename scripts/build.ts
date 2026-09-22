@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Compiles the harness executables into ./build and places the DuckDB native
+ * Compiles Skillwalker executables into ./build and places the DuckDB native
  * files beside them.
  *
  * DuckDB ships as a native addon (duckdb.node) that dynamically links libduckdb,
@@ -26,8 +26,8 @@ const BUILD_DIR = path.join(ROOT, 'build')
 const BINDINGS_METADATA_FILES = new Set(['LICENSE', 'README.md', 'package.json'])
 
 const COMPILE_TARGETS = [
-  { entrypoint: 'packages/cli/index.ts', outfile: 'harness' },
-  { entrypoint: 'packages/web/src/server/index.ts', outfile: 'harness-web' },
+  { entrypoint: 'packages/cli/index.ts', outfile: 'skillwalker' },
+  { entrypoint: 'packages/web/src/server/index.ts', outfile: 'skillwalker-web' },
 ]
 
 // Handed to `sbx exec` as real filesystem paths, so they cannot be embedded in
@@ -71,7 +71,7 @@ function tryResolve(specifier: string, from: string): string | null {
 
 /**
  * Walks the same resolution chain the runtime uses, so the addon copied into
- * ./build is the one the harness would otherwise have loaded from node_modules.
+ * ./build is the one Skillwalker would otherwise have loaded from node_modules.
  */
 function resolveDuckdbNativeDir(): string {
   const nodeApi = Bun.resolveSync('@duckdb/node-api', path.join(ROOT, 'packages/data'))

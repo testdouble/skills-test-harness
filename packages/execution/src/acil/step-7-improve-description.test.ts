@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@testdouble/harness-data', async (importOriginal) => {
+vi.mock('@testdouble/skillwalker-data', async (importOriginal) => {
   const actual = (await importOriginal()) as Record<string, unknown>
   return {
     ...actual,
@@ -13,7 +13,7 @@ vi.mock('@testdouble/claude-integration', () => ({
 }))
 
 import { runClaude } from '@testdouble/claude-integration'
-import { getResultText, parseStreamJsonLines } from '@testdouble/harness-data'
+import { getResultText, parseStreamJsonLines } from '@testdouble/skillwalker-data'
 import type { ImproveDescriptionOptions } from './step-7-improve-description.js'
 import { improveDescription } from './step-7-improve-description.js'
 

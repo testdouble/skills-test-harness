@@ -20,11 +20,11 @@ At the end of every iteration, ACIL prints a progress summary. When the loop exi
 
 ## Prerequisites
 
-`acil` uses the same Test Sandbox as `test-run`. Build the harness and set up the sandbox before running:
+`acil` uses the same Test Sandbox as `test-run`. Build Skillwalker and set up the sandbox before running:
 
 ```bash
 make build
-./build/harness sandbox-setup
+./build/skillwalker sandbox-setup
 ```
 
 ## Test Suite Requirements

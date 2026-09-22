@@ -1,4 +1,4 @@
-import type { IterationResult, QueryResult } from '@testdouble/harness-data'
+import type { IterationResult, QueryResult } from '@testdouble/skillwalker-data'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { printFinalSummary, printIterationProgress } from './print-report.js'
 

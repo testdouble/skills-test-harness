@@ -58,7 +58,7 @@ $1 $2 $3"; }
 for d in .git node_modules vendor __pycache__ .venv venv .bundle; do
   find "$DIR" -type d -name "$d" 2>/dev/null | sort | while IFS= read -r hit; do
     case "$d" in
-      .git) echo "error $hit .git directory; the harness runs git init itself" ;;
+      .git) echo "error $hit .git directory; Skillwalker runs git init itself" ;;
       *)    echo "error $hit dependency directory; remove it" ;;
     esac
   done

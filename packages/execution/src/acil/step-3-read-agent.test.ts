@@ -3,13 +3,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 vi.mock('node:fs/promises', () => ({
   readFile: vi.fn(),
 }))
-vi.mock('@testdouble/harness-data', () => ({
+vi.mock('@testdouble/skillwalker-data', () => ({
   parseDescription: vi.fn(),
 }))
 
 import { readFile } from 'node:fs/promises'
-import { parseDescription } from '@testdouble/harness-data'
-import { HarnessError } from '../lib/errors.js'
+import { parseDescription } from '@testdouble/skillwalker-data'
+import { SkillwalkerError } from '../lib/errors.js'
 import { readAgent } from './step-3-read-agent.js'
 
 beforeEach(() => {
@@ -40,10 +40,10 @@ describe('readAgent', () => {
     expect(result.description).toBe('No name agent')
   })
 
-  it('throws HarnessError when no frontmatter found', async () => {
+  it('throws SkillwalkerError when no frontmatter found', async () => {
     vi.mocked(readFile).mockResolvedValue('No frontmatter here')
 
-    await expect(readAgent('/path/to/agent.md')).rejects.toThrow(HarnessError)
+    await expect(readAgent('/path/to/agent.md')).rejects.toThrow(SkillwalkerError)
   })
 
   it('trims leading whitespace from body', async () => {

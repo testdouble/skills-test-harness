@@ -1,8 +1,8 @@
 import { existsSync } from 'node:fs'
 import path from 'node:path'
-import type { TestCase } from '@testdouble/harness-data'
-import { readTestSuiteConfig, TEST_CONFIG_FILENAME } from '@testdouble/harness-data'
-import { HarnessError } from '../lib/errors.js'
+import type { TestCase } from '@testdouble/skillwalker-data'
+import { readTestSuiteConfig, TEST_CONFIG_FILENAME } from '@testdouble/skillwalker-data'
+import { SkillwalkerError } from '../lib/errors.js'
 
 export interface ResolvedSkillAndTests {
   skillFile: string
@@ -28,7 +28,7 @@ export async function resolveAndLoad(
     const [pluginName, skillName] = skill.split(':')
     const skillMdPath = path.join(repoRoot, pluginName, 'skills', skillName, 'SKILL.md')
     if (!existsSync(skillMdPath)) {
-      throw new HarnessError(`SKILL.md not found: ${skillMdPath}`)
+      throw new SkillwalkerError(`SKILL.md not found: ${skillMdPath}`)
     }
 
     // Filter tests to those targeting this skill
@@ -40,7 +40,7 @@ export async function resolveAndLoad(
     })
 
     if (filtered.length === 0) {
-      throw new HarnessError(`No skill-call tests found for skill "${skill}" in suite "${suite}"`)
+      throw new SkillwalkerError(`No skill-call tests found for skill "${skill}" in suite "${suite}"`)
     }
 
     return { skillFile: skill, skillMdPath, tests: filtered }
@@ -57,12 +57,12 @@ export async function resolveAndLoad(
   }
 
   if (skillFiles.size === 0) {
-    throw new HarnessError(`No skill-call tests found in suite "${suite}"`)
+    throw new SkillwalkerError(`No skill-call tests found in suite "${suite}"`)
   }
 
   if (skillFiles.size > 1) {
     const options = Array.from(skillFiles).join(', ')
-    throw new HarnessError(`Multiple skills found in suite "${suite}": ${options}. Use --skill to specify one.`)
+    throw new SkillwalkerError(`Multiple skills found in suite "${suite}": ${options}. Use --skill to specify one.`)
   }
 
   const inferredSkill = Array.from(skillFiles)[0]
@@ -70,7 +70,7 @@ export async function resolveAndLoad(
   const skillMdPath = path.join(repoRoot, pluginName, 'skills', skillName, 'SKILL.md')
 
   if (!existsSync(skillMdPath)) {
-    throw new HarnessError(`SKILL.md not found: ${skillMdPath}`)
+    throw new SkillwalkerError(`SKILL.md not found: ${skillMdPath}`)
   }
 
   return { skillFile: inferredSkill, skillMdPath, tests: skillCallTests }

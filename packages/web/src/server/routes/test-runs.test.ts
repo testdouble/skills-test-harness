@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@testdouble/harness-data', () => ({
+vi.mock('@testdouble/skillwalker-data', () => ({
   queryTestRunSummaries: vi.fn(),
   queryTestRunDetails: vi.fn(),
 }))
 
-import { queryTestRunDetails, queryTestRunSummaries } from '@testdouble/harness-data'
+import { queryTestRunDetails, queryTestRunSummaries } from '@testdouble/skillwalker-data'
 import { getTestRunById, getTestRuns } from './test-runs.js'
 
 function makeMockContext(overrides?: { param?: Record<string, string> }) {

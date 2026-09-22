@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@testdouble/harness-data', () => ({
+vi.mock('@testdouble/skillwalker-data', () => ({
   ensureOutputDir: vi.fn(),
   appendTestConfig: vi.fn(),
   appendTestRun: vi.fn(),
   buildTestCaseId: vi.fn(),
 }))
 
-import { appendTestConfig, appendTestRun, buildTestCaseId, ensureOutputDir } from '@testdouble/harness-data'
+import { appendTestConfig, appendTestRun, buildTestCaseId, ensureOutputDir } from '@testdouble/skillwalker-data'
 import { writeTestOutput } from './output.js'
 
 const mockTest = {

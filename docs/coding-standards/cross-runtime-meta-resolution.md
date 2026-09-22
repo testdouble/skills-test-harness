@@ -15,7 +15,7 @@ This coding standard defines how to resolve the current file's directory path us
 
 ### Purpose
 
-The test harness runs production code under Bun but executes tests under Vitest (which uses Node). Additionally, the CLI and web binaries are compiled via `bun build --compile`, which introduces a third runtime context where `import.meta.dir` resolves to a virtual `/$bunfs/root` path. Bun provides `import.meta.dir` for the current file's directory, but this property is `undefined` in Vitest. Conversely, `import.meta.dirname` works in Node/Vitest but is not always available in Bun. In compiled binaries, `import.meta.dir` resolves to `/$bunfs/root` for ALL bundled modules regardless of their original source location, making relative path resolution produce nonexistent virtual paths. Without a consistent resolution strategy, code that derives paths from `import.meta` will break in one or more of these contexts.
+Skillwalker runs production code under Bun but executes tests under Vitest (which uses Node). Additionally, the CLI and web binaries are compiled via `bun build --compile`, which introduces a third runtime context where `import.meta.dir` resolves to a virtual `/$bunfs/root` path. Bun provides `import.meta.dir` for the current file's directory, but this property is `undefined` in Vitest. Conversely, `import.meta.dirname` works in Node/Vitest but is not always available in Bun. In compiled binaries, `import.meta.dir` resolves to `/$bunfs/root` for ALL bundled modules regardless of their original source location, making relative path resolution produce nonexistent virtual paths. Without a consistent resolution strategy, code that derives paths from `import.meta` will break in one or more of these contexts.
 
 ### Scope
 
@@ -149,7 +149,7 @@ The caller must pass `import.meta` directly because `import.meta` is scoped to t
 
 ### Handle Compiled Binary Path Resolution
 
-When the harness is compiled via `bun build --compile`, all modules are bundled into a single executable. In this context, `import.meta.dir` resolves to `/$bunfs/root` for every module — it does not preserve the original source file's directory. This means any path resolved relative to `import.meta.dir` will point to a nonexistent `$bunfs` virtual path.
+When Skillwalker is compiled via `bun build --compile`, all modules are bundled into a single executable. In this context, `import.meta.dir` resolves to `/$bunfs/root` for every module — it does not preserve the original source file's directory. This means any path resolved relative to `import.meta.dir` will point to a nonexistent `$bunfs` virtual path.
 
 The `resolveRelativePath` helper handles this by accepting a second path (`compiledPath`) that is relative to the directory containing the compiled binary. The compiled binary's location is determined via `process.execPath`. `scripts/build.ts` compiles binaries into `build/` and copies every runtime asset in beside them, so `compiledPath` is the asset's bare filename. Adding a new asset means listing it in that script's `RUNTIME_ASSETS` as well as passing its name here.
 

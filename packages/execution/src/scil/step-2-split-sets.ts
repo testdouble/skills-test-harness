@@ -1,1 +1,1 @@
-export { splitSets } from '@testdouble/harness-data'
+export { splitSets } from '@testdouble/skillwalker-data'

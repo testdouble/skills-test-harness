@@ -1,5 +1,5 @@
 import { resolvePluginDirs } from '@testdouble/claude-integration'
-import type { TestSuiteConfig } from '@testdouble/harness-data'
+import type { TestSuiteConfig } from '@testdouble/skillwalker-data'
 import { describe, expect, it, vi } from 'vitest'
 import { buildFlags } from './step-6-build-flags.js'
 
