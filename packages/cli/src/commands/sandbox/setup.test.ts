@@ -5,7 +5,7 @@ vi.mock('@testdouble/sandbox-integration', () => ({
 }))
 
 import { createSandbox } from '@testdouble/sandbox-integration'
-import { command, describe as commandDescribe, handler } from './setup.js'
+import { builder, command, describe as commandDescribe, handler } from './setup.js'
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -24,6 +24,25 @@ describe('sandbox setup command exports', () => {
   it('exports a non-empty describe string', () => {
     expect(typeof commandDescribe).toBe('string')
     expect(commandDescribe.length).toBeGreaterThan(0)
+  })
+})
+
+describe('sandbox setup builder', () => {
+  function buildOptions() {
+    const options: Record<string, unknown> = {}
+    const fakeYargs = {
+      option(name: string, opts: unknown) {
+        options[name] = opts
+        return fakeYargs
+      },
+    } as any
+    builder(fakeYargs)
+    return options
+  }
+
+  it('configures repo-root with default process.cwd()', () => {
+    const options = buildOptions()
+    expect(options['repo-root']).toMatchObject({ type: 'string', default: process.cwd() })
   })
 })
 
