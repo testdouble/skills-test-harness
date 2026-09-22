@@ -1077,7 +1077,47 @@ describe('infrastructure-error filtering', () => {
     // The infrastructure-error record should still appear in llmJudgeGroups
     expect(details.llmJudgeGroups).toHaveLength(1)
     expect(details.llmJudgeGroups[0].passed).toBe(false)
-    expect(Number(details.llmJudgeGroups[0].score)).toBe(0)
+    expect(details.llmJudgeGroups[0].score).toBe(0)
+  })
+})
+
+describe('queryTestRunDetails (whole-number judge values)', () => {
+  it('returns judge score and threshold as JSON-serializable numbers', async () => {
+    const outputDir = path.join(tmpDir, 'output')
+    const dataDir = path.join(tmpDir, 'analytics')
+
+    const runId = '20260101T100004'
+    const runDir = path.join(outputDir, runId)
+
+    await writeJsonl(path.join(runDir, 'test-config.jsonl'), [
+      makeConfigRecord({ testRunId: runId, eval: 's', testName: 'my test' }),
+    ])
+    await writeJsonl(path.join(runDir, 'test-run.jsonl'), [
+      makeRunResultRecord({ testRunId: runId, eval: 's', testName: 'my test' }),
+    ])
+    // whole numbers are written to JSONL without a decimal point, so DuckDB infers BIGINT
+    await writeJsonl(path.join(runDir, 'test-results.jsonl'), [
+      makeResultRecord({
+        testRunId: runId,
+        eval: 's',
+        testName: 'my test',
+        expectType: 'llm-judge-aggregate',
+        expectValue: 'rubric.md',
+        passed: true,
+        judgeModel: 'opus',
+        judgeThreshold: 1,
+        judgeScore: 1,
+        rubricFile: 'rubric.md',
+      }),
+    ])
+
+    await updateAllParquet({ outputDir, dataDir })
+    const details = await queryTestRunDetails(dataDir, runId)
+
+    expect(details.llmJudgeGroups).toHaveLength(1)
+    expect(details.llmJudgeGroups[0].score).toBe(1)
+    expect(details.llmJudgeGroups[0].threshold).toBe(1)
+    expect(() => JSON.stringify(details)).not.toThrow()
   })
 })
 
