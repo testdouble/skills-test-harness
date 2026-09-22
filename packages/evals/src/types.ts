@@ -3,7 +3,7 @@ export type EvalResult = BooleanEvalResult | LlmJudgeEvalResult
 export interface BooleanEvalResult {
   kind: 'boolean'
   test_run_id: string
-  suite: string
+  eval: string
   test_name: string
   expect_type: 'result-contains' | 'result-does-not-contain' | 'skill-call'
   expect_value: string
@@ -15,7 +15,7 @@ export interface BooleanEvalResult {
 export interface LlmJudgeEvalResult {
   kind: 'llm-judge'
   test_run_id: string
-  suite: string
+  eval: string
   test_name: string
   expect_type: 'llm-judge'
   expect_value: string

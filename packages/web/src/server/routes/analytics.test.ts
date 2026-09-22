@@ -21,8 +21,8 @@ function makeMockContext(query?: Record<string, string | undefined>) {
 }
 
 const fixtureRows = [
-  { test_run_id: 'run-1', suite: 'suite-a', test_name: 'test 1' },
-  { test_run_id: 'run-2', suite: 'suite-b', test_name: 'test 2' },
+  { test_run_id: 'run-1', eval: 'eval-a', test_name: 'test 1' },
+  { test_run_id: 'run-2', eval: 'eval-b', test_name: 'test 2' },
 ]
 
 beforeEach(() => {
@@ -31,23 +31,23 @@ beforeEach(() => {
 })
 
 describe('getPerTestAnalytics', () => {
-  it('returns all rows when no suite filter is provided', async () => {
+  it('returns all rows when no eval filter is provided', async () => {
     const { c, jsonMock } = makeMockContext()
     await getPerTestAnalytics(c, '/data')
     const { rows } = jsonMock.mock.calls[0][0] as { rows: any[] }
     expect(rows).toHaveLength(2)
   })
 
-  it('filters rows by suite when suite query param is provided', async () => {
-    const { c, jsonMock } = makeMockContext({ suite: 'suite-a' })
+  it('filters rows by eval when eval query param is provided', async () => {
+    const { c, jsonMock } = makeMockContext({ eval: 'eval-a' })
     await getPerTestAnalytics(c, '/data')
     const { rows } = jsonMock.mock.calls[0][0] as { rows: any[] }
     expect(rows).toHaveLength(1)
-    expect(rows[0].suite).toBe('suite-a')
+    expect(rows[0].eval).toBe('eval-a')
   })
 
-  it('returns empty rows when suite filter matches nothing', async () => {
-    const { c, jsonMock } = makeMockContext({ suite: 'nonexistent-suite' })
+  it('returns empty rows when eval filter matches nothing', async () => {
+    const { c, jsonMock } = makeMockContext({ eval: 'nonexistent-eval' })
     await getPerTestAnalytics(c, '/data')
     const { rows } = jsonMock.mock.calls[0][0] as { rows: any[] }
     expect(rows).toHaveLength(0)

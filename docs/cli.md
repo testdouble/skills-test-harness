@@ -102,10 +102,10 @@ The CLI catches `SkillwalkerError` at the top level (`index.ts`) and writes the 
 
 | Option | Command | Description | Default |
 |--------|---------|-------------|---------|
-| `--suite` | `test-run` | Test suite name (omit to run all) | all suites |
+| `--eval` | `test-run` | Eval name (omit to run all) | all evals |
 | `--test` | `test-run` | Filter to single test by name | none |
 | `--debug` | `test-run`, `test-eval`, `scil` | Show sandbox/debug output | `false` |
-| `--suite` | `scil`, `acil` | Test suite name (required) | none |
+| `--eval` | `scil`, `acil` | Eval name (required) | none |
 | `--skill` | `scil` | Target skill in `plugin:skill` format | inferred |
 | `--agent` | `acil` | Target agent in `plugin:agent` format | inferred |
 | `--max-iterations` | `scil`, `acil` | Maximum improvement iterations | `5` |
@@ -119,7 +119,7 @@ The CLI catches `SkillwalkerError` at the top level (`index.ts`) and writes the 
 
 ## Testing
 
-- `packages/cli/src/paths.test.ts` — Tests `createPathConfig` and `getAllTestSuites`
+- `packages/cli/src/paths.test.ts` — Tests `createPathConfig` and `getAllEvals`
 - `packages/cli/src/commands/test-run.test.ts` — Tests `test-run` command builder and handler
 - `packages/cli/src/commands/test-eval.test.ts` — Tests `test-eval` command builder and handler
 - `packages/cli/src/commands/scil.test.ts` — Tests `scil` command builder and handler
@@ -136,7 +136,7 @@ Test files are co-located with their source files. Tests use Vitest with the sta
 
 - [Execution Package](./execution.md) — Execution orchestration layer that the CLI delegates to (test-run, test-eval, SCIL pipelines, error hierarchy, path config)
 - [Skillwalker Architecture](./skillwalker-architecture.md) — System-wide architecture, package boundaries, and data flow
-- [Test Suite Reference](./test-suite-reference.md) — How `tests.json` files are structured
+- [Evals Reference](./evals-reference.md) — How `tests.json` files are structured
 - [Sandbox Integration](./sandbox-integration.md) — Test Sandbox API and consumer patterns
 - [Skill Call Improvement Loop](./skill-call-improvement-loop.md) — Detailed SCIL algorithm and design
 - [Parquet Schema](./parquet-schema.md) — Schema for analytics data produced by `update-analytics-data`

@@ -1,4 +1,4 @@
-import type { RunTotals, TestCase, TestSuiteConfig } from '@testdouble/skillwalker-data'
+import type { RunTotals, TestCase, EvalConfig } from '@testdouble/skillwalker-data'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { runAgentCallTests } from './index.js'
 
@@ -6,7 +6,7 @@ vi.mock('@testdouble/skillwalker-data', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@testdouble/skillwalker-data')>()
   return {
     ...actual,
-    resolvePromptPath: vi.fn((_dir: string, file: string) => `/mock/suite/${file}`),
+    resolvePromptPath: vi.fn((_dir: string, file: string) => `/mock/eval/${file}`),
     readPromptFile: vi.fn().mockResolvedValue('test prompt content'),
     parseStreamJsonLines: vi.fn().mockReturnValue([]),
     extractMetrics: vi.fn().mockReturnValue({
@@ -48,7 +48,7 @@ import { buildTempAgentPlugin } from './build-temp-plugin.js'
 
 const defaultTotals: RunTotals = { totalDurationMs: 0, totalInputTokens: 0, totalOutputTokens: 0, failures: 0 }
 
-const mockConfig: TestSuiteConfig = {
+const mockConfig: EvalConfig = {
   plugins: ['r-and-d'],
   tests: [],
 }
@@ -82,7 +82,7 @@ describe('runAgentCallTests', () => {
       [test],
       mockConfig,
       'gap-analysis',
-      '/mock/suite',
+      '/mock/eval',
       false,
       'run-001',
       { ...defaultTotals },
@@ -99,7 +99,7 @@ describe('runAgentCallTests', () => {
       [test],
       mockConfig,
       'gap-analysis',
-      '/mock/suite',
+      '/mock/eval',
       false,
       'run-001',
       { ...defaultTotals },
@@ -122,7 +122,7 @@ describe('runAgentCallTests', () => {
       [test],
       mockConfig,
       'gap-analysis',
-      '/mock/suite',
+      '/mock/eval',
       false,
       'run-001',
       { ...defaultTotals },
@@ -140,7 +140,7 @@ describe('runAgentCallTests', () => {
       [test],
       mockConfig,
       'gap-analysis',
-      '/mock/suite',
+      '/mock/eval',
       false,
       'run-001',
       { ...defaultTotals },
@@ -149,7 +149,7 @@ describe('runAgentCallTests', () => {
     )
 
     const claudeCall = vi.mocked(runClaude).mock.calls[0][0]
-    expect(claudeCall.scaffold).toBe('/mock/suite/scaffolds/my-scaffold')
+    expect(claudeCall.scaffold).toBe('/mock/eval/scaffolds/my-scaffold')
   })
 
   it('prints agentFile in test config output', async () => {
@@ -158,7 +158,7 @@ describe('runAgentCallTests', () => {
       [test],
       mockConfig,
       'gap-analysis',
-      '/mock/suite',
+      '/mock/eval',
       false,
       'run-001',
       { ...defaultTotals },
@@ -176,7 +176,7 @@ describe('runAgentCallTests', () => {
       [test],
       mockConfig,
       'gap-analysis',
-      '/mock/suite',
+      '/mock/eval',
       false,
       'run-001',
       { ...defaultTotals },
@@ -203,7 +203,7 @@ describe('runAgentCallTests', () => {
       tests,
       mockConfig,
       'gap-analysis',
-      '/mock/suite',
+      '/mock/eval',
       false,
       'run-001',
       { ...defaultTotals },
@@ -222,7 +222,7 @@ describe('runAgentCallTests', () => {
       [test],
       mockConfig,
       'gap-analysis',
-      '/mock/suite',
+      '/mock/eval',
       false,
       'run-001',
       { ...defaultTotals },
@@ -247,7 +247,7 @@ describe('runAgentCallTests', () => {
       [test],
       mockConfig,
       'gap-analysis',
-      '/mock/suite',
+      '/mock/eval',
       false,
       'run-001',
       { ...defaultTotals },
@@ -273,7 +273,7 @@ describe('runAgentCallTests', () => {
       [test],
       mockConfig,
       'gap-analysis',
-      '/mock/suite',
+      '/mock/eval',
       false,
       'run-001',
       { ...defaultTotals },
@@ -293,7 +293,7 @@ describe('runAgentCallTests', () => {
       tests,
       mockConfig,
       'gap-analysis',
-      '/mock/suite',
+      '/mock/eval',
       false,
       'run-001',
       { ...defaultTotals },
@@ -312,7 +312,7 @@ describe('runAgentCallTests', () => {
       [test],
       mockConfig,
       'gap-analysis',
-      '/mock/suite',
+      '/mock/eval',
       false,
       'run-001',
       incomingTotals,
@@ -329,7 +329,7 @@ describe('runAgentCallTests', () => {
       [test],
       mockConfig,
       'gap-analysis',
-      '/mock/suite',
+      '/mock/eval',
       true,
       'run-001',
       { ...defaultTotals },
@@ -346,7 +346,7 @@ describe('runAgentCallTests', () => {
       [],
       mockConfig,
       'gap-analysis',
-      '/mock/suite',
+      '/mock/eval',
       false,
       'run-001',
       { ...defaultTotals },
@@ -367,7 +367,7 @@ describe('runAgentCallTests', () => {
         [test],
         mockConfig,
         'gap-analysis',
-        '/mock/suite',
+        '/mock/eval',
         false,
         'run-001',
         { ...defaultTotals },

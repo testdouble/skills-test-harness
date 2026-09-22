@@ -7,7 +7,7 @@ vi.mock('node:fs/promises', () => ({
 }))
 
 vi.mock('@testdouble/skillwalker-data', () => ({
-  buildTestCaseId: vi.fn((suite: string, name: string) => `${suite}-${name}`),
+  buildTestCaseId: vi.fn((evalName: string, name: string) => `${evalName}-${name}`),
   getResultText: vi.fn(),
   parseStreamJsonLines: vi.fn(),
   readJsonlFile: vi.fn(),
@@ -34,7 +34,7 @@ const { buildJudgePrompt } = await import('./llm-judge-prompt.js')
 function makeJudgeConfig(overrides?: Partial<TestConfigRecord>): TestConfigRecord {
   return {
     test_run_id: '20260327T120000',
-    suite: 'test-suite',
+    eval: 'eval',
     plugins: [],
     test: {
       name: 'my test',
@@ -55,7 +55,7 @@ describe('evaluateLlmJudge', () => {
     vi.mocked(readFile).mockRejectedValue(new Error('rubric file not found'))
 
     const config = makeJudgeConfig()
-    const results = await evaluateLlmJudge(config, [], '20260327T120000', '/fake/suite', '/fake/run')
+    const results = await evaluateLlmJudge(config, [], '20260327T120000', '/fake/eval', '/fake/run')
 
     expect(results).toHaveLength(1)
     const result = results[0]
@@ -75,7 +75,7 @@ describe('evaluateLlmJudge', () => {
     vi.mocked(runClaude).mockRejectedValue(new Error('sandbox timeout'))
 
     const config = makeJudgeConfig()
-    const results = await evaluateLlmJudge(config, [], '20260327T120000', '/fake/suite', '/fake/run')
+    const results = await evaluateLlmJudge(config, [], '20260327T120000', '/fake/eval', '/fake/run')
 
     expect(results).toHaveLength(1)
     expect(results[0].status).toBe('infrastructure-error')
@@ -96,7 +96,7 @@ describe('evaluateLlmJudge', () => {
     vi.mocked(parseStreamJsonLines).mockReturnValue([])
 
     const config = makeJudgeConfig()
-    const results = await evaluateLlmJudge(config, [], '20260327T120000', '/fake/suite', '/fake/run')
+    const results = await evaluateLlmJudge(config, [], '20260327T120000', '/fake/eval', '/fake/run')
 
     expect(results).toHaveLength(1)
     const result = results[0]
@@ -116,7 +116,7 @@ describe('evaluateLlmJudge', () => {
   it('returns empty array when no llm-judge expectations exist', async () => {
     const config: TestConfigRecord = {
       test_run_id: '20260327T120000',
-      suite: 'test-suite',
+      eval: 'eval',
       plugins: [],
       test: {
         name: 'my test',
@@ -124,7 +124,7 @@ describe('evaluateLlmJudge', () => {
         expect: [{ type: 'result-contains', value: 'hello' }],
       },
     }
-    const results = await evaluateLlmJudge(config, [], '20260327T120000', '/fake/suite', '/fake/run')
+    const results = await evaluateLlmJudge(config, [], '20260327T120000', '/fake/eval', '/fake/run')
     expect(results).toEqual([])
   })
 
@@ -149,7 +149,7 @@ describe('evaluateLlmJudge', () => {
         expect: [{ type: 'llm-judge', rubricFile: 'rubric.md', model: 'opus', threshold: 1.0 }],
       },
     })
-    await evaluateLlmJudge(config, [], '20260327T120000', '/fake/suite', '/fake/run')
+    await evaluateLlmJudge(config, [], '20260327T120000', '/fake/eval', '/fake/run')
 
     expect(buildJudgePrompt).toHaveBeenCalledWith(
       [{ type: 'transcript', criteria: ['criterion one'] }],
@@ -166,7 +166,7 @@ describe('evaluateLlmJudge', () => {
     vi.mocked(parseRubricSections).mockReturnValue([])
 
     const config = makeJudgeConfig()
-    const results = await evaluateLlmJudge(config, [], '20260327T120000', '/fake/suite', '/fake/run')
+    const results = await evaluateLlmJudge(config, [], '20260327T120000', '/fake/eval', '/fake/run')
 
     expect(results).toHaveLength(1)
     expect(results[0].status).toBe('infrastructure-error')
@@ -177,7 +177,7 @@ describe('evaluateLlmJudge', () => {
     vi.mocked(readJsonlFile).mockResolvedValue([
       {
         test_run_id: '20260327T120000',
-        test_name: 'test-suite-my test',
+        test_name: 'eval-my test',
         file_path: 'docs/output.md',
         file_content: '# Analysis',
       },
@@ -196,7 +196,7 @@ describe('evaluateLlmJudge', () => {
     vi.mocked(parseStreamJsonLines).mockReturnValue([])
 
     const config = makeJudgeConfig()
-    const results = await evaluateLlmJudge(config, [], '20260327T120000', '/fake/suite', '/fake/run')
+    const results = await evaluateLlmJudge(config, [], '20260327T120000', '/fake/eval', '/fake/run')
 
     expect(buildJudgePrompt).toHaveBeenCalledWith(
       expect.anything(),
@@ -223,7 +223,7 @@ describe('evaluateLlmJudge', () => {
     })
 
     const config = makeJudgeConfig()
-    const results = await evaluateLlmJudge(config, [], '20260327T120000', '/fake/suite', '/fake/run')
+    const results = await evaluateLlmJudge(config, [], '20260327T120000', '/fake/eval', '/fake/run')
 
     expect(results).toHaveLength(1)
     const result = results[0]

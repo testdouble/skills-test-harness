@@ -32,12 +32,12 @@ export interface TestCase {
   skillFile?: string
   agentFile?: string
   model?: string // defaults to "sonnet" when absent
-  scaffold?: string // name of scaffolds/{name}/ directory in test suite
+  scaffold?: string // name of scaffolds/{name}/ directory in eval
   expect: TestExpectation[]
 }
 
 // Top-level tests.json structure
-export interface TestSuiteConfig {
+export interface EvalConfig {
   plugins: string[]
   tests: TestCase[]
 }
@@ -108,7 +108,7 @@ export interface ExpectationResult {
 // JSONL record shapes written to output/{runId}/*.jsonl
 export interface TestConfigRecord {
   test_run_id: string
-  suite: string
+  eval: string
   plugins: string[]
   test: TestCase
 }
@@ -120,7 +120,7 @@ export type TestRunRecord = StreamJsonEvent & {
 
 export interface TestResultRecord {
   test_run_id: string
-  suite: string
+  eval: string
   test_name: string
   expect_type: string
   expect_value: string
@@ -310,7 +310,7 @@ export interface AcilSummaryRecord {
 // Test run summary — aggregated view of a test run
 export interface TestRunSummary {
   test_run_id: string
-  suite: string
+  eval: string
   date: string
   total_tests: number
   passed: number
@@ -321,7 +321,7 @@ export interface TestRunSummary {
 export interface PerTestRow {
   test_run_id: string
   test_name: string
-  suite: string
+  eval: string
   all_expectations_passed: boolean
   total_cost_usd: number
   num_turns: number
@@ -335,7 +335,7 @@ export interface TestRunDetailRow extends PerTestRow {
 
 export interface TestRunExpectationRow {
   test_run_id: string
-  suite: string
+  eval: string
   test_name: string
   expect_type: string
   expect_value: string

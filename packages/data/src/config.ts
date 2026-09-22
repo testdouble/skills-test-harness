@@ -1,17 +1,17 @@
 import { existsSync } from 'node:fs'
 import path from 'node:path'
-import type { TestExpectation, TestSuiteConfig } from './types.js'
+import type { TestExpectation, EvalConfig } from './types.js'
 
 const VALID_TEST_TYPES = ['skill-prompt', 'skill-call', 'agent-call', 'agent-prompt'] as const
 
-export async function readTestSuiteConfig(configFilePath: string): Promise<TestSuiteConfig> {
+export async function readEvalConfig(configFilePath: string): Promise<EvalConfig> {
   const file = Bun.file(configFilePath)
   if (!(await file.exists())) {
     throw new Error(`Config file not found: ${configFilePath}`)
   }
-  let config: TestSuiteConfig
+  let config: EvalConfig
   try {
-    config = JSON.parse(await file.text()) as TestSuiteConfig
+    config = JSON.parse(await file.text()) as EvalConfig
   } catch (e) {
     throw new Error(`Invalid JSON in config file: ${configFilePath}: ${e}`)
   }
@@ -95,8 +95,8 @@ export async function readTestSuiteConfig(configFilePath: string): Promise<TestS
   return config
 }
 
-export function resolvePromptPath(testSuiteDir: string, promptFile: string): string {
-  return path.join(testSuiteDir, 'prompts', promptFile)
+export function resolvePromptPath(evalDir: string, promptFile: string): string {
+  return path.join(evalDir, 'prompts', promptFile)
 }
 
 export async function readPromptFile(promptPath: string): Promise<string> {
@@ -107,15 +107,15 @@ export async function readPromptFile(promptPath: string): Promise<string> {
   return file.text()
 }
 
-export function buildTestCaseId(suite: string, testName: string): string {
+export function buildTestCaseId(evalName: string, testName: string): string {
   const normalized = testName.replace(/ /g, '-').replace(/[^a-zA-Z0-9-]/g, '')
-  return `${suite}-${normalized}`
+  return `${evalName}-${normalized}`
 }
 
-export function validateScaffolds(testSuiteDir: string, config: TestSuiteConfig): void {
+export function validateScaffolds(evalDir: string, config: EvalConfig): void {
   for (const test of config.tests) {
     if (test.scaffold) {
-      const scaffoldPath = path.join(testSuiteDir, 'scaffolds', test.scaffold)
+      const scaffoldPath = path.join(evalDir, 'scaffolds', test.scaffold)
       if (!existsSync(scaffoldPath)) {
         throw new Error(`Scaffold directory not found: ${scaffoldPath} (test "${test.name}")`)
       }

@@ -1,26 +1,26 @@
 ---
-name: audit-eval-suite
-description: "Audits an existing eval suite against the current state of the skill or agent it tests and reports drift. Given a plugin:skill or plugin:agent identifier, validates tests/test-suites/{name}/ structurally, then compares the target's current description, checks, references, and dispatched agents against the suite's prompts, rubric criteria, scaffold signals, and expectations to find criteria the target no longer checks for, checks the scaffold never exercises, prompts that contradict the description's current boundaries, and siblings added since the suite was written. Use when a skill or agent changed and its evals may be stale, when a suite fails or passes unexpectedly, or before trusting SCIL, ACIL, or judge scores. Reports only and names the write-* or build-* skill that fixes each finding; does not edit the suite."
+name: audit-evals
+description: "Audits an existing eval against the current state of the skill or agent it tests and reports drift. Given a plugin:skill or plugin:agent identifier, validates evals/{name}/ structurally, then compares the target's current description, checks, references, and dispatched agents against the eval's prompts, rubric criteria, scaffold signals, and expectations to find criteria the target no longer checks for, checks the scaffold never exercises, prompts that contradict the description's current boundaries, and siblings added since the eval was written. Use when a skill or agent changed and its evals may be stale, when an eval fails or passes unexpectedly, or before trusting SCIL, ACIL, or judge scores. Reports only and names the write-* or build-* skill that fixes each finding; does not edit the eval."
 argument-hint: "[plugin:skill or plugin:agent] e.g. example-plugin:code-review"
 allowed-tools: Read, Glob, Grep
 ---
 
-Find the places where an eval suite and the skill or agent it tests have drifted apart. A run follows stale evals faithfully: a rubric criterion for a check the skill dropped fails every run, a scaffold signal the skill no longer looks for inflates nothing, and a positive prompt that a new boundary clause now excludes is scored as a miss. Each looks like a target regression when it is a suite regression. This skill compares both sides and says which is which, so the suite can be repaired with the skill that owns each artifact.
+Find the places where an eval and the skill or agent it tests have drifted apart. A run follows stale evals faithfully: a rubric criterion for a check the skill dropped fails every run, a scaffold signal the skill no longer looks for inflates nothing, and a positive prompt that a new boundary clause now excludes is scored as a miss. Each looks like a target regression when it is an eval regression. This skill compares both sides and says which is which, so the eval can be repaired with the skill that owns each artifact.
 
 ## Constraints
 
-- Report only; never edit the suite or the target BECAUSE each artifact has an owning skill (write-scil-evals, write-acil-evals, write-skill-eval-rubric, write-agent-eval-rubric, build-skill-eval-scaffold, build-agent-eval-scaffold), and an audit that also edits leaves no clean record of what drifted.
-- Every drift finding cites both sides — the target file and line or clause, and the suite file and criterion, prompt, or scaffold path — BECAUSE a drift claim with one side cannot be verified.
+- Report only; never edit the eval or the target BECAUSE each artifact has an owning skill (write-scil-evals, write-acil-evals, write-skill-eval-rubric, write-agent-eval-rubric, build-skill-eval-scaffold, build-agent-eval-scaffold), and an audit that also edits leaves no clean record of what drifted.
+- Every drift finding cites both sides — the target file and line or clause, and the eval file and criterion, prompt, or scaffold path — BECAUSE a drift claim with one side cannot be verified.
 - Report only drift that changes what a run would score; leave wording differences alone BECAUSE a long list of cosmetic notes hides the findings that matter.
-- Keep the report proportional: one line per finding, evidence in the line, no restating the suite back to the user.
+- Keep the report proportional: one line per finding, evidence in the line, no restating the eval back to the user.
 
 ## Step 1: Identify the target
 
 If the user provided a `plugin:name` argument, use it. If no argument was provided, ask which plugin:skill or plugin:agent to audit and stop until they answer.
 
-Validate the argument format: exactly one colon, both parts non-empty and matching `^[a-z0-9-]+$`. Then run `${CLAUDE_SKILL_DIR}/scripts/collect-target-inputs.sh {plugin} {name}` from the repository root. It resolves the name as a skill first, then as an agent, and prints `target-type`, `target-file`, `suite-dir`, `suite-exists`, the reference files between `reference-files-start` and `reference-files-end`, dispatched agents between `agents-start` and `agents-end` as `{agent-plugin}:{agent} {path} {found|missing}`, and every other skill and agent in the plugin between `siblings-start` and `siblings-end`. If it reports `status: error`, show the `reason` and ask the user to correct the input.
+Validate the argument format: exactly one colon, both parts non-empty and matching `^[a-z0-9-]+$`. Then run `${CLAUDE_SKILL_DIR}/scripts/collect-target-inputs.sh {plugin} {name}` from the repository root. It resolves the name as a skill first, then as an agent, and prints `target-type`, `target-file`, `eval-dir`, `eval-exists`, the reference files between `reference-files-start` and `reference-files-end`, dispatched agents between `agents-start` and `agents-end` as `{agent-plugin}:{agent} {path} {found|missing}`, and every other skill and agent in the plugin between `siblings-start` and `siblings-end`. If it reports `status: error`, show the `reason` and ask the user to correct the input.
 
-If `suite-exists: false`, tell the user there is nothing to audit and name the skill that creates the suite — `write-scil-evals` or `write-skill-eval-rubric` for a skill, `write-acil-evals` or `write-agent-eval-rubric` for an agent — then stop.
+If `eval-exists: false`, tell the user there is nothing to audit and name the skill that creates the eval — `write-scil-evals` or `write-skill-eval-rubric` for a skill, `write-acil-evals` or `write-agent-eval-rubric` for an agent — then stop.
 
 Read the `target-file`, every reference file, and every agent marked `found`. Build the target's current profile:
 
@@ -29,11 +29,11 @@ Read the `target-file`, every reference file, and every agent marked `found`. Bu
 - **Output shape** — headings and sections the template or instructions guarantee, and any output file paths
 - **Missing agents** — any line marked `missing`; that is drift inside the target itself
 
-## Step 2: Validate the suite structurally
+## Step 2: Validate the eval structurally
 
-Run `${CLAUDE_SKILL_DIR}/scripts/validate-suite.sh {suite-dir}`. It re-checks what Skillwalker checks at load time and prints one finding per line between `findings-start` and `findings-end`. Every finding goes into the report's first section as-is; a structural error stops Skillwalker before any drift matters.
+Run `${CLAUDE_SKILL_DIR}/scripts/validate-eval.sh {eval-dir}`. It re-checks what Skillwalker checks at load time and prints one finding per line between `findings-start` and `findings-end`. Every finding goes into the report's first section as-is; a structural error stops Skillwalker before any drift matters.
 
-## Step 3: Read the suite
+## Step 3: Read the eval
 
 Read `tests.json` and group the entries by type. Then read every prompt file, every rubric under `rubrics/`, and every file of every scaffold under `scaffolds/` that a test references. For each scaffold, list the signals or cues it plants — the concrete problems in its files, or the context cues in `CLAUDE.md`, README, and top-level names — with the file that carries each.
 
@@ -61,9 +61,9 @@ Fixes, by artifact:
 
 Present the report in the conversation, in this order:
 
-1. **Verdict** — one sentence: whether the suite's scores can be trusted as they stand, and how many findings at each severity
+1. **Verdict** — one sentence: whether the eval's scores can be trusted as they stand, and how many findings at each severity
 2. **Structural** — the validator's findings, verbatim, or "none"
-3. **Breaks scoring** — one line each: `{artifact}: {suite-side evidence} — target now {target-side evidence} → {fix command}`
+3. **Breaks scoring** — one line each: `{artifact}: {eval-side evidence} — target now {target-side evidence} → {fix command}`
 4. **Weakens scoring** — same form
 5. **Coverage gaps** — same form
 6. **Repair order** — the fix commands to run, in dependency order: scaffold first (criteria and prompts reference it), then rubric, then prompts

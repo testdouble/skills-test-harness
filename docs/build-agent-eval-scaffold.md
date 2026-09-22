@@ -2,7 +2,7 @@
 
 > **Tier 3 · Skill/agent authors building evals.** The `/build-agent-eval-scaffold` skill generates a realistic project fixture for evaluating a Claude Code agent — planted signals for rubric (effectiveness) evaluation by default, or repo context cues for trigger accuracy with `--for trigger`; you need a target `plugin:agent` already defined.
 
-Run `/build-agent-eval-scaffold` to generate a realistic project scaffold an agent can be evaluated against. Given a `plugin:agent` identifier and an optional project description, it analyzes the target agent's definition file to understand what inputs it expects and what signals it looks for, then interviews you in structured phases before writing a scaffold at `tests/test-suites/{agent}/scaffolds/{name}/`. Run it before writing rubric criteria with `/write-agent-eval-rubric`.
+Run `/build-agent-eval-scaffold` to generate a realistic project scaffold an agent can be evaluated against. Given a `plugin:agent` identifier and an optional project description, it analyzes the target agent's definition file to understand what inputs it expects and what signals it looks for, then interviews you in structured phases before writing a scaffold at `evals/{agent}/scaffolds/{name}/`. Run it before writing rubric criteria with `/write-agent-eval-rubric`.
 
 ## When to use this skill
 
@@ -37,7 +37,7 @@ If no argument is provided, the skill will ask which `plugin:agent` to build a s
 The skill creates a scaffold directory containing realistic project files:
 
 ```
-tests/test-suites/{agent-name}/
+evals/{agent-name}/
   scaffolds/
     {scaffold-name}/
       src/
@@ -112,7 +112,7 @@ After generating the scaffold, you can:
 
 2. **Run the tests** to produce output for the judge to evaluate:
    ```bash
-   ./build/skillwalker test-run --suite {agent-name}
+   ./build/skillwalker test-run --eval {agent-name}
    ```
 
 3. **Evaluate results**:
@@ -124,7 +124,7 @@ After generating the scaffold, you can:
 
 - [Building Rubric Evals](rubric-evals-guide.md) — step-by-step guide covering the full workflow from scaffolds to rubric evaluation
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context inside the Test Sandbox
-- [Test Suite Reference](test-suite-reference.md) — full tests.json field reference
+- [Evals Reference](evals-reference.md) — full tests.json field reference
 - [Writing Agent Eval Rubrics](write-agent-eval-rubric.md) — the `/write-agent-eval-rubric` skill: workflow, criteria categories, output format
 - [Building Skill Eval Scaffolds](build-skill-eval-scaffold.md) — the equivalent skill for skill-based scaffold generation
 - [Writing Agent-Call Evals](write-acil-evals.md) — the `/write-acil-evals` skill: workflow, prompt categories, output format

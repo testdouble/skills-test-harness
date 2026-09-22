@@ -41,11 +41,11 @@ export async function evaluateLlmJudge(
   record: TestConfigRecord,
   events: StreamJsonEvent[],
   testRunId: string,
-  suiteDir: string,
+  evalDir: string,
   runDir: string,
   onProgress?: OnProgress,
 ): Promise<LlmJudgeEvalResult[]> {
-  const { suite, test } = record
+  const { eval: evalName, test } = record
   const judgeExpectations = test.expect.filter(
     (e: TestExpectation): e is Extract<TestExpectation, { type: 'llm-judge' }> => e.type === 'llm-judge',
   )
@@ -60,7 +60,7 @@ export async function evaluateLlmJudge(
     onProgress?.({ type: 'eval-start', testName: test.name, expectType: 'llm-judge' })
 
     try {
-      const rubricPath = path.join(suiteDir, 'rubrics', expectation.rubricFile)
+      const rubricPath = path.join(evalDir, 'rubrics', expectation.rubricFile)
       const rubricMarkdown = await readFile(rubricPath, 'utf8')
       const sections = parseRubricSections(rubricMarkdown)
 
@@ -69,7 +69,7 @@ export async function evaluateLlmJudge(
         results.push({
           kind: 'llm-judge',
           test_run_id: testRunId,
-          suite,
+          eval: evalName,
           test_name: test.name,
           expect_type: 'llm-judge',
           expect_value: expectation.rubricFile,
@@ -86,12 +86,12 @@ export async function evaluateLlmJudge(
       }
 
       const resultText = getResultText(events) ?? ''
-      const scaffoldDir = test.scaffold ? path.join(suiteDir, 'scaffolds', test.scaffold) : null
+      const scaffoldDir = test.scaffold ? path.join(evalDir, 'scaffolds', test.scaffold) : null
 
       // Load output files for file-scoped rubric sections
       const hasFileSections = sections.some((s) => s.type === 'file')
       const outputFiles = hasFileSections
-        ? await loadOutputFiles(runDir, buildTestCaseId(suite, test.name))
+        ? await loadOutputFiles(runDir, buildTestCaseId(evalName, test.name))
         : new Map<string, string>()
 
       const { prompt: judgePrompt, autoFailCriteria } = await buildJudgePrompt(
@@ -162,7 +162,7 @@ export async function evaluateLlmJudge(
       const result: LlmJudgeEvalResult = {
         kind: 'llm-judge',
         test_run_id: testRunId,
-        suite,
+        eval: evalName,
         test_name: test.name,
         expect_type: 'llm-judge',
         expect_value: expectation.rubricFile,
@@ -183,7 +183,7 @@ export async function evaluateLlmJudge(
       const result: LlmJudgeEvalResult = {
         kind: 'llm-judge',
         test_run_id: testRunId,
-        suite,
+        eval: evalName,
         test_name: test.name,
         expect_type: 'llm-judge',
         expect_value: expectation.rubricFile,

@@ -13,7 +13,7 @@ Skillwalker is a monorepo workspace that executes AI skill evaluations inside Te
 ## System Summary
 
 - Nine workspace packages under `packages/` form a layered architecture: CLI (thin Yargs wrapper), execution orchestration, shared data layer, evaluation logic, Claude CLI integration, Test Sandbox integration, web dashboard, cross-runtime utilities, and test fixtures
-- Test suites defined in `test-suites/` drive the system — each suite contains a `tests.json` config, prompt files, optional rubrics, and optional scaffolds
+- Evals defined in `evals/` drive the system — each eval contains a `tests.json` config, prompt files, optional rubrics, and optional scaffolds
 - Data flows through three stages: **execution** (execution package runs Claude in Docker via CLI commands, writes JSONL to `output/`), **evaluation** (execution package scores results via skillwalker-evals, appends to JSONL), and **analysis** (DuckDB imports JSONL to Parquet in `analytics/`, web serves queries over it)
 - All Claude invocations happen inside a named Test Sandbox (`claude-skills-skillwalker`), providing filesystem isolation and reproducibility
 
@@ -30,7 +30,7 @@ Key files:
 
 ```mermaid
 flowchart TB
-    suites["test-suites/<br>suite-a/tests.json<br>suite-b/tests.json<br>..."]
+    evals["evals/<br>eval-a/tests.json<br>eval-b/tests.json<br>..."]
 
     cli["<b>@testdouble/skillwalker-cli</b><br>Thin Yargs wrapper — parses args, resolves paths, delegates<br>Commands: test-run, test-eval, scil, acil, update-analytics, shell, clean"]
 
@@ -48,8 +48,8 @@ flowchart TB
 
     web["<b>@testdouble/skillwalker-web</b><br>Server (Hono): /api/test-runs · /api/test-runs/:id<br>/api/analytics/per-test · /api/scil · /api/acil<br>Client (React SPA): TestRunHistory · TestRunDetail<br>PerTestAnalytics · ScilHistory · ScilDetail · AcilHistory · AcilDetail"]
 
-    suites --> cli
-    cli -->|"runTestSuite() · runTestEval()<br>runScilLoop() · runAcilLoop()"| exec
+    evals --> cli
+    cli -->|"runEvals() · runTestEval()<br>runScilLoop() · runAcilLoop()"| exec
     exec --> evals
     exec --> claude
     exec --> data
@@ -104,13 +104,13 @@ flowchart LR
 
 The command-line entry point. A thin Yargs wrapper that parses arguments, resolves paths from `process.cwd()`, and delegates all real work to `skillwalker-execution`. Compiled to a `./build/skillwalker` binary by `scripts/build.ts`.
 
-**Boundary:** Command parsing, path resolution from `process.cwd()`, and Yargs configuration live here. The CLI owns no pipeline logic, no test runners, no SCIL/ACIL steps — it calls `runTestSuite()`, `runTestEval()`, `runScilLoop()`, and `runAcilLoop()` from `skillwalker-execution` and passes path values as parameters. Direct package dependencies beyond `skillwalker-execution` exist only for commands that don't go through the execution layer: `sandbox-integration` (shell, clean, sandbox-setup) and `skillwalker-data` (update-analytics).
+**Boundary:** Command parsing, path resolution from `process.cwd()`, and Yargs configuration live here. The CLI owns no pipeline logic, no test runners, no SCIL/ACIL steps — it calls `runEvals()`, `runTestEval()`, `runScilLoop()`, and `runAcilLoop()` from `skillwalker-execution` and passes path values as parameters. Direct package dependencies beyond `skillwalker-execution` exist only for commands that don't go through the execution layer: `sandbox-integration` (shell, clean, sandbox-setup) and `skillwalker-data` (update-analytics).
 
 **Commands:**
 
 | Command | Purpose | Delegates to |
 |---------|---------|-------------|
-| `test-run` | Execute test suites against Claude in Test Sandbox | `runTestSuite()` |
+| `test-run` | Execute evals against Claude in Test Sandbox | `runEvals()` |
 | `test-eval` | Evaluate stored run output against expectations | `runTestEval()` |
 | `scil` | Iterative skill-call description improvement loop | `runScilLoop()` |
 | `acil` | Iterative agent-call description improvement loop | `runAcilLoop()` |
@@ -134,7 +134,7 @@ The execution orchestration layer. Owns all test execution pipelines, the SCIL/A
 
 | Export | Purpose |
 |--------|---------|
-| `runTestSuite(opts)` | Orchestrate the full test-run pipeline (steps 1-10) |
+| `runEvals(opts)` | Orchestrate the full test-run pipeline (steps 1-10) |
 | `runTestEval(opts)` | Orchestrate the test evaluation pipeline |
 | `runScilLoop(config)` | Orchestrate the iterative SCIL improvement loop |
 | `runAcilLoop(config)` | Orchestrate the iterative ACIL improvement loop |
@@ -145,7 +145,7 @@ The execution orchestration layer. Owns all test execution pipelines, the SCIL/A
 
 **Internal structure:**
 
-- `src/test-suite/` — `runTestSuite()` orchestrator
+- `src/evals/` — `runEvals()` orchestrator
 - `src/test-eval/` — `runTestEval()` orchestrator and result conversion helpers
 - `src/scil/` — SCIL loop orchestrator + numbered step files (steps 1-10)
 - `src/acil/` — ACIL loop orchestrator + numbered step files
@@ -201,7 +201,7 @@ The evaluation engine. Applies expectations to stored test output and produces p
 
 The Claude CLI execution layer. Abstracts the complexity of invoking Claude with various configurations, plugin directories, and output options. Sits between the CLI/evals packages and the lower-level Test Sandbox.
 
-**Boundary:** All Claude-specific invocation logic lives here — constructing CLI argument arrays, resolving plugin directory paths, and wrapping results in typed objects. This package knows how to call Claude (flags like `--output-format stream-json`, `--dangerously-skip-permissions`, `--plugin-dir`) but knows nothing about test suites, evaluations, or data formats. It delegates all container execution to `sandbox-integration`.
+**Boundary:** All Claude-specific invocation logic lives here — constructing CLI argument arrays, resolving plugin directory paths, and wrapping results in typed objects. This package knows how to call Claude (flags like `--output-format stream-json`, `--dangerously-skip-permissions`, `--plugin-dir`) but knows nothing about evals, evaluations, or data formats. It delegates all container execution to `sandbox-integration`.
 
 **Key exports:**
 
@@ -219,7 +219,7 @@ The Claude CLI execution layer. Abstracts the complexity of invoking Claude with
 
 The sandbox execution layer. Manages Test Sandbox lifecycle and runs commands inside it.
 
-**Boundary:** Everything related to Docker — creating/removing sandboxes, checking sandbox existence, executing commands inside them, and streaming output — lives here. This package knows nothing about test suites, evaluations, or data formats. It accepts command arguments and returns `SandboxResult { exitCode, stdout, stderr }`.
+**Boundary:** Everything related to Docker — creating/removing sandboxes, checking sandbox existence, executing commands inside them, and streaming output — lives here. This package knows nothing about evals, evaluations, or data formats. It accepts command arguments and returns `SandboxResult { exitCode, stdout, stderr }`.
 
 **Key exports:**
 
@@ -259,7 +259,7 @@ The dashboard layer. A Hono HTTP server with an embedded React SPA for viewing t
 |-------|-----------|---------|
 | `/` | `TestRunHistory` | List of all test runs with aggregate stats |
 | `/runs/:runId` | `TestRunDetail` | Per-test results, expectations, LLM judge details |
-| `/analytics` | `PerTestAnalytics` | Cross-run analytics: pass rates, costs, suite breakdowns |
+| `/analytics` | `PerTestAnalytics` | Cross-run analytics: pass rates, costs, eval breakdowns |
 | `/scil` | `ScilHistory` | List of SCIL optimization runs |
 | `/scil/:runId` | `ScilDetail` | Iteration-by-iteration SCIL results |
 | `/acil` | `AcilHistory` | List of ACIL optimization runs |
@@ -296,7 +296,7 @@ Shared test data for integration and unit tests across all packages.
 **Fixture categories:**
 
 - `data/analytics/` — 18 named scenarios with JSONL files for DuckDB integration tests
-- `cli/test-runners/steps/` — JSON fixtures for CLI unit tests (`ParsedRunMetrics`, `TestSuiteConfig`)
+- `cli/test-runners/steps/` — JSON fixtures for CLI unit tests (`ParsedRunMetrics`, `EvalConfig`)
 
 ## Data Flow
 
@@ -419,7 +419,7 @@ analytics/*.parquet ──▶ DuckDB SQL queries ──▶ Hono API ──▶ Re
 - [Project Discovery](./project-discovery.md) — Full project attributes: languages, frameworks, tooling, commands
 - [Sandbox Integration](./sandbox-integration.md) — Test Sandbox API, lifecycle, and consumer patterns
 - [Parquet Schema](./parquet-schema.md) — DuckDB/Parquet table schemas
-- [Test Suite Reference](./test-suite-reference.md) — `tests.json` field reference
+- [Evals Reference](./evals-reference.md) — `tests.json` field reference
 - [LLM Judge](./llm-judge.md) — LLM-as-judge evaluation approach
 - [SCIL Evals Guide](./scil-evals-guide.md) — Skill Call Improvement Loop guide
 - [ACIL Evals Guide](./agent-call-improvement-loop.md) — Agent Call Improvement Loop guide

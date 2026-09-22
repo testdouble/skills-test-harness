@@ -21,7 +21,7 @@ export function evalResultToTestResultRecord(result: EvalResult): TestResultReco
     return [
       {
         test_run_id: result.test_run_id,
-        suite: result.suite,
+        eval: result.eval,
         test_name: result.test_name,
         expect_type: result.expect_type,
         expect_value: result.expect_value,
@@ -40,7 +40,7 @@ export function evalResultToTestResultRecord(result: EvalResult): TestResultReco
   for (const cr of judge.criteria) {
     const record: TestResultRecord = {
       test_run_id: judge.test_run_id,
-      suite: judge.suite,
+      eval: judge.eval,
       test_name: judge.test_name,
       expect_type: 'llm-judge',
       expect_value: cr.criterion,
@@ -55,7 +55,7 @@ export function evalResultToTestResultRecord(result: EvalResult): TestResultReco
 
   records.push({
     test_run_id: judge.test_run_id,
-    suite: judge.suite,
+    eval: judge.eval,
     test_name: judge.test_name,
     expect_type: 'llm-judge-aggregate',
     expect_value: judge.rubric_file,
@@ -128,8 +128,8 @@ async function filterUnevaluated(ids: string[], outputDir: string): Promise<stri
   return out
 }
 
-function getTestSuiteDir(suite: string, testsDir: string): string {
-  return path.join(testsDir, 'test-suites', suite)
+function getEvalDir(evalName: string, testsDir: string): string {
+  return path.join(testsDir, 'evals', evalName)
 }
 
 async function computeMetrics(
@@ -144,7 +144,7 @@ async function computeMetrics(
   let totalOutputTokens = 0
 
   for (const record of testConfigs) {
-    const testCaseId = buildTestCaseId(record.suite, record.test.name)
+    const testCaseId = buildTestCaseId(record.eval, record.test.name)
     const events = storedEvents.filter((e: StoredEvent) => e.test_case === testCaseId)
     const metrics = extractMetrics(events)
     totalDurationMs += metrics.durationMs
@@ -177,16 +177,16 @@ export async function runTestEval(opts: RunTestEvalOptions): Promise<void> {
     const { runDir } = await resolveRunDir(id, outputDir)
     const wasEvaluated = testRunId != null ? await hasBeenEvaluated(runDir) : false
 
-    // Determine suite from test configs
+    // Determine eval from test configs
     const testConfigs = await readJsonlFile<TestConfigRecord>(path.join(runDir, 'test-config.jsonl'))
-    const suite = testConfigs[0]?.suite ?? ''
-    const suiteDir = getTestSuiteDir(suite, testsDir)
+    const evalName = testConfigs[0]?.eval ?? ''
+    const evalDir = getEvalDir(evalName, testsDir)
 
     console.log()
     for (const record of testConfigs) {
       console.log(record.test.name)
       console.log(`  - run id: ${id}`)
-      console.log(`  - suite: ${record.suite}`)
+      console.log(`  - eval: ${record.eval}`)
       console.log(`  - prompt: ${record.test.promptFile}`)
       console.log(`  - plugins: ${record.plugins.join(', ')}`)
       if (record.test.type) console.log(`  - type: ${record.test.type}`)
@@ -197,7 +197,7 @@ export async function runTestEval(opts: RunTestEvalOptions): Promise<void> {
 
     const evalResults = await evaluateTestRun({
       runDir,
-      suiteDir,
+      evalDir,
       testRunId: id,
       onProgress: logProgress,
     })

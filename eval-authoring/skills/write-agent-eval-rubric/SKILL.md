@@ -1,11 +1,11 @@
 ---
 name: write-agent-eval-rubric
-description: "Writes or updates the LLM-judge rubric that scores a Claude Code agent's output quality, and wires it into agent-prompt tests. Given a plugin:agent identifier, reads the agent definition and its test suite's scaffold, drafts criteria in four categories (Presence, Specificity, Depth, Absence) plus per-file criteria for agents that write files, proposes deterministic result-contains checks, and writes the rubric markdown and llm-judge expectations to tests.json. Use when creating a rubric, adding llm-judge or effectiveness evals for an agent, or revising existing rubric criteria. Does not write agent-call tests — use write-acil-evals. Does not build scaffolds — use build-agent-eval-scaffold. Does not cover skills — use write-skill-eval-rubric."
+description: "Writes or updates the LLM-judge rubric that scores a Claude Code agent's output quality, and wires it into agent-prompt tests. Given a plugin:agent identifier, reads the agent definition and its eval's scaffold, drafts criteria in four categories (Presence, Specificity, Depth, Absence) plus per-file criteria for agents that write files, proposes deterministic result-contains checks, and writes the rubric markdown and llm-judge expectations to tests.json. Use when creating a rubric, adding llm-judge or effectiveness evals for an agent, or revising existing rubric criteria. Does not write agent-call tests — use write-acil-evals. Does not build scaffolds — use build-agent-eval-scaffold. Does not cover skills — use write-skill-eval-rubric."
 argument-hint: "[plugin:agent] e.g. example-plugin:gap-analyzer"
 allowed-tools: Read, Glob, Grep, Write, Edit
 ---
 
-Produce the rubric an LLM judge scores the target agent's run against, and attach it to the suite's `agent-prompt` tests. A rubric is only as good as what the judge can verify, so the criteria are drafted from what the agent actually checks for and from the concrete files planted in the suite's scaffold, then edited by the user — not invented from the agent's name.
+Produce the rubric an LLM judge scores the target agent's run against, and attach it to the eval's `agent-prompt` tests. A rubric is only as good as what the judge can verify, so the criteria are drafted from what the agent actually checks for and from the concrete files planted in the eval's scaffold, then edited by the user — not invented from the agent's name.
 
 ## Constraints
 
@@ -13,7 +13,7 @@ Produce the rubric an LLM judge scores the target agent's run against, and attac
 - When a scaffold exists, criteria name its concrete files, functions, or lines BECAUSE the judge can only verify what it can point at in the transcript.
 - Never remove or reword an existing criterion unless the user asks BECAUSE the threshold was tuned against the existing set, and changing it changes what passes.
 - Propose a `result-contains` string only for text the agent's own output format guarantees BECAUSE a deterministic check fails the whole test on any variation, whereas a judge criterion is one of many.
-- Reference only rubric files and scaffolds that exist on disk BECAUSE Skillwalker validates both before a run and refuses the suite otherwise.
+- Reference only rubric files and scaffolds that exist on disk BECAUSE Skillwalker validates both before a run and refuses the eval otherwise.
 - Keep interview turns compact: the draft, then the question.
 
 ## Step 1: Identify the target agent
@@ -28,9 +28,9 @@ Read the agent definition. Agents are single markdown files with YAML frontmatte
 - **What it checks for** — the signals its instructions look for; these become Presence criteria
 - **File output** — whether the agent writes files: `Write` in its `tools` frontmatter, instructions like "write the analysis to", or named output paths. If clearly yes, note the paths; if clearly no, skip file criteria; if inconclusive, ask in Step 3.
 
-## Step 2: Inspect the test suite
+## Step 2: Inspect the eval
 
-The suite directory is `tests/test-suites/{agent}/`. Read what is there:
+The eval directory is `evals/{agent}/`. Read what is there:
 
 - `tests.json`, if present — note every `agent-prompt` test, the scaffold each uses, and any `llm-judge` expectation already attached. If absent, it will be created.
 - `rubrics/` — if a rubric file exists, this is an **update**: read it and keep its criteria.
@@ -69,7 +69,7 @@ Present the draft and ask the user to approve it, or to add, remove, or modify c
 
 Show, in one message, exactly what will be written:
 
-1. **Rubric file** at `tests/test-suites/{agent}/rubrics/{filename}`, as one markdown block in this format:
+1. **Rubric file** at `evals/{agent}/rubrics/{filename}`, as one markdown block in this format:
 
 ```
 ## Rubric: {agent} of {scaffold-name} scaffold
@@ -102,5 +102,5 @@ Wait for the user to confirm.
 ## Step 7: Write and validate
 
 1. Write the rubric file, create or edit `tests.json` (append to `expect` arrays; append new entries to `tests`; a new file is `{ "plugins": ["{plugin}"], "tests": [ … ] }`), and write any new prompt files.
-2. Run `${CLAUDE_SKILL_DIR}/scripts/validate-suite.sh tests/test-suites/{agent}`. It re-checks what Skillwalker checks at load time (rubric and prompt files exist, rubric has bullet criteria, threshold in range, scaffolds exist, `agentFile` present on agent-prompt tests) and prints one finding per line between `findings-start` and `findings-end`. Fix every finding and re-run until `errors: 0`.
+2. Run `${CLAUDE_SKILL_DIR}/scripts/validate-eval.sh evals/{agent}`. It re-checks what Skillwalker checks at load time (rubric and prompt files exist, rubric has bullet criteria, threshold in range, scaffolds exist, `agentFile` present on agent-prompt tests) and prints one finding per line between `findings-start` and `findings-end`. Fix every finding and re-run until `errors: 0`.
 3. Report: the files created and modified, the criteria counts, and the tests that now carry the rubric.

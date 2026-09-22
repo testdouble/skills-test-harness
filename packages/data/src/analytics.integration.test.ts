@@ -53,7 +53,7 @@ describe('importJsonlToParquet', () => {
   it('creates a new parquet file from JSONL when parquet does not exist', async () => {
     const runDir = path.join(tmpDir, '20260101T100001')
     await writeJsonl(path.join(runDir, 'test-config.jsonl'), [
-      makeConfigRecord({ testRunId: '20260101T100001', suite: 's', testName: 'test one' }),
+      makeConfigRecord({ testRunId: '20260101T100001', eval: 's', testName: 'test one' }),
     ])
 
     const parquetPath = path.join(tmpDir, 'out.parquet')
@@ -83,10 +83,10 @@ describe('importJsonlToParquet', () => {
     const run1Dir = path.join(tmpDir, '20260101T100001')
     const run2Dir = path.join(tmpDir, '20260101T100002')
     await writeJsonl(path.join(run1Dir, 'test-config.jsonl'), [
-      makeConfigRecord({ testRunId: '20260101T100001', suite: 's', testName: 'test one' }),
+      makeConfigRecord({ testRunId: '20260101T100001', eval: 's', testName: 'test one' }),
     ])
     await writeJsonl(path.join(run2Dir, 'test-config.jsonl'), [
-      makeConfigRecord({ testRunId: '20260101T100002', suite: 's', testName: 'test two' }),
+      makeConfigRecord({ testRunId: '20260101T100002', eval: 's', testName: 'test two' }),
     ])
 
     const parquetPath = path.join(tmpDir, 'out.parquet')
@@ -105,7 +105,7 @@ describe('importJsonlToParquet', () => {
   it('does not duplicate records when the same test_run_id is imported twice', async () => {
     const runDir = path.join(tmpDir, '20260101T100001')
     await writeJsonl(path.join(runDir, 'test-config.jsonl'), [
-      makeConfigRecord({ testRunId: '20260101T100001', suite: 's', testName: 'test one' }),
+      makeConfigRecord({ testRunId: '20260101T100001', eval: 's', testName: 'test one' }),
     ])
 
     const parquetPath = path.join(tmpDir, 'out.parquet')
@@ -122,7 +122,7 @@ describe('importJsonlToParquet', () => {
     const runDir = path.join(tmpDir, '20260101T100001')
     await writeJsonl(path.join(runDir, 'test-run.jsonl'), [
       { type: 'assistant', test_run_id: '20260101T100001', message: {} },
-      makeRunResultRecord({ testRunId: '20260101T100001', suite: 's', testName: 'test one' }),
+      makeRunResultRecord({ testRunId: '20260101T100001', eval: 's', testName: 'test one' }),
     ])
 
     const parquetPath = path.join(tmpDir, 'out.parquet')
@@ -164,7 +164,7 @@ describe('updateAllParquet', () => {
     await writeRunFixture({
       outputDir,
       testRunId: '20260101T100001',
-      suite: 'my-suite',
+      eval: 'my-eval',
       testName: 'test one',
       totalCostUsd: 0.05,
       numTurns: 2,
@@ -188,15 +188,15 @@ describe('updateAllParquet', () => {
 
     const runDir = path.join(outputDir, '20260101T100001')
     await writeJsonl(path.join(runDir, 'test-config.jsonl'), [
-      makeConfigRecord({ testRunId: '20260101T100001', suite: 's', testName: 't' }),
+      makeConfigRecord({ testRunId: '20260101T100001', eval: 's', testName: 't' }),
     ])
     await writeJsonl(path.join(runDir, 'test-run.jsonl'), [
       { type: 'assistant', test_run_id: '20260101T100001', message: {} },
       { type: 'system', subtype: 'init', session_id: 'x', test_run_id: '20260101T100001' },
-      makeRunResultRecord({ testRunId: '20260101T100001', suite: 's', testName: 't' }),
+      makeRunResultRecord({ testRunId: '20260101T100001', eval: 's', testName: 't' }),
     ])
     await writeJsonl(path.join(runDir, 'test-results.jsonl'), [
-      makeResultRecord({ testRunId: '20260101T100001', suite: 's', testName: 't' }),
+      makeResultRecord({ testRunId: '20260101T100001', eval: 's', testName: 't' }),
     ])
 
     await updateAllParquet({ outputDir, dataDir })
@@ -235,13 +235,13 @@ describe('updateAllParquet', () => {
     // Now create fresh run data
     const runDir = path.join(outputDir, '20260101T100001')
     await writeJsonl(path.join(runDir, 'test-config.jsonl'), [
-      makeConfigRecord({ testRunId: '20260101T100001', suite: 's', testName: 't' }),
+      makeConfigRecord({ testRunId: '20260101T100001', eval: 's', testName: 't' }),
     ])
     await writeJsonl(path.join(runDir, 'test-run.jsonl'), [
-      makeRunResultRecord({ testRunId: '20260101T100001', suite: 's', testName: 't' }),
+      makeRunResultRecord({ testRunId: '20260101T100001', eval: 's', testName: 't' }),
     ])
     await writeJsonl(path.join(runDir, 'test-results.jsonl'), [
-      makeResultRecord({ testRunId: '20260101T100001', suite: 's', testName: 't' }),
+      makeResultRecord({ testRunId: '20260101T100001', eval: 's', testName: 't' }),
     ])
 
     await updateAllParquet({ outputDir, dataDir })
@@ -263,7 +263,7 @@ describe('importJsonlToParquet (edge cases)', () => {
     await mkdir(runDir, { recursive: true })
     // Mix of valid result event, malformed line, valid non-result event
     const content = `${[
-      JSON.stringify(makeRunResultRecord({ testRunId: '20260101T100001', suite: 's', testName: 't' })),
+      JSON.stringify(makeRunResultRecord({ testRunId: '20260101T100001', eval: 's', testName: 't' })),
       'not valid json {{{',
       JSON.stringify({ type: 'assistant', test_run_id: '20260101T100001', message: {} }),
     ].join('\n')}\n`
@@ -300,7 +300,7 @@ describe('queryPerTest', () => {
     expect(rows[0]).toMatchObject({
       test_run_id: '20260101T000001',
       test_name: 'test one',
-      suite: 'my-suite',
+      eval: 'my-eval',
       all_expectations_passed: true,
       num_turns: 3,
       input_tokens: 200,
@@ -361,19 +361,19 @@ describe('queryTestRunSummaries', () => {
     const runDir1 = path.join(outputDir, runId1)
 
     await writeJsonl(path.join(runDir1, 'test-config.jsonl'), [
-      makeConfigRecord({ testRunId: runId1, suite: 'suite-a', testName: 'test-1' }),
-      makeConfigRecord({ testRunId: runId1, suite: 'suite-a', testName: 'test-2' }),
+      makeConfigRecord({ testRunId: runId1, eval: 'eval-a', testName: 'test-1' }),
+      makeConfigRecord({ testRunId: runId1, eval: 'eval-a', testName: 'test-2' }),
     ])
     await writeJsonl(path.join(runDir1, 'test-run.jsonl'), [
-      makeRunResultRecord({ testRunId: runId1, suite: 'suite-a', testName: 'test-1' }),
-      makeRunResultRecord({ testRunId: runId1, suite: 'suite-a', testName: 'test-2' }),
+      makeRunResultRecord({ testRunId: runId1, eval: 'eval-a', testName: 'test-1' }),
+      makeRunResultRecord({ testRunId: runId1, eval: 'eval-a', testName: 'test-2' }),
     ])
     await writeJsonl(path.join(runDir1, 'test-results.jsonl'), [
-      makeResultRecord({ testRunId: runId1, suite: 'suite-a', testName: 'test-1', passed: true }),
-      makeResultRecord({ testRunId: runId1, suite: 'suite-a', testName: 'test-2', passed: false }),
+      makeResultRecord({ testRunId: runId1, eval: 'eval-a', testName: 'test-1', passed: true }),
+      makeResultRecord({ testRunId: runId1, eval: 'eval-a', testName: 'test-2', passed: false }),
     ])
 
-    await writeRunFixture({ outputDir, testRunId: runId2, suite: 'suite-b', testName: 'test-3', passed: true })
+    await writeRunFixture({ outputDir, testRunId: runId2, eval: 'eval-b', testName: 'test-3', passed: true })
     await updateAllParquet({ outputDir, dataDir })
 
     const runs = await queryTestRunSummaries(dataDir)
@@ -381,14 +381,14 @@ describe('queryTestRunSummaries', () => {
     expect(runs).toHaveLength(2)
     // Ordered by test_run_id DESC
     expect(runs[0].test_run_id).toBe('20240103T120000')
-    expect(runs[0].suite).toBe('suite-a')
+    expect(runs[0].eval).toBe('eval-a')
     expect(runs[0].total_tests).toBe(2)
     expect(runs[0].passed).toBe(1)
     expect(runs[0].failed).toBe(1)
     expect(runs[0].date).toBe(new Date('2024-01-03T12:00:00').toISOString())
 
     expect(runs[1].test_run_id).toBe('20240101T080000')
-    expect(runs[1].suite).toBe('suite-b')
+    expect(runs[1].eval).toBe('eval-b')
     expect(runs[1].total_tests).toBe(1)
     expect(runs[1].passed).toBe(1)
     expect(runs[1].failed).toBe(0)
@@ -399,7 +399,7 @@ describe('queryTestRunSummaries', () => {
     const dataDir = path.join(tmpDir, 'analytics')
     await mkdir(dataDir, { recursive: true })
 
-    await writeRunFixture({ outputDir, testRunId: '20240101T000000', suite: 'suite-a', testName: 'test-1' })
+    await writeRunFixture({ outputDir, testRunId: '20240101T000000', eval: 'eval-a', testName: 'test-1' })
     await updateAllParquet({ outputDir, dataDir })
 
     const runs = await queryTestRunSummaries(dataDir)
@@ -428,7 +428,7 @@ describe('queryTestRunDetails', () => {
     expect(details.summary[0]).toMatchObject({
       test_run_id: '20260101T000004',
       test_name: 'my test',
-      suite: 's',
+      eval: 's',
       is_error: false,
       all_expectations_passed: false,
     })
@@ -497,13 +497,13 @@ describe('queryPerTest (JOIN edge cases)', () => {
     const runDir = path.join(outputDir, '20260101T100001')
     // Write test-run with one ID but test-config for a different run ID
     await writeJsonl(path.join(runDir, 'test-config.jsonl'), [
-      makeConfigRecord({ testRunId: '20260101T199999', suite: 's', testName: 't' }),
+      makeConfigRecord({ testRunId: '20260101T199999', eval: 's', testName: 't' }),
     ])
     await writeJsonl(path.join(runDir, 'test-run.jsonl'), [
-      makeRunResultRecord({ testRunId: '20260101T100001', suite: 's', testName: 't' }),
+      makeRunResultRecord({ testRunId: '20260101T100001', eval: 's', testName: 't' }),
     ])
     await writeJsonl(path.join(runDir, 'test-results.jsonl'), [
-      makeResultRecord({ testRunId: '20260101T100001', suite: 's', testName: 't' }),
+      makeResultRecord({ testRunId: '20260101T100001', eval: 's', testName: 't' }),
     ])
     await updateAllParquet({ outputDir, dataDir })
 
@@ -519,14 +519,14 @@ describe('queryPerTest (JOIN edge cases)', () => {
 
     const runDir = path.join(outputDir, '20260101T100001')
     await writeJsonl(path.join(runDir, 'test-config.jsonl'), [
-      makeConfigRecord({ testRunId: '20260101T100001', suite: 's', testName: 't' }),
+      makeConfigRecord({ testRunId: '20260101T100001', eval: 's', testName: 't' }),
     ])
     await writeJsonl(path.join(runDir, 'test-run.jsonl'), [
-      makeRunResultRecord({ testRunId: '20260101T100001', suite: 's', testName: 't' }),
+      makeRunResultRecord({ testRunId: '20260101T100001', eval: 's', testName: 't' }),
     ])
     // Write test-results for a DIFFERENT run so test-results.parquet exists but has no match
     await writeJsonl(path.join(runDir, 'test-results.jsonl'), [
-      makeResultRecord({ testRunId: '20260101T199999', suite: 's', testName: 't' }),
+      makeResultRecord({ testRunId: '20260101T199999', eval: 's', testName: 't' }),
     ])
     await updateAllParquet({ outputDir, dataDir })
 
@@ -555,10 +555,10 @@ describe('queryTestRunDetails (missing parquet)', () => {
     // Import only test-run and test-config — skip test-results
     const runDir = path.join(outputDir, '20260101T100001')
     await writeJsonl(path.join(runDir, 'test-config.jsonl'), [
-      makeConfigRecord({ testRunId: '20260101T100001', suite: 's', testName: 't' }),
+      makeConfigRecord({ testRunId: '20260101T100001', eval: 's', testName: 't' }),
     ])
     await writeJsonl(path.join(runDir, 'test-run.jsonl'), [
-      makeRunResultRecord({ testRunId: '20260101T100001', suite: 's', testName: 't' }),
+      makeRunResultRecord({ testRunId: '20260101T100001', eval: 's', testName: 't' }),
     ])
     // Manually import only test-run and test-config
     await importJsonlToParquet({
@@ -595,7 +595,7 @@ describe('SCIL updateAllParquet', () => {
     })
 
     // Also write standard test files so updateAllParquet doesn't fail on missing globs
-    await writeRunFixture({ outputDir, testRunId: '20260101T200001', suite: 's', testName: 't' })
+    await writeRunFixture({ outputDir, testRunId: '20260101T200001', eval: 's', testName: 't' })
 
     await updateAllParquet({ outputDir, dataDir })
 
@@ -617,7 +617,7 @@ describe('SCIL updateAllParquet', () => {
       runId: '20260101T200001',
       iterations: [makeScilIterationRecord({ test_run_id: '20260101T200001' })],
     })
-    await writeRunFixture({ outputDir, testRunId: '20260101T200001', suite: 's', testName: 't' })
+    await writeRunFixture({ outputDir, testRunId: '20260101T200001', eval: 's', testName: 't' })
 
     await updateAllParquet({ outputDir, dataDir })
 
@@ -641,7 +641,7 @@ describe('SCIL updateAllParquet', () => {
       runId: '20260101T200001',
       iterations: [makeScilIterationRecord({ test_run_id: '20260101T200001' })],
     })
-    await writeRunFixture({ outputDir, testRunId: '20260101T200001', suite: 's', testName: 't' })
+    await writeRunFixture({ outputDir, testRunId: '20260101T200001', eval: 's', testName: 't' })
 
     await updateAllParquet({ outputDir, dataDir })
     await updateAllParquet({ outputDir, dataDir })
@@ -829,7 +829,7 @@ describe('SCIL updateAllParquet (partial data)', () => {
     await writeJsonl(path.join(runDir, 'scil-iteration.jsonl'), [
       makeScilIterationRecord({ test_run_id: '20260101T200001' }),
     ])
-    await writeRunFixture({ outputDir, testRunId: '20260101T200001', suite: 's', testName: 't' })
+    await writeRunFixture({ outputDir, testRunId: '20260101T200001', eval: 's', testName: 't' })
 
     const { updated } = await updateAllParquet({ outputDir, dataDir })
     expect(updated).toContain('scil-iteration')
@@ -850,7 +850,7 @@ describe('SCIL updateAllParquet (partial data)', () => {
     // Remove the iteration file that writeScilRunFixture created
     const { unlink: unlinkFs } = await import('node:fs/promises')
     await unlinkFs(path.join(outputDir, '20260101T200001', 'scil-iteration.jsonl'))
-    await writeRunFixture({ outputDir, testRunId: '20260101T200001', suite: 's', testName: 't' })
+    await writeRunFixture({ outputDir, testRunId: '20260101T200001', eval: 's', testName: 't' })
 
     const { updated } = await updateAllParquet({ outputDir, dataDir })
     expect(updated).not.toContain('scil-iteration')
@@ -862,7 +862,7 @@ describe('SCIL updateAllParquet (partial data)', () => {
     const dataDir = path.join(tmpDir, 'analytics')
     await mkdir(dataDir, { recursive: true })
 
-    await writeRunFixture({ outputDir, testRunId: '20260101T100001', suite: 's', testName: 't' })
+    await writeRunFixture({ outputDir, testRunId: '20260101T100001', eval: 's', testName: 't' })
     await writeScilRunFixture({
       outputDir,
       runId: '20260101T100001',
@@ -901,7 +901,7 @@ describe('SCIL updateAllParquet (partial data)', () => {
       runId: '20260101T200002',
       iterations: [makeScilIterationRecord({ test_run_id: '20260101T200002' })],
     })
-    await writeRunFixture({ outputDir, testRunId: '20260101T200001', suite: 's', testName: 't' })
+    await writeRunFixture({ outputDir, testRunId: '20260101T200001', eval: 's', testName: 't' })
 
     await updateAllParquet({ outputDir, dataDir })
 
@@ -956,17 +956,17 @@ describe('infrastructure-error filtering', () => {
     const runDir = path.join(outputDir, runId)
 
     await writeJsonl(path.join(runDir, 'test-config.jsonl'), [
-      makeConfigRecord({ testRunId: runId, suite: 's', testName: 'my test' }),
+      makeConfigRecord({ testRunId: runId, eval: 's', testName: 'my test' }),
     ])
     await writeJsonl(path.join(runDir, 'test-run.jsonl'), [
-      makeRunResultRecord({ testRunId: runId, suite: 's', testName: 'my test' }),
+      makeRunResultRecord({ testRunId: runId, eval: 's', testName: 'my test' }),
     ])
     // One passing expectation + one infrastructure-error record
     await writeJsonl(path.join(runDir, 'test-results.jsonl'), [
-      makeResultRecord({ testRunId: runId, suite: 's', testName: 'my test', passed: true }),
+      makeResultRecord({ testRunId: runId, eval: 's', testName: 'my test', passed: true }),
       makeResultRecord({
         testRunId: runId,
-        suite: 's',
+        eval: 's',
         testName: 'my test',
         expectType: 'llm-judge-aggregate',
         expectValue: 'rubric.md',
@@ -997,16 +997,16 @@ describe('infrastructure-error filtering', () => {
     const runDir = path.join(outputDir, runId)
 
     await writeJsonl(path.join(runDir, 'test-config.jsonl'), [
-      makeConfigRecord({ testRunId: runId, suite: 's', testName: 'my test' }),
+      makeConfigRecord({ testRunId: runId, eval: 's', testName: 'my test' }),
     ])
     await writeJsonl(path.join(runDir, 'test-run.jsonl'), [
-      makeRunResultRecord({ testRunId: runId, suite: 's', testName: 'my test' }),
+      makeRunResultRecord({ testRunId: runId, eval: 's', testName: 'my test' }),
     ])
     await writeJsonl(path.join(runDir, 'test-results.jsonl'), [
-      makeResultRecord({ testRunId: runId, suite: 's', testName: 'my test', passed: true }),
+      makeResultRecord({ testRunId: runId, eval: 's', testName: 'my test', passed: true }),
       makeResultRecord({
         testRunId: runId,
-        suite: 's',
+        eval: 's',
         testName: 'my test',
         expectType: 'llm-judge-aggregate',
         expectValue: 'rubric.md',
@@ -1037,16 +1037,16 @@ describe('infrastructure-error filtering', () => {
     const runDir = path.join(outputDir, runId)
 
     await writeJsonl(path.join(runDir, 'test-config.jsonl'), [
-      makeConfigRecord({ testRunId: runId, suite: 's', testName: 'my test' }),
+      makeConfigRecord({ testRunId: runId, eval: 's', testName: 'my test' }),
     ])
     await writeJsonl(path.join(runDir, 'test-run.jsonl'), [
-      makeRunResultRecord({ testRunId: runId, suite: 's', testName: 'my test' }),
+      makeRunResultRecord({ testRunId: runId, eval: 's', testName: 'my test' }),
     ])
     await writeJsonl(path.join(runDir, 'test-results.jsonl'), [
-      makeResultRecord({ testRunId: runId, suite: 's', testName: 'my test', passed: true }),
+      makeResultRecord({ testRunId: runId, eval: 's', testName: 'my test', passed: true }),
       makeResultRecord({
         testRunId: runId,
-        suite: 's',
+        eval: 's',
         testName: 'my test',
         expectType: 'llm-judge-aggregate',
         expectValue: 'rubric.md',
@@ -1083,7 +1083,7 @@ describe('updateAllParquet (ACIL tables)', () => {
       runId: '20260101T300001',
       iterations: [makeAcilIterationRecord({ test_run_id: '20260101T300001' })],
     })
-    await writeRunFixture({ outputDir, testRunId: '20260101T300001', suite: 's', testName: 't' })
+    await writeRunFixture({ outputDir, testRunId: '20260101T300001', eval: 's', testName: 't' })
 
     const { updated } = await updateAllParquet({ outputDir, dataDir })
 
@@ -1106,7 +1106,7 @@ describe('updateAllParquet (ACIL tables)', () => {
       runId: '20260101T300001',
       iterations: [makeAcilIterationRecord({ test_run_id: '20260101T300001' })],
     })
-    await writeRunFixture({ outputDir, testRunId: '20260101T300001', suite: 's', testName: 't' })
+    await writeRunFixture({ outputDir, testRunId: '20260101T300001', eval: 's', testName: 't' })
 
     await updateAllParquet({ outputDir, dataDir })
 
@@ -1129,7 +1129,7 @@ describe('updateAllParquet (ACIL tables)', () => {
       runId: '20260101T300001',
       iterations: [makeAcilIterationRecord({ test_run_id: '20260101T300001' })],
     })
-    await writeRunFixture({ outputDir, testRunId: '20260101T300001', suite: 's', testName: 't' })
+    await writeRunFixture({ outputDir, testRunId: '20260101T300001', eval: 's', testName: 't' })
 
     await updateAllParquet({ outputDir, dataDir })
     await updateAllParquet({ outputDir, dataDir })
@@ -1155,7 +1155,7 @@ describe('ACIL updateAllParquet (partial data)', () => {
     await writeJsonl(path.join(runDir, 'acil-iteration.jsonl'), [
       makeAcilIterationRecord({ test_run_id: '20260101T300001' }),
     ])
-    await writeRunFixture({ outputDir, testRunId: '20260101T300001', suite: 's', testName: 't' })
+    await writeRunFixture({ outputDir, testRunId: '20260101T300001', eval: 's', testName: 't' })
 
     const { updated } = await updateAllParquet({ outputDir, dataDir })
     expect(updated).toContain('acil-iteration')
@@ -1176,7 +1176,7 @@ describe('ACIL updateAllParquet (partial data)', () => {
     // Remove the iteration file that writeAcilRunFixture created
     const { unlink: unlinkFs } = await import('node:fs/promises')
     await unlinkFs(path.join(outputDir, '20260101T300001', 'acil-iteration.jsonl'))
-    await writeRunFixture({ outputDir, testRunId: '20260101T300001', suite: 's', testName: 't' })
+    await writeRunFixture({ outputDir, testRunId: '20260101T300001', eval: 's', testName: 't' })
 
     const { updated } = await updateAllParquet({ outputDir, dataDir })
     expect(updated).not.toContain('acil-iteration')
@@ -1198,7 +1198,7 @@ describe('ACIL updateAllParquet (partial data)', () => {
       runId: '20260101T300002',
       iterations: [makeAcilIterationRecord({ test_run_id: '20260101T300002' })],
     })
-    await writeRunFixture({ outputDir, testRunId: '20260101T300001', suite: 's', testName: 't' })
+    await writeRunFixture({ outputDir, testRunId: '20260101T300001', eval: 's', testName: 't' })
 
     await updateAllParquet({ outputDir, dataDir })
 
@@ -1236,7 +1236,7 @@ describe('importJsonlToParquet (replaceRunIds)', () => {
   it('replaces existing records for specified run IDs', async () => {
     const runDir = path.join(tmpDir, '20260101T100001')
     await writeJsonl(path.join(runDir, 'test-results.jsonl'), [
-      makeResultRecord({ testRunId: '20260101T100001', suite: 's', testName: 't', passed: false }),
+      makeResultRecord({ testRunId: '20260101T100001', eval: 's', testName: 't', passed: false }),
     ])
 
     const parquetPath = path.join(tmpDir, 'out.parquet')
@@ -1249,7 +1249,7 @@ describe('importJsonlToParquet (replaceRunIds)', () => {
 
     // Update the JSONL with new data
     await writeJsonl(path.join(runDir, 'test-results.jsonl'), [
-      makeResultRecord({ testRunId: '20260101T100001', suite: 's', testName: 't', passed: true }),
+      makeResultRecord({ testRunId: '20260101T100001', eval: 's', testName: 't', passed: true }),
     ])
 
     // Re-import with replaceRunIds to replace the existing record
@@ -1268,10 +1268,10 @@ describe('importJsonlToParquet (replaceRunIds)', () => {
     const run1Dir = path.join(tmpDir, '20260101T100001')
     const run2Dir = path.join(tmpDir, '20260101T100002')
     await writeJsonl(path.join(run1Dir, 'test-results.jsonl'), [
-      makeResultRecord({ testRunId: '20260101T100001', suite: 's', testName: 't1' }),
+      makeResultRecord({ testRunId: '20260101T100001', eval: 's', testName: 't1' }),
     ])
     await writeJsonl(path.join(run2Dir, 'test-results.jsonl'), [
-      makeResultRecord({ testRunId: '20260101T100002', suite: 's', testName: 't2' }),
+      makeResultRecord({ testRunId: '20260101T100002', eval: 's', testName: 't2' }),
     ])
 
     const parquetPath = path.join(tmpDir, 'out.parquet')

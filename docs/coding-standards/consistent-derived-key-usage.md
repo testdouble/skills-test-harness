@@ -20,7 +20,7 @@ This coding standard requires that all write and read paths for JSONL-persisted 
 
 ### Purpose
 
-When a JSONL record is keyed by a derived identifier (e.g., `buildTestCaseId(suite, test.name)` rather than raw `test.name`), every site that writes, reads, or filters those records must use the same derivation function. A mismatch between write-side and read-side key construction causes silent data loss — lookups return empty results with no error, making the bug invisible until downstream behavior fails for unrelated-seeming reasons.
+When a JSONL record is keyed by a derived identifier (e.g., `buildTestCaseId(eval, test.name)` rather than raw `test.name`), every site that writes, reads, or filters those records must use the same derivation function. A mismatch between write-side and read-side key construction causes silent data loss — lookups return empty results with no error, making the bug invisible until downstream behavior fails for unrelated-seeming reasons.
 
 ### Scope
 
@@ -28,7 +28,7 @@ All TypeScript code in the Skillwalker workspace that persists or queries JSONL 
 
 ## Background
 
-Skillwalker persists output files to `output-files.jsonl` with a `test_name` field built via `buildTestCaseId(suite, test.name)`, which produces a slugified composite key (e.g., `"test-engineer-Agent-Prompt-test-plan-for-go-security-project"`). When `llm-judge-eval.ts` was written, it looked up output files using the raw `test.name` (e.g., `"Agent Prompt: test plan for go-security-project"`). The keys never matched, so `loadOutputFiles` silently returned an empty map for every test. All file-scoped rubric criteria auto-failed with "Output file was not produced by the agent" — even though the files were correctly extracted and stored.
+Skillwalker persists output files to `output-files.jsonl` with a `test_name` field built via `buildTestCaseId(eval, test.name)`, which produces a slugified composite key (e.g., `"test-engineer-Agent-Prompt-test-plan-for-go-security-project"`). When `llm-judge-eval.ts` was written, it looked up output files using the raw `test.name` (e.g., `"Agent Prompt: test plan for go-security-project"`). The keys never matched, so `loadOutputFiles` silently returned an empty map for every test. All file-scoped rubric criteria auto-failed with "Output file was not produced by the agent" — even though the files were correctly extracted and stored.
 
 The bug was a one-liner to fix but took significant investigation to find, because no error was raised. The empty map was a valid return value (it means "no files produced"), making the mismatch indistinguishable from a legitimate empty result.
 
@@ -42,17 +42,17 @@ When JSONL records are keyed by a derived identifier, both the code that writes 
 
 ```typescript
 // Write path (test runner) — uses buildTestCaseId
-await appendOutputFiles(runDir, testRunId, buildTestCaseId(suite, test.name), outputFiles)
+await appendOutputFiles(runDir, testRunId, buildTestCaseId(eval, test.name), outputFiles)
 
 // Read path (evaluator) — uses the same buildTestCaseId
-const outputFiles = await loadOutputFiles(runDir, buildTestCaseId(suite, test.name))
+const outputFiles = await loadOutputFiles(runDir, buildTestCaseId(eval, test.name))
 ```
 
 **What to avoid:**
 
 ```typescript
 // Write path — uses buildTestCaseId
-await appendOutputFiles(runDir, testRunId, buildTestCaseId(suite, test.name), outputFiles)
+await appendOutputFiles(runDir, testRunId, buildTestCaseId(eval, test.name), outputFiles)
 
 // Read path — uses raw test.name (WRONG: will never match the derived key)
 const outputFiles = await loadOutputFiles(runDir, test.name)

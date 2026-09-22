@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Collect the inputs /audit-eval-suite compares a test suite against.
+# Collect the inputs /audit-evals compares an eval against.
 #
 # Usage: collect-target-inputs.sh {plugin} {name}
 #
@@ -12,8 +12,8 @@
 #   reason            (only when status=error) explanation for the operator
 #   target-type       skill | agent
 #   target-file       path to the SKILL.md or agent definition
-#   suite-dir         tests/test-suites/{name}
-#   suite-exists      true | false
+#   eval-dir         evals/{name}
+#   eval-exists      true | false
 #   reference-files-start / reference-files-end   (skills only)
 #   reference-files: none
 #   agents-start / agents-end
@@ -47,8 +47,8 @@ fi
 echo "status: ok"
 echo "target-type: $TYPE"
 echo "target-file: $TARGET"
-echo "suite-dir: tests/test-suites/$NAME"
-if [ -f "tests/test-suites/$NAME/tests.json" ]; then echo "suite-exists: true"; else echo "suite-exists: false"; fi
+echo "eval-dir: evals/$NAME"
+if [ -f "evals/$NAME/tests.json" ]; then echo "eval-exists: true"; else echo "eval-exists: false"; fi
 
 REFS=""
 if [ -n "$TDIR" ] && [ -d "$TDIR/references" ]; then

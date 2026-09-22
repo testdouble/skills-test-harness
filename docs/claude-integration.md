@@ -182,7 +182,7 @@ export class ClaudeError extends Error {
 
 ### Test Patterns
 
-All tests mock `@testdouble/sandbox-integration` and `@testdouble/bun-helpers` at the module level using `vi.mock()`. The `run-claude.test.ts` suite verifies argument construction by inspecting `vi.mocked(execInSandbox).mock.calls` rather than testing actual sandbox execution. Mocks are cleared in `beforeEach` to prevent cross-test contamination.
+All tests mock `@testdouble/sandbox-integration` and `@testdouble/bun-helpers` at the module level using `vi.mock()`. The `run-claude.test.ts` eval verifies argument construction by inspecting `vi.mocked(execInSandbox).mock.calls` rather than testing actual sandbox execution. Mocks are cleared in `beforeEach` to prevent cross-test contamination.
 
 ## Related References
 

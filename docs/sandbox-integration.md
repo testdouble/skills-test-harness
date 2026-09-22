@@ -101,7 +101,7 @@ export class SandboxError extends Error {
 Pre-flight check that the sandbox is running. Runs `sbx ls --quiet` and verifies `SANDBOX_NAME` exactly matches one output line. Throws `SandboxError` with `exitCode: null` if not found.
 
 Called by:
-- `commands/test-run.ts` — before the per-suite test loop
+- `commands/test-run.ts` — before the per-eval test loop
 - `scil/loop.ts` — before the SCIL iteration loop
 - `lifecycle.ts: openShell()` — before spawning an interactive bash session
 
@@ -286,7 +286,7 @@ This means a `Bun.spawn` mock is missing a return value. Ensure every `spawn` ca
 
 - [Test Scaffolding](test-scaffolding.md) — How scaffolds provide project context in the Test Sandbox
 - [LLM Judge](llm-judge.md) — Judge evaluation runs inside the sandbox via `execInSandbox`
-- [Test Suite Reference](test-suite-reference.md) — Test case config including scaffold and model fields consumed by `execInSandbox`
+- [Evals Reference](evals-reference.md) — Test case config including scaffold and model fields consumed by `execInSandbox`
 - [Skill Call Improvement Loop](skill-call-improvement-loop.md) — SCIL uses `ensureSandboxExists` and `execInSandbox`
 - [Skip Permissions in Test Sandbox](adrs/20260326084800-skip-permissions-in-test-sandbox.md) — ADR on using `--dangerously-skip-permissions` inside the sandbox
 - [Cross-Runtime Meta Property Resolution](coding-standards/cross-runtime-meta-resolution.md) — Coding standard for the `import.meta` fallback chain used in this package

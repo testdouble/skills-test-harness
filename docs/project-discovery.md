@@ -114,7 +114,7 @@
 - Analytics store: `analytics/` (Parquet files)
 - Test output: `output/` (timestamped JSONL run data)
 - Test Sandbox: `packages/sandbox-integration/` (see [docs/sandbox-integration.md](sandbox-integration.md))
-- Test suites: `test-suites/` (11 test suites)
+- Evals: `evals/` (11 evals)
 
 ### Documentation
 
@@ -126,7 +126,7 @@
 - `docs/scil-evals-guide.md` — SCIL evaluation guide
 - `docs/skill-call-improvement-loop.md` — iterative skill improvement feedback loop
 - `docs/test-scaffolding.md` — scaffold directory setup for sandbox tests
-- `docs/test-suite-reference.md` — tests.json field reference
+- `docs/evals-reference.md` — tests.json field reference
 - `docs/write-skill-eval-rubric.md` — authoring skill rubric files
 - `docs/write-agent-eval-rubric.md` — authoring agent rubric files
 - `docs/script-extraction.md` — extracting mechanical steps from skills into shell scripts

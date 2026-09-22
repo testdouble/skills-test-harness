@@ -88,12 +88,12 @@ reference material — reach for them when a guide points you here.
 
 ### Configuration Reference
 
-- [Test Suite Reference](docs/test-suite-reference.md) — full `tests.json` field reference: test types, expectation types, validation
+- [Evals Reference](docs/evals-reference.md) — full `tests.json` field reference: test types, expectation types, validation
 - [Test Scaffolding](docs/test-scaffolding.md) — how scaffolds provide project context inside the Test Sandbox
 
 ### Eval Authoring Skills
 
-Claude Code skills that generate eval suites for you. They ship as the `eval-authoring` plugin in this repo:
+Claude Code skills that generate evals for you. They ship as the `eval-authoring` plugin in this repo:
 
 ```
 /plugin marketplace add testdouble/skills-test-harness
@@ -106,7 +106,7 @@ Claude Code skills that generate eval suites for you. They ship as the `eval-aut
 - [Writing Agent-Call Evals](docs/write-acil-evals.md) — `/write-acil-evals`: the agent equivalent
 - [Writing Skill Eval Rubrics](docs/write-skill-eval-rubric.md) — `/write-skill-eval-rubric`: criteria categories, output format
 - [Writing Agent Eval Rubrics](docs/write-agent-eval-rubric.md) — `/write-agent-eval-rubric`: the agent equivalent
-- [Auditing Eval Suites](docs/audit-eval-suite.md) — `/audit-eval-suite`: find drift between a suite and the skill or agent it tests, and which skill repairs it
+- [Auditing Evals](docs/audit-evals.md) — `/audit-evals`: find drift between an eval and the skill or agent it tests, and which skill repairs it
 - [Script Extraction](docs/script-extraction.md) — `/script-extraction`: hardening skills by extracting mechanical steps into shell scripts
 
 ### Deep Dives

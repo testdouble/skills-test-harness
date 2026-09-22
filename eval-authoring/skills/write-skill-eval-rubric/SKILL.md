@@ -1,11 +1,11 @@
 ---
 name: write-skill-eval-rubric
-description: "Writes or updates the LLM-judge rubric that scores a Claude Code skill's output quality, and wires it into skill-prompt tests. Given a plugin:skill identifier, reads the skill and its test suite's scaffold, drafts criteria in four categories (Presence, Specificity, Depth, Absence) plus per-file criteria for skills that write files, proposes deterministic result-contains checks, and writes the rubric markdown and llm-judge expectations to tests.json. Use when creating a rubric, adding llm-judge or effectiveness evals for a skill, or revising existing rubric criteria. Does not write skill-call tests — use write-scil-evals. Does not build scaffolds — use build-skill-eval-scaffold. Does not cover agents — use write-agent-eval-rubric."
+description: "Writes or updates the LLM-judge rubric that scores a Claude Code skill's output quality, and wires it into skill-prompt tests. Given a plugin:skill identifier, reads the skill and its eval's scaffold, drafts criteria in four categories (Presence, Specificity, Depth, Absence) plus per-file criteria for skills that write files, proposes deterministic result-contains checks, and writes the rubric markdown and llm-judge expectations to tests.json. Use when creating a rubric, adding llm-judge or effectiveness evals for a skill, or revising existing rubric criteria. Does not write skill-call tests — use write-scil-evals. Does not build scaffolds — use build-skill-eval-scaffold. Does not cover agents — use write-agent-eval-rubric."
 argument-hint: "[plugin:skill] e.g. example-plugin:code-review"
 allowed-tools: Read, Glob, Grep, Write, Edit
 ---
 
-Produce the rubric an LLM judge scores the target skill's run against, and attach it to the suite's `skill-prompt` tests. A rubric is only as good as what the judge can verify, so the criteria are drafted from what the skill actually checks for and from the concrete files planted in the suite's scaffold, then edited by the user — not invented from the skill's name.
+Produce the rubric an LLM judge scores the target skill's run against, and attach it to the eval's `skill-prompt` tests. A rubric is only as good as what the judge can verify, so the criteria are drafted from what the skill actually checks for and from the concrete files planted in the eval's scaffold, then edited by the user — not invented from the skill's name.
 
 ## Constraints
 
@@ -13,7 +13,7 @@ Produce the rubric an LLM judge scores the target skill's run against, and attac
 - When a scaffold exists, criteria name its concrete files, functions, or lines BECAUSE the judge can only verify what it can point at in the transcript.
 - Never remove or reword an existing criterion unless the user asks BECAUSE the threshold was tuned against the existing set, and changing it changes what passes.
 - Propose a `result-contains` string only for text the skill's own template or instructions guarantee BECAUSE a deterministic check fails the whole test on any variation, whereas a judge criterion is one of many.
-- Reference only rubric files and scaffolds that exist on disk BECAUSE Skillwalker validates both before a run and refuses the suite otherwise.
+- Reference only rubric files and scaffolds that exist on disk BECAUSE Skillwalker validates both before a run and refuses the eval otherwise.
 - Keep interview turns compact: the draft, then the question.
 
 ## Step 1: Identify the target skill
@@ -28,9 +28,9 @@ Read the `skill-file`, every reference file, and every agent marked `found`. Fro
 - **What it checks for** — the signals its steps, checklists, and agents look for; these become Presence criteria
 - **File output** — whether the skill writes files: `Write` in `allowed-tools`, instructions like "write the analysis to", or named output paths. If clearly yes, note the paths; if clearly no, skip file criteria; if inconclusive, ask in Step 3.
 
-## Step 2: Inspect the test suite
+## Step 2: Inspect the eval
 
-The suite directory is `tests/test-suites/{skill}/`. Read what is there:
+The eval directory is `evals/{skill}/`. Read what is there:
 
 - `tests.json`, if present — note every `skill-prompt` test, the scaffold each uses, and any `llm-judge` expectation already attached. If absent, it will be created.
 - `rubrics/` — if a rubric file exists, this is an **update**: read it and keep its criteria.
@@ -69,7 +69,7 @@ Present the draft and ask the user to approve it, or to add, remove, or modify c
 
 Show, in one message, exactly what will be written:
 
-1. **Rubric file** at `tests/test-suites/{skill}/rubrics/{filename}`, as one markdown block in this format:
+1. **Rubric file** at `evals/{skill}/rubrics/{filename}`, as one markdown block in this format:
 
 ```
 ## Rubric: {skill} of {scaffold-name} scaffold
@@ -102,5 +102,5 @@ Wait for the user to confirm.
 ## Step 7: Write and validate
 
 1. Write the rubric file, create or edit `tests.json` (append to `expect` arrays; append new entries to `tests`; a new file is `{ "plugins": ["{plugin}"], "tests": [ … ] }`), and write any new prompt files.
-2. Run `${CLAUDE_SKILL_DIR}/scripts/validate-suite.sh tests/test-suites/{skill}`. It re-checks what Skillwalker checks at load time (rubric and prompt files exist, rubric has bullet criteria, threshold in range, scaffolds exist) and prints one finding per line between `findings-start` and `findings-end`. Fix every finding and re-run until `errors: 0`.
+2. Run `${CLAUDE_SKILL_DIR}/scripts/validate-eval.sh evals/{skill}`. It re-checks what Skillwalker checks at load time (rubric and prompt files exist, rubric has bullet criteria, threshold in range, scaffolds exist) and prints one finding per line between `findings-start` and `findings-end`. Fix every finding and re-run until `errors: 0`.
 3. Report: the files created and modified, the criteria counts, and the tests that now carry the rubric.

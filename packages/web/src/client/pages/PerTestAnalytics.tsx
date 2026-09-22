@@ -3,7 +3,7 @@ import { type JSX, useEffect, useState } from 'react'
 interface PerTestRow {
   test_run_id: string
   test_name: string
-  suite: string
+  eval: string
   all_expectations_passed: boolean
   total_cost_usd: number
   num_turns: number
@@ -11,8 +11,8 @@ interface PerTestRow {
   output_tokens: number
 }
 
-interface SuiteStats {
-  suite: string
+interface EvalStats {
+  eval: string
   runs: number
   tests: number
   passed: number
@@ -96,23 +96,23 @@ export function PerTestAnalytics(): JSX.Element {
   const totalCost = allRows.reduce((s, r) => s + r.total_cost_usd, 0)
   const avgTurns = totalTests > 0 ? allRows.reduce((s, r) => s + r.num_turns, 0) / totalTests : 0
 
-  // Suite breakdown
-  const suiteMap = new Map<string, SuiteStats>()
+  // Eval breakdown
+  const evalMap = new Map<string, EvalStats>()
   for (const row of allRows) {
-    const existing = suiteMap.get(row.suite) ?? { suite: row.suite, runs: 0, tests: 0, passed: 0 }
+    const existing = evalMap.get(row.eval) ?? { eval: row.eval, runs: 0, tests: 0, passed: 0 }
     existing.tests++
     if (row.all_expectations_passed) existing.passed++
-    suiteMap.set(row.suite, existing)
+    evalMap.set(row.eval, existing)
   }
-  // Runs per suite (unique run IDs per suite)
-  const suiteRunMap = new Map<string, Set<string>>()
+  // Runs per eval (unique run IDs per eval)
+  const evalRunMap = new Map<string, Set<string>>()
   for (const row of allRows) {
-    if (!suiteRunMap.has(row.suite)) suiteRunMap.set(row.suite, new Set())
-    suiteRunMap.get(row.suite)?.add(row.test_run_id)
+    if (!evalRunMap.has(row.eval)) evalRunMap.set(row.eval, new Set())
+    evalRunMap.get(row.eval)?.add(row.test_run_id)
   }
-  const suiteStats: SuiteStats[] = Array.from(suiteMap.values()).map((s) => ({
+  const evalStats: EvalStats[] = Array.from(evalMap.values()).map((s) => ({
     ...s,
-    runs: suiteRunMap.get(s.suite)?.size ?? 0,
+    runs: evalRunMap.get(s.eval)?.size ?? 0,
   }))
 
   // Cost by test name (top 3)
@@ -133,7 +133,7 @@ export function PerTestAnalytics(): JSX.Element {
         <h1 className="text-[#f0f0f0] text-[35px] font-bold leading-tight" style={{ letterSpacing: '-0.5px' }}>
           Analytics
         </h1>
-        <p className="text-[#4f4f4f] text-[18px] mt-1">Aggregate insights across all test suites and runs</p>
+        <p className="text-[#4f4f4f] text-[18px] mt-1">Aggregate insights across all evals and runs</p>
       </div>
 
       {/* Stats row */}
@@ -163,15 +163,15 @@ export function PerTestAnalytics(): JSX.Element {
           <DonutChart passCount={passedTests} failCount={failedTests} />
         </div>
 
-        {/* Suite breakdown */}
+        {/* Eval breakdown */}
         <div className="flex-1 bg-[#1a1b1a] rounded-lg p-6">
           <span className="text-[#4f4f4f] text-[13px] font-bold block mb-4" style={{ letterSpacing: '1.5px' }}>
-            SUITE BREAKDOWN
+            EVAL BREAKDOWN
           </span>
           <div className="rounded-md overflow-hidden">
             <div className="bg-[#131413] flex items-center h-9 px-4 rounded-md">
               <span className="text-[#4f4f4f] text-[13px] font-bold flex-1" style={{ letterSpacing: '1.2px' }}>
-                SUITE
+                EVAL
               </span>
               <span className="text-[#4f4f4f] text-[13px] font-bold w-20" style={{ letterSpacing: '1.2px' }}>
                 RUNS
@@ -183,16 +183,16 @@ export function PerTestAnalytics(): JSX.Element {
                 PASS RATE
               </span>
             </div>
-            {suiteStats.map((s, i) => {
-              const suitePassRate = s.tests > 0 ? Math.round((s.passed / s.tests) * 100) : 0
+            {evalStats.map((s, i) => {
+              const evalPassRate = s.tests > 0 ? Math.round((s.passed / s.tests) * 100) : 0
               return (
                 <div
-                  key={s.suite}
+                  key={s.eval}
                   className={`flex items-center h-12 px-4 rounded-md mt-0.5 ${i % 2 === 0 ? 'bg-[#161716]' : 'bg-[#131413]'}`}
                 >
                   <span className="flex-1">
                     <span className="bg-[#1e1060] text-[#a580f9] text-[15px] font-semibold px-2.5 py-1 rounded">
-                      {s.suite}
+                      {s.eval}
                     </span>
                   </span>
                   <span className="text-[#f0f0f0] text-[16px] font-semibold w-20">{s.runs}</span>
@@ -201,10 +201,10 @@ export function PerTestAnalytics(): JSX.Element {
                     <span className="relative bg-[#252625] rounded-sm h-1.5 w-20 overflow-hidden">
                       <span
                         className="absolute left-0 top-0 h-full bg-[#75fe04] rounded-sm"
-                        style={{ width: `${suitePassRate}%` }}
+                        style={{ width: `${evalPassRate}%` }}
                       />
                     </span>
-                    <span className="text-[#f0f0f0] text-[15px] font-semibold">{suitePassRate}%</span>
+                    <span className="text-[#f0f0f0] text-[15px] font-semibold">{evalPassRate}%</span>
                   </span>
                 </div>
               )

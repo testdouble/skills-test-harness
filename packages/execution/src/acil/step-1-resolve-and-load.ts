@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import path from 'node:path'
 import type { TestCase } from '@testdouble/skillwalker-data'
-import { readTestSuiteConfig, TEST_CONFIG_FILENAME } from '@testdouble/skillwalker-data'
+import { readEvalConfig, TEST_CONFIG_FILENAME } from '@testdouble/skillwalker-data'
 import { SkillwalkerError } from '../lib/errors.js'
 
 export interface ResolvedAgentAndTests {
@@ -11,14 +11,14 @@ export interface ResolvedAgentAndTests {
 }
 
 export async function resolveAndLoad(
-  suite: string,
+  evalName: string,
   agent: string | undefined,
   testsDir: string,
   repoRoot: string,
 ): Promise<ResolvedAgentAndTests> {
-  const testSuiteDir = path.join(testsDir, 'test-suites', suite)
-  const configPath = path.join(testSuiteDir, TEST_CONFIG_FILENAME)
-  const config = await readTestSuiteConfig(configPath)
+  const evalDir = path.join(testsDir, 'evals', evalName)
+  const configPath = path.join(evalDir, TEST_CONFIG_FILENAME)
+  const config = await readEvalConfig(configPath)
 
   // Filter to agent-call tests only
   const agentCallTests = config.tests.filter((t) => t.type === 'agent-call')
@@ -52,7 +52,7 @@ export async function resolveAndLoad(
     })
 
     if (filtered.length === 0) {
-      throw new SkillwalkerError(`No agent-call tests found for agent "${agent}" in suite "${suite}"`)
+      throw new SkillwalkerError(`No agent-call tests found for agent "${agent}" in eval "${evalName}"`)
     }
 
     return { agentFile: agent, agentMdPath, tests: filtered }
@@ -69,12 +69,12 @@ export async function resolveAndLoad(
   }
 
   if (agentFiles.size === 0) {
-    throw new SkillwalkerError(`No agent-call tests found in suite "${suite}"`)
+    throw new SkillwalkerError(`No agent-call tests found in eval "${evalName}"`)
   }
 
   if (agentFiles.size > 1) {
     const options = Array.from(agentFiles).join(', ')
-    throw new SkillwalkerError(`Multiple agents found in suite "${suite}": ${options}. Use --agent to specify one.`)
+    throw new SkillwalkerError(`Multiple agents found in eval "${evalName}": ${options}. Use --agent to specify one.`)
   }
 
   const inferredAgent = Array.from(agentFiles)[0]

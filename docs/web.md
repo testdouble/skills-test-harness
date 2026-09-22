@@ -71,7 +71,7 @@ flowchart TB
 | `packages/web/src/server/index.ts` | Server entry point — Yargs CLI, Hono app, route registration, embedded static asset serving, SPA fallback |
 | `packages/web/src/server/routes/test-runs.ts` | `getTestRuns` and `getTestRunById` handlers delegating to `queryTestRunSummaries` / `queryTestRunDetails` |
 | `packages/web/src/server/routes/scil.ts` | `getScilHistory` and `getScilRunById` handlers delegating to `queryScilHistory` / `queryScilRunDetails` |
-| `packages/web/src/server/routes/analytics.ts` | `getPerTestAnalytics` handler with optional `?suite=` query param filter |
+| `packages/web/src/server/routes/analytics.ts` | `getPerTestAnalytics` handler with optional `?eval=` query param filter |
 
 ### Frontend
 | File | Purpose |
@@ -83,7 +83,7 @@ flowchart TB
 | `packages/web/src/client/pages/TestRunDetail.tsx` | Single run detail — test summary table, expectation results, LLM judge results with collapsible criteria and markdown output |
 | `packages/web/src/client/pages/ScilHistory.tsx` | SCIL run list with aggregate stats (total runs, unique skills, avg best accuracy) |
 | `packages/web/src/client/pages/ScilDetail.tsx` | Single SCIL run detail — original description, iteration-by-iteration train/test results, best description highlight |
-| `packages/web/src/client/pages/PerTestAnalytics.tsx` | Cross-run analytics — donut chart, suite breakdown, cost-by-test bars, expectation type summary |
+| `packages/web/src/client/pages/PerTestAnalytics.tsx` | Cross-run analytics — donut chart, eval breakdown, cost-by-test bars, expectation type summary |
 
 ### Infrastructure
 | File | Purpose |
@@ -105,7 +105,7 @@ The server route handlers use Hono's `Context` type and delegate to `@testdouble
 // packages/web/src/client/pages/TestRunHistory.tsx
 interface TestRunSummary {
   test_run_id: string
-  suite:       string
+  eval:       string
   date:        string
   total_tests: number
   passed:      number
@@ -116,7 +116,7 @@ interface TestRunSummary {
 interface TestRunDetailRow {
   test_run_id:             string
   test_name:               string
-  suite:                   string
+  eval:                   string
   is_error:                boolean
   all_expectations_passed: boolean
   total_cost_usd:          number
@@ -127,7 +127,7 @@ interface TestRunDetailRow {
 
 interface TestRunExpectationRow {
   test_run_id:  string
-  suite:        string
+  eval:        string
   test_name:    string
   expect_type:  string
   expect_value: string
@@ -233,7 +233,7 @@ export async function getTestRunById(c: Context, dataDir: string): Promise<Respo
 
 #### Analytics Filtering
 
-The `/api/analytics/per-test` endpoint supports an optional `?suite=` query parameter. When provided, rows are filtered client-side after the full query completes. When absent, all rows are returned.
+The `/api/analytics/per-test` endpoint supports an optional `?eval=` query parameter. When provided, rows are filtered client-side after the full query completes. When absent, all rows are returned.
 
 ### Frontend
 
@@ -264,7 +264,7 @@ Aggregates data across all test runs with:
 
 - **Summary stats** — total runs, total tests, pass rate, total cost, average turns
 - **Donut chart** — CSS conic-gradient pass/fail visualization (no charting library)
-- **Suite breakdown** — per-suite runs, tests, and pass rate with progress bars
+- **Eval breakdown** — per-eval runs, tests, and pass rate with progress bars
 - **Cost by test** — horizontal bar chart of top 3 most expensive tests
 - **Expectation types** — static list of known expectation types
 
@@ -275,7 +275,7 @@ Aggregates data across all test runs with:
 | `GET` | `/api/health` | inline | Returns `{ status: 'ok' }` |
 | `GET` | `/api/test-runs` | `getTestRuns` | List all test run summaries |
 | `GET` | `/api/test-runs/:runId` | `getTestRunById` | Get test run detail (summary, expectations, LLM judge groups, output files) |
-| `GET` | `/api/analytics/per-test` | `getPerTestAnalytics` | Get per-test analytics rows, optional `?suite=` filter |
+| `GET` | `/api/analytics/per-test` | `getPerTestAnalytics` | Get per-test analytics rows, optional `?eval=` filter |
 | `GET` | `/api/scil` | `getScilHistory` | List all SCIL run summaries |
 | `GET` | `/api/scil/:runId` | `getScilRunById` | Get SCIL run detail (summary, iterations) |
 
@@ -287,7 +287,7 @@ Aggregates data across all test runs with:
   "runs": [
     {
       "test_run_id": "20240103T120000",
-      "suite": "suite-a",
+      "eval": "eval-a",
       "date": "2024-01-03T12:00:00.000Z",
       "total_tests": 2,
       "passed": 1,
@@ -302,8 +302,8 @@ Aggregates data across all test runs with:
 **Response (200):**
 ```json
 {
-  "summary": [{ "test_run_id": "...", "test_name": "...", "suite": "...", "is_error": false, "all_expectations_passed": true, "total_cost_usd": 0.05, "num_turns": 3, "input_tokens": 1200, "output_tokens": 800 }],
-  "expectations": [{ "test_run_id": "...", "suite": "...", "test_name": "...", "expect_type": "has_call", "expect_value": "Skill(foo)", "passed": true }],
+  "summary": [{ "test_run_id": "...", "test_name": "...", "eval": "...", "is_error": false, "all_expectations_passed": true, "total_cost_usd": 0.05, "num_turns": 3, "input_tokens": 1200, "output_tokens": 800 }],
+  "expectations": [{ "test_run_id": "...", "eval": "...", "test_name": "...", "expect_type": "has_call", "expect_value": "Skill(foo)", "passed": true }],
   "llmJudgeGroups": [{ "testName": "...", "rubricFile": "...", "model": "...", "threshold": 0.8, "score": 0.9, "passed": true, "criteria": [] }],
   "outputFiles": [{ "testName": "...", "filePath": "docs/analysis.md", "fileContent": "..." }]
 }
@@ -347,7 +347,7 @@ flowchart TB
     r5["<b>/analytics</b><br>PerTestAnalytics"]
 
     d1["SectionHeader"]
-    d2["SuiteBadge"]
+    d2["EvalBadge"]
     d3["LlmJudgeSection"]
     d3a["CollapsibleOutput"]
     d3b["CriteriaTable"]
@@ -426,7 +426,7 @@ flowchart TB
 ### Backend
 - `packages/web/src/server/routes/test-runs.test.ts` — Tests `getTestRuns` and `getTestRunById` with mocked `skillwalker-data` query functions
 - `packages/web/src/server/routes/scil.test.ts` — Tests `getScilHistory` and `getScilRunById` including missing Parquet file handling
-- `packages/web/src/server/routes/analytics.test.ts` — Tests `getPerTestAnalytics` including suite filter behavior
+- `packages/web/src/server/routes/analytics.test.ts` — Tests `getPerTestAnalytics` including eval filter behavior
 
 ### Test Patterns
 - All tests mock `@testdouble/skillwalker-data` at the module level using `vi.mock()` with inline factory functions

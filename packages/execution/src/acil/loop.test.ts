@@ -65,7 +65,7 @@ import type { AcilConfig, AcilQueryResult, AcilTestCase } from './types.js'
 
 function makeConfig(overrides: Partial<AcilConfig> = {}): AcilConfig {
   return {
-    suite: 'my-suite',
+    eval: 'my-eval',
     agent: 'r-and-d:gap-analyzer',
     maxIterations: 5,
     holdout: 0,
@@ -311,7 +311,7 @@ describe('runAcilLoop', () => {
     expect(runEval).toHaveBeenCalledWith(
       expect.objectContaining({
         tempDir: '/tmp/acil-plugin',
-        suite: 'my-suite',
+        eval: 'my-eval',
         testsDir: '/mock-tests',
         concurrency: 4,
         runsPerQuery: 3,

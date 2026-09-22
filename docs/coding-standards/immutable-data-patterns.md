@@ -25,7 +25,7 @@ All TypeScript source and test files under `packages/*/src/` — both production
 
 Skillwalker accumulates metrics across test runs, threads configuration through multi-step pipelines, and reuses fixture data across many test cases. In each of these scenarios, mutating an input object would silently corrupt downstream consumers. Early in development, a totals-accumulation function mutated its input, which caused cascading incorrect metrics when the same totals object was passed to multiple accumulation calls. Adopting a return-new-object convention eliminated that bug category entirely.
 
-Spread-based test data variation complements this by ensuring that shared fixtures (like `mockTestSuiteConfig` or `defaultTotals`) remain stable across test cases even when individual tests need slightly different configurations.
+Spread-based test data variation complements this by ensuring that shared fixtures (like `mockEvalConfig` or `defaultTotals`) remain stable across test cases even when individual tests need slightly different configurations.
 
 ## Coding Standard
 
@@ -102,20 +102,20 @@ Tests use the spread operator to create variations of shared fixtures. This ensu
 
 ```typescript
 // Top-level spread to override a single property
-const promptOnlyConfig = { ...mockTestSuiteConfig }
+const promptOnlyConfig = { ...mockEvalConfig }
 
 // Nested spread to extend an array without mutating the original
 const configWithSkillCall = {
-  ...mockTestSuiteConfig,
+  ...mockEvalConfig,
   tests: [
-    ...mockTestSuiteConfig.tests,
+    ...mockEvalConfig.tests,
     { name: 'Skill: code-review trigger', type: 'skill-call', promptFile: 'trigger.md', skillFile: 'r-and-d:code-review', expect: [] },
   ],
 }
 
 // Spread in a helper to provide a fresh copy per call
-function callRunTestCases(config = mockTestSuiteConfig, totals = { ...defaultTotals }) {
-  return runTestCases(config, 'code-review', '/mock/test-suites/code-review', [], false, '20260320T094845', totals)
+function callRunTestCases(config = mockEvalConfig, totals = { ...defaultTotals }) {
+  return runTestCases(config, 'code-review', '/mock/evals/code-review', [], false, '20260320T094845', totals)
 }
 
 // Spread to override a single field on a mock object
@@ -126,18 +126,18 @@ const testWithScaffold = { ...mockTest, scaffold: 'ruby-project' }
 
 ```typescript
 // Mutating a shared fixture directly — pollutes other tests
-mockTestSuiteConfig.tests.push(newTest)
+mockEvalConfig.tests.push(newTest)
 
 // Assigning properties on a shared object
 defaultTotals.totalDurationMs = 500
 
 // Forgetting to spread the inner array — the original array is shared by reference
 const configWithSkillCall = {
-  ...mockTestSuiteConfig,
-  tests: mockTestSuiteConfig.tests.concat(newTest), // concat is safe, but push() is not
+  ...mockEvalConfig,
+  tests: mockEvalConfig.tests.concat(newTest), // concat is safe, but push() is not
 }
 // Even worse:
-mockTestSuiteConfig.tests.push(newTest) // mutates the shared fixture's array
+mockEvalConfig.tests.push(newTest) // mutates the shared fixture's array
 ```
 
 **Project references:**

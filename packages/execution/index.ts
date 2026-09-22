@@ -17,5 +17,5 @@ export type { RunTestEvalOptions } from './src/test-eval/run-test-eval.js'
 export { runTestEval } from './src/test-eval/run-test-eval.js'
 // Exit helper (used by CLI commands)
 export { exitWithResult } from './src/test-runners/steps/step-10-exit.js'
-export type { RunTestSuiteOptions, RunTestSuiteResult } from './src/test-suite/run-test-suite.js'
-export { runTestSuite } from './src/test-suite/run-test-suite.js'
+export type { RunEvalsOptions, RunEvalsResult } from './src/evals/run-evals.js'
+export { runEvals } from './src/evals/run-evals.js'

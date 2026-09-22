@@ -17,9 +17,9 @@ import type { IterationResult, ScilConfig } from './types.js'
 
 export async function runScilLoop(config: ScilConfig): Promise<void> {
   // Step 1: Resolve skill and load tests
-  process.stderr.write(`Resolving skill and loading tests for suite "${config.suite}"...\n`)
+  process.stderr.write(`Resolving skill and loading tests for eval "${config.eval}"...\n`)
   const { skillFile, skillMdPath, tests } = await resolveAndLoad(
-    config.suite,
+    config.eval,
     config.skill,
     config.testsDir,
     config.repoRoot,
@@ -32,7 +32,7 @@ export async function runScilLoop(config: ScilConfig): Promise<void> {
   } else {
     process.stderr.write(`Using all ${tests.length} tests for training (no holdout)\n`)
   }
-  const splitTests = splitSets(config.suite, skillFile, tests, config.holdout)
+  const splitTests = splitSets(config.eval, skillFile, tests, config.holdout)
   const trainTestNames = new Set(splitTests.filter((t) => t.set === 'train').map((t) => t.name))
 
   // Step 3: Read SKILL.md
@@ -68,7 +68,7 @@ export async function runScilLoop(config: ScilConfig): Promise<void> {
     const allResults = await runEval({
       tempDir,
       testCases: splitTests,
-      suite: config.suite,
+      eval: config.eval,
       testsDir: config.testsDir,
       concurrency: config.concurrency,
       runsPerQuery: config.runsPerQuery,

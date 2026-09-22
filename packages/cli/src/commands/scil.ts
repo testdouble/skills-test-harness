@@ -8,7 +8,7 @@ export const describe = 'Skill Call Improvement Loop — iteratively improve a s
 
 export function builder(yargs: Argv): Argv {
   return yargs
-    .option('suite', { type: 'string', demandOption: true, describe: 'Test suite name' })
+    .option('eval', { type: 'string', demandOption: true, describe: 'Eval name' })
     .option('skill', { type: 'string', describe: 'Target skill in plugin:skill format (inferred if omitted)' })
     .option('max-iterations', { type: 'number', default: 5, describe: 'Maximum improvement iterations' })
     .option('holdout', { type: 'number', default: 0, describe: 'Fraction of tests held out for validation (e.g. 0.4)' })
@@ -30,7 +30,7 @@ export function builder(yargs: Argv): Argv {
 
 export async function handler(argv: Record<string, unknown>): Promise<void> {
   const config: ScilConfig = {
-    suite: argv.suite as string,
+    eval: argv.eval as string,
     skill: argv.skill as string | undefined,
     maxIterations: argv['max-iterations'] as number,
     holdout: argv.holdout as number,

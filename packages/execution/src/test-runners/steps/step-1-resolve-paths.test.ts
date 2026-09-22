@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { resolvePaths } from './step-1-resolve-paths.js'
 
 describe('resolvePaths', () => {
-  it('returns testSuiteDir computed from testsDir and suite', () => {
-    const result = resolvePaths('my-suite', '/mock/tests')
-    expect(result).toEqual({ testSuiteDir: '/mock/tests/test-suites/my-suite' })
+  it('returns evalDir computed from testsDir and eval', () => {
+    const result = resolvePaths('my-eval', '/mock/tests')
+    expect(result).toEqual({ evalDir: '/mock/tests/evals/my-eval' })
   })
 })

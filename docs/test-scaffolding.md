@@ -1,6 +1,6 @@
 # Test Scaffolding
 
-> **Tier 2 · Skill and agent authors.** Explains what scaffolds are and how to create and wire one into a test suite. Assumes you have a working test suite — see [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md) if you don't.
+> **Tier 2 · Skill and agent authors.** Explains what scaffolds are and how to create and wire one into an eval. Assumes you have a working eval — see [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md) if you don't.
 
 Add a `scaffold` field to a test to give your skill a realistic project to work against — source files to review, configs to discover, docs to enhance. This page first explains the concept (what scaffolds are and how Skillwalker applies them), then the task (how to configure and create one).
 
@@ -13,7 +13,7 @@ Scaffolds provide a pre-built project structure that Claude Code runs against in
 When a test case includes a `scaffold` field, Skillwalker passes the scaffold path to the sandbox run script. The script copies the scaffold into a temporary working directory and initializes a git repository before Claude Code starts.
 
 ```
-tests/test-suites/code-review/
+evals/code-review/
   scaffolds/
     ruby-project/           <-- scaffold directory
       Gemfile
@@ -116,18 +116,18 @@ The first test uses a scaffold; the second does not. Tests without a `scaffold` 
 #### Scaffold Field Rules
 
 - The `scaffold` field is **optional** on each test case.
-- The value must match a directory name under `scaffolds/` in the same test suite.
+- The value must match a directory name under `scaffolds/` in the same eval.
 - Validation runs before sandbox execution — a bad scaffold name fails fast.
-- Different tests in the same suite can use different scaffolds, or no scaffold at all.
+- Different tests in the same eval can use different scaffolds, or no scaffold at all.
 
 ### Creating a Scaffold
 
 #### Directory Structure
 
-Create a directory under your test suite's `scaffolds/` folder. The directory name becomes the scaffold name used in `tests.json`:
+Create a directory under your eval's `scaffolds/` folder. The directory name becomes the scaffold name used in `tests.json`:
 
 ```
-tests/test-suites/{suite-name}/
+evals/{eval-name}/
   scaffolds/
     {scaffold-name}/
       ... project files ...
@@ -207,9 +207,9 @@ Not every test needs a scaffold. The choice depends on what the test is verifyin
 | Negative test — skill should NOT trigger | Usually no | Empty workspace is sufficient to verify non-invocation |
 | Skill requires external tools (e.g. `gh`) | Usually no | GitHub CLI isn't available in the sandbox |
 
-#### Sharing Scaffolds Across Suites
+#### Sharing Scaffolds Across Evals
 
-Each test suite has its own `scaffolds/` directory. If multiple suites need the same project structure, the scaffold files are duplicated into each suite. This keeps suites self-contained — changes to one suite's scaffold don't affect others.
+Each eval has its own `scaffolds/` directory. If multiple evals need the same project structure, the scaffold files are duplicated into each eval. This keeps evals self-contained — changes to one eval's scaffold don't affect others.
 
 ## Related References
 
@@ -221,5 +221,5 @@ Each test suite has its own `scaffolds/` directory. If multiple suites need the 
 
 ---
 
-**Next:** [Test Suite Reference](test-suite-reference.md) — the full `tests.json` field reference, including the `scaffold` field.
+**Next:** [Evals Reference](evals-reference.md) — the full `tests.json` field reference, including the `scaffold` field.
 **Related:** [Building Skill Eval Scaffolds](build-skill-eval-scaffold.md) — the `/build-skill-eval-scaffold` skill that generates a scaffold for you.

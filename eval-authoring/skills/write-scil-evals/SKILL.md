@@ -1,6 +1,6 @@
 ---
 name: write-scil-evals
-description: "Writes skill-call (SCIL) trigger-accuracy tests for a Claude Code skill. Given a plugin:skill identifier, reads the skill's description and its sibling skills, collects positive, negative, and sibling trigger prompts from the user, assigns a scaffold to any prompt whose trigger decision depends on repo state, and writes tests.json entries plus prompt files under tests/test-suites/{skill}/. Use when creating or extending skill-call tests, writing SCIL evals, or adding trigger accuracy coverage for a skill. Does not write rubrics or skill-prompt tests — use write-skill-eval-rubric. Does not build scaffolds — use build-skill-eval-scaffold with --for trigger. Does not test agents — use write-acil-evals."
+description: "Writes skill-call (SCIL) trigger-accuracy tests for a Claude Code skill. Given a plugin:skill identifier, reads the skill's description and its sibling skills, collects positive, negative, and sibling trigger prompts from the user, assigns a scaffold to any prompt whose trigger decision depends on repo state, and writes tests.json entries plus prompt files under evals/{skill}/. Use when creating or extending skill-call tests, writing SCIL evals, or adding trigger accuracy coverage for a skill. Does not write rubrics or skill-prompt tests — use write-skill-eval-rubric. Does not build scaffolds — use build-skill-eval-scaffold with --for trigger. Does not test agents — use write-acil-evals."
 argument-hint: "[plugin:skill] e.g. example-plugin:code-review"
 allowed-tools: Read, Glob, Grep, Write, Edit
 ---
@@ -12,7 +12,7 @@ Produce the prompts and `tests.json` entries that measure whether Claude calls t
 - Never modify or remove an existing test entry BECAUSE the existing entries are the baseline a SCIL run scores the description against; changing them changes the baseline silently.
 - Every entry carries an explicit `expect` array with `{ "skill-call": true }` or `{ "skill-call": false }` BECAUSE an omitted `expect` falls back to Skillwalker defaults without a warning.
 - A prompt file contains only the prompt text — no frontmatter, no heading — BECAUSE Skillwalker sends the file verbatim as the user's message.
-- Set `scaffold` on a test only when `tests/test-suites/{suite}/scaffolds/{name}/` already exists BECAUSE Skillwalker validates every scaffold before a run and refuses the whole suite otherwise.
+- Set `scaffold` on a test only when `evals/{eval}/scaffolds/{name}/` already exists BECAUSE Skillwalker validates every scaffold before a run and refuses the whole eval otherwise.
 - Every new prompt filename is unique within `prompts/` BECAUSE two tests sharing a file cannot be edited independently.
 - Keep interview turns compact: the ask, the guidance for each category, then wait.
 
@@ -28,13 +28,13 @@ Read the target skill's SKILL.md. Note its `name`, its `description`, and every 
 
 Use Glob for `{plugin}/skills/*/SKILL.md`. For every sibling other than the target, read `name` and `description` from the frontmatter. If the target is the only skill in its plugin, sibling prompts are skipped in Step 4.
 
-## Step 3: Locate the test suite
+## Step 3: Locate the eval
 
-The suite directory is `tests/test-suites/{skill}/`. If `tests.json` exists there, this is an **update**: read it, note the existing `skill-call` tests (names, prompt files, scaffolds), and note every directory under `scaffolds/`. Otherwise this is a **new suite**. Do not ask about the location; state it in the next message and let the user redirect if they want to.
+The eval directory is `evals/{skill}/`. If `tests.json` exists there, this is an **update**: read it, note the existing `skill-call` tests (names, prompt files, scaffolds), and note every directory under `scaffolds/`. Otherwise this is a **new eval**. Do not ask about the location; state it in the next message and let the user redirect if they want to.
 
 ## Step 4: Collect trigger prompts
 
-Send one message that states the suite location and the sibling list, then asks for all three categories at once. Explain each category with its examples:
+Send one message that states the eval location and the sibling list, then asks for all three categories at once. Explain each category with its examples:
 
 **Positive prompts (3 to 5)** — natural sentences a real user would type that SHOULD trigger the skill. They describe the intent the skill handles without necessarily using the skill's name:
 - e.g. for code-review: `review the code in lib/example.rb`
@@ -73,13 +73,13 @@ For each prompt, generate:
    - `"scaffold"`: only when assigned in Step 5
    - `"expect"`: `[{ "skill-call": true }]` for positive prompts, `[{ "skill-call": false }]` for negative and sibling prompts
 
-A new suite's `tests.json` is `{ "plugins": ["{plugin}"], "tests": [ ...entries ] }`. An update appends the new entries to the existing `tests` array.
+A new eval's `tests.json` is `{ "plugins": ["{plugin}"], "tests": [ ...entries ] }`. An update appends the new entries to the existing `tests` array.
 
 ## Step 7: Present the summary and confirm
 
 Before writing anything, show the user in one message:
 
-1. The suite directory and whether this is a new suite or an update
+1. The eval directory and whether this is a new eval or an update
 2. The complete `tests.json` (new) or the entries being appended (update)
 3. Each prompt file path with its contents
 4. Counts by category: positive, negative, sibling
@@ -89,6 +89,6 @@ Wait for the user to confirm.
 
 ## Step 8: Write and validate
 
-1. Create or edit `tests/test-suites/{suite}/tests.json` and write each prompt file under `tests/test-suites/{suite}/prompts/`.
-2. Run `${CLAUDE_SKILL_DIR}/scripts/validate-suite.sh tests/test-suites/{suite}`. It re-checks what Skillwalker checks at load time (prompt files exist and are non-empty, scaffolds and rubrics exist, every entry has `expect`, `skillFile` is present and well-formed) and prints one finding per line between `findings-start` and `findings-end`. Fix every finding and re-run until `errors: 0`.
+1. Create or edit `evals/{eval}/tests.json` and write each prompt file under `evals/{eval}/prompts/`.
+2. Run `${CLAUDE_SKILL_DIR}/scripts/validate-eval.sh evals/{eval}`. It re-checks what Skillwalker checks at load time (prompt files exist and are non-empty, scaffolds and rubrics exist, every entry has `expect`, `skillFile` is present and well-formed) and prints one finding per line between `findings-start` and `findings-end`. Fix every finding and re-run until `errors: 0`.
 3. Report: the files created and modified, the counts by category, and any test still waiting on a scaffold with the exact build command.

@@ -34,15 +34,15 @@ function makeManyTests(positiveCount: number, negativeCount: number): TestCase[]
 describe('splitSets', () => {
   it('assigns all tests to train when holdout is 0', () => {
     const tests = makeManyTests(3, 2)
-    const result = splitSets('suite', 'p:s', tests, 0)
+    const result = splitSets('eval', 'p:s', tests, 0)
     expect(result).toHaveLength(5)
     expect(result.every((t) => t.set === 'train')).toBe(true)
   })
 
   it('produces identical results for identical inputs (deterministic)', () => {
     const tests = makeManyTests(5, 5)
-    const result1 = splitSets('suite', 'p:s', tests, 0.3)
-    const result2 = splitSets('suite', 'p:s', tests, 0.3)
+    const result1 = splitSets('eval', 'p:s', tests, 0.3)
+    const result2 = splitSets('eval', 'p:s', tests, 0.3)
     const assignments1 = result1.map((t) => `${t.name}:${t.set}`)
     const assignments2 = result2.map((t) => `${t.name}:${t.set}`)
     expect(assignments1).toEqual(assignments2)
@@ -50,7 +50,7 @@ describe('splitSets', () => {
 
   it('stratifies by expected trigger value', () => {
     const tests = makeManyTests(6, 6)
-    const result = splitSets('suite', 'p:s', tests, 0.4)
+    const result = splitSets('eval', 'p:s', tests, 0.4)
     const positives = result.filter((t) =>
       t.expect.some((e) => e.type === 'skill-call' && (e as { value: boolean }).value === true),
     )
@@ -65,18 +65,18 @@ describe('splitSets', () => {
 
   it('assigns single-element groups to train', () => {
     const tests = [makeSkillTest('pos-0', true), makeSkillTest('neg-0', false)]
-    const result = splitSets('suite', 'p:s', tests, 0.5)
+    const result = splitSets('eval', 'p:s', tests, 0.5)
     expect(result.every((t) => t.set === 'train')).toBe(true)
   })
 
   it('returns empty array for empty input', () => {
-    expect(splitSets('suite', 'p:s', [], 0.3)).toEqual([])
+    expect(splitSets('eval', 'p:s', [], 0.3)).toEqual([])
   })
 
-  it('produces different splits for different suite/entityFile combinations', () => {
+  it('produces different splits for different eval/entityFile combinations', () => {
     const tests = makeManyTests(10, 0)
-    const result1 = splitSets('suite-a', 'p:s', tests, 0.3)
-    const result2 = splitSets('suite-b', 'p:s', tests, 0.3)
+    const result1 = splitSets('eval-a', 'p:s', tests, 0.3)
+    const result2 = splitSets('eval-b', 'p:s', tests, 0.3)
     const a1 = result1.map((t) => `${t.name}:${t.set}`)
     const a2 = result2.map((t) => `${t.name}:${t.set}`)
     expect(a1).not.toEqual(a2)
@@ -84,7 +84,7 @@ describe('splitSets', () => {
 
   it('produces expected train/test proportions', () => {
     const tests = makeManyTests(10, 0)
-    const result = splitSets('suite', 'p:s', tests, 0.2)
+    const result = splitSets('eval', 'p:s', tests, 0.2)
     const trainCount = result.filter((t) => t.set === 'train').length
     const testCount = result.filter((t) => t.set === 'test').length
     expect(testCount).toBe(2)
@@ -96,7 +96,7 @@ describe('splitSets', () => {
       const positiveTests = [makeAgentTest('agent-pos-0', true), makeAgentTest('agent-pos-1', true)]
       const negativeTests = [makeAgentTest('agent-neg-0', false), makeAgentTest('agent-neg-1', false)]
       const allTests = [...positiveTests, ...negativeTests]
-      const result = splitSets('suite', 'p:a', allTests, 0)
+      const result = splitSets('eval', 'p:a', allTests, 0)
       // holdout=0 → all train, but verify all 4 are present (getExpectedTrigger didn't crash)
       expect(result).toHaveLength(4)
       expect(result.every((t) => t.set === 'train')).toBe(true)
@@ -110,7 +110,7 @@ describe('splitSets', () => {
       for (let i = 0; i < 6; i++) {
         tests.push(makeAgentTest(`agent-neg-${i}`, false))
       }
-      const result = splitSets('suite', 'p:a', tests, 0.4)
+      const result = splitSets('eval', 'p:a', tests, 0.4)
       const positives = result.filter((t) =>
         t.expect.some((e) => e.type === 'agent-call' && (e as { value: boolean }).value === true),
       )
@@ -131,8 +131,8 @@ describe('splitSets', () => {
       for (let i = 0; i < 5; i++) {
         tests.push(makeAgentTest(`agent-neg-${i}`, false))
       }
-      const result1 = splitSets('suite', 'p:a', tests, 0.3)
-      const result2 = splitSets('suite', 'p:a', tests, 0.3)
+      const result1 = splitSets('eval', 'p:a', tests, 0.3)
+      const result2 = splitSets('eval', 'p:a', tests, 0.3)
       const assignments1 = result1.map((t) => `${t.name}:${t.set}`)
       const assignments2 = result2.map((t) => `${t.name}:${t.set}`)
       expect(assignments1).toEqual(assignments2)
@@ -155,7 +155,7 @@ describe('splitSets', () => {
       makeAgentTest('agent-neg-1', false),
       makeAgentTest('agent-neg-2', false),
     ]
-    const result = splitSets('suite', 'p:s', tests, 0.4)
+    const result = splitSets('eval', 'p:s', tests, 0.4)
     expect(result).toHaveLength(12)
     const positives = result.filter((t) => {
       const e = t.expect[0]
@@ -174,8 +174,8 @@ describe('splitSets', () => {
   // TP-002 (T2): Different entityFile values produce different splits
   it('produces different splits for different entityFile values', () => {
     const tests = makeManyTests(10, 0)
-    const result1 = splitSets('suite', 'p:skill-a', tests, 0.3)
-    const result2 = splitSets('suite', 'p:skill-b', tests, 0.3)
+    const result1 = splitSets('eval', 'p:skill-a', tests, 0.3)
+    const result2 = splitSets('eval', 'p:skill-b', tests, 0.3)
     const a1 = result1.map((t) => `${t.name}:${t.set}`)
     const a2 = result2.map((t) => `${t.name}:${t.set}`)
     expect(a1).not.toEqual(a2)
@@ -197,7 +197,7 @@ describe('splitSets', () => {
       makeSkillTest('pos-1', true),
       makeSkillTest('pos-2', true),
     ]
-    const result = splitSets('suite', 'p:s', tests, 0.5)
+    const result = splitSets('eval', 'p:s', tests, 0.5)
     // multi-expect has skill-call value=false → negative stratum (single element → train)
     const multiExpect = result.find((t) => t.name === 'multi-expect')
     expect(multiExpect).toBeDefined()
@@ -207,7 +207,7 @@ describe('splitSets', () => {
   // TP-004 (T3): holdout=1.0 preserves at least 1 train per stratum
   it('preserves at least 1 train sample even with holdout=1.0', () => {
     const tests = makeManyTests(4, 4)
-    const result = splitSets('suite', 'p:s', tests, 1.0)
+    const result = splitSets('eval', 'p:s', tests, 1.0)
     const trainCount = result.filter((t) => t.set === 'train').length
     expect(trainCount).toBeGreaterThanOrEqual(2)
   })
@@ -225,7 +225,7 @@ describe('splitSets', () => {
       makeSkillTest('neg-1', false),
       makeSkillTest('neg-2', false),
     ]
-    const result = splitSets('suite', 'p:s', tests, 0.5)
+    const result = splitSets('eval', 'p:s', tests, 0.5)
     // no-trigger defaults to positive (single element in positive stratum → train)
     const noTrigger = result.find((t) => t.name === 'no-trigger')
     expect(noTrigger).toBeDefined()

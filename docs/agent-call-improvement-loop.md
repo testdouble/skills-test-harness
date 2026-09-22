@@ -8,7 +8,7 @@ Agent descriptions determine when Claude delegates tasks to custom agents — th
 
 ## How It Works
 
-ACIL runs a loop over `agent-call` type tests in a test suite:
+ACIL runs a loop over `agent-call` type tests in an eval:
 
 1. **Evaluate** — run each test case against the current agent description in a Test Sandbox, recording whether the agent was delegated to as expected
 2. **Score** — compute trigger accuracy across all test cases
@@ -27,7 +27,7 @@ make build
 ./build/skillwalker sandbox-setup
 ```
 
-## Test Suite Requirements
+## Eval Requirements
 
 `acil` reads `agent-call` type tests from `tests.json`. Only tests with `"type": "agent-call"` are used — prompt tests and skill-call tests are ignored.
 
@@ -100,7 +100,7 @@ The ACIL pipeline (numbered step files, shared scoring/output/report modules) is
 
 When `--holdout` is greater than `0`, ACIL splits the test cases into a train set and a test set before the loop begins. The split is:
 
-- **Deterministic** — the same suite+agent always produces the same split
+- **Deterministic** — the same eval+agent always produces the same split
 - **Stratified** — at least one positive (`expected: true`) and one negative (`expected: false`) in each set when possible
 
 During the loop, only train results are shown to the improvement prompt. Test accuracy is tracked separately and not included in the prompt, preventing data leakage. The best iteration is selected by highest test accuracy (not train accuracy) when holdout is active.
@@ -152,12 +152,12 @@ ACIL validates agent identifiers before constructing file paths:
 ## Related References
 
 - [Skill Call Improvement Loop (SCIL)](skill-call-improvement-loop.md) — parallel implementation for skill descriptions
-- [Test Suite Reference](test-suite-reference.md) — full tests.json field reference for `agent-call` type tests
+- [Evals Reference](evals-reference.md) — full tests.json field reference for `agent-call` type tests
 - [Data Package](data.md) — shared data layer providing train/test splitting, ACIL prompt building, and frontmatter manipulation
 - [Evals Package](evals.md) — evaluation engine providing `evaluateAgentCall` used by ACIL step-5
 - [Execution Package](execution.md) — execution package architecture including ACIL pipeline steps and shared modules
 
 ---
 
-**Next:** [Getting Started: Agent Trigger Accuracy](getting-started/agent-trigger-accuracy.md) — write and run an agent-call test suite end to end.
+**Next:** [Getting Started: Agent Trigger Accuracy](getting-started/agent-trigger-accuracy.md) — write and run an agent-call eval end to end.
 **Related:** [Skill Call Improvement Loop (SCIL)](skill-call-improvement-loop.md) — the parallel loop for skill descriptions.

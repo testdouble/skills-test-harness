@@ -12,7 +12,7 @@ Agent effectiveness measures how well your agent performs its job — not whethe
 
 1. Create a project scaffold that gives your agent realistic context to work with
 2. Write your test configuration and rubric using the `/write-agent-eval-rubric` skill
-3. Run the test suite to produce agent output
+3. Run the eval to produce agent output
 4. Evaluate the results with the LLM judge
 5. Import the results into the analytics database
 6. View the results in the skillwalker-web dashboard
@@ -33,7 +33,7 @@ For example:
 /build-agent-eval-scaffold r-and-d:gap-analyzer
 ```
 
-The skill interviews you about the technology stack, project shape, and specific signals to plant, then generates a scaffold directory at `tests/test-suites/{agent-name}/scaffolds/{scaffold-name}/`.
+The skill interviews you about the technology stack, project shape, and specific signals to plant, then generates a scaffold directory at `evals/{agent-name}/scaffolds/{scaffold-name}/`.
 
 For details on the scaffold creation workflow, see [Building Agent Eval Scaffolds](../build-agent-eval-scaffold.md). For how scaffolds work inside the Test Sandbox, see [Test Scaffolding](../test-scaffolding.md).
 
@@ -60,19 +60,19 @@ The skill reads your scaffold files and interviews you to collect criteria in fo
 
 It generates two things:
 
-- `tests/test-suites/{agent-name}/rubrics/{agent-name}-quality.md` — the rubric file with categorized criteria
-- Updates to `tests/test-suites/{agent-name}/tests.json` — agent-prompt test entries with `llm-judge` expectations
+- `evals/{agent-name}/rubrics/{agent-name}-quality.md` — the rubric file with categorized criteria
+- Updates to `evals/{agent-name}/tests.json` — agent-prompt test entries with `llm-judge` expectations
 
 **Note:** The skill can create agent-prompt tests from scratch if none exist yet, or add rubric expectations to existing tests.
 
-For details on the skill's full workflow and criteria categories, see [Writing Agent Eval Rubrics](../write-agent-eval-rubric.md). For the complete `tests.json` field reference, see [Test Suite Reference](../test-suite-reference.md).
+For details on the skill's full workflow and criteria categories, see [Writing Agent Eval Rubrics](../write-agent-eval-rubric.md). For the complete `tests.json` field reference, see [Evals Reference](../evals-reference.md).
 
-## Step 3: Run the test suite
+## Step 3: Run the eval
 
-Run all tests in your suite:
+Run all tests in your eval:
 
 ```bash
-./build/skillwalker test-run --suite {agent-name}
+./build/skillwalker test-run --eval {agent-name}
 ```
 
 This runs your agent against the prompt and scaffold inside the Test Sandbox. The LLM judge does not run yet — it evaluates stored output in the next step.
@@ -80,13 +80,13 @@ This runs your agent against the prompt and scaffold inside the Test Sandbox. Th
 **Tip:** To run a single test in isolation (useful for debugging):
 
 ```bash
-./build/skillwalker test-run --suite {agent-name} --test "Prompt: some test name"
+./build/skillwalker test-run --eval {agent-name} --test "Prompt: some test name"
 ```
 
 **Tip:** To see raw Claude output for troubleshooting:
 
 ```bash
-./build/skillwalker test-run --suite {agent-name} --debug
+./build/skillwalker test-run --eval {agent-name} --debug
 ```
 
 For the full list of CLI flags, see [CLI](../cli.md).

@@ -1,9 +1,9 @@
-import type { ParsedRunMetrics, TestSuiteConfig } from '@testdouble/skillwalker-data'
+import type { ParsedRunMetrics, EvalConfig } from '@testdouble/skillwalker-data'
 import mockParsedMetricsJson from '@testdouble/test-fixtures/cli/test-runners/steps/mock-parsed-metrics.json'
-import mockTestSuiteConfigJson from '@testdouble/test-fixtures/cli/test-runners/steps/mock-test-suite-config.json'
+import mockEvalConfigJson from '@testdouble/test-fixtures/cli/test-runners/steps/mock-eval-config.json'
 import { vi } from 'vitest'
 
-export const mockTestSuiteConfig: TestSuiteConfig = mockTestSuiteConfigJson as TestSuiteConfig
+export const mockEvalConfig: EvalConfig = mockEvalConfigJson as EvalConfig
 
 export const mockParsedMetrics: ParsedRunMetrics = mockParsedMetricsJson as ParsedRunMetrics
 

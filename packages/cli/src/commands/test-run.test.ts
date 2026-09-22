@@ -1,17 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@testdouble/skillwalker-execution', () => ({
-  runTestSuite: vi.fn(),
+  runEvals: vi.fn(),
   exitWithResult: vi.fn(),
 }))
 vi.mock('../paths.js', () => ({
   outputDir: '/mock/output',
   testsDir: '/mock/tests',
-  getAllTestSuites: vi.fn(),
+  getAllEvals: vi.fn(),
 }))
 
-import { exitWithResult, runTestSuite } from '@testdouble/skillwalker-execution'
-import { getAllTestSuites } from '../paths.js'
+import { exitWithResult, runEvals } from '@testdouble/skillwalker-execution'
+import { getAllEvals } from '../paths.js'
 import { builder, command, describe as commandDescribe, handler } from './test-run.js'
 
 const mockResult = {
@@ -23,7 +23,7 @@ const mockResult = {
 }
 
 const defaultArgv = {
-  suite: 'my-suite',
+  eval: 'my-eval',
   test: undefined,
   debug: false,
   'repo-root': '/mock/repo',
@@ -31,9 +31,9 @@ const defaultArgv = {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  vi.mocked(runTestSuite).mockResolvedValue(mockResult)
+  vi.mocked(runEvals).mockResolvedValue(mockResult)
   vi.mocked(exitWithResult).mockImplementation((() => {}) as any)
-  vi.mocked(getAllTestSuites).mockReturnValue(['suite-a', 'suite-b'])
+  vi.mocked(getAllEvals).mockReturnValue(['eval-a', 'eval-b'])
 })
 
 describe('test-run command exports', () => {
@@ -48,7 +48,7 @@ describe('test-run command exports', () => {
 })
 
 describe('test-run builder', () => {
-  it('configures suite as an optional string option', () => {
+  it('configures eval as an optional string option', () => {
     const options: Record<string, unknown> = {}
     const fakeYargs = {
       option(name: string, opts: unknown) {
@@ -57,8 +57,8 @@ describe('test-run builder', () => {
       },
     } as any
     builder(fakeYargs)
-    expect(options.suite).toMatchObject({ type: 'string' })
-    expect(options.suite).not.toHaveProperty('demandOption')
+    expect(options.eval).toMatchObject({ type: 'string' })
+    expect(options.eval).not.toHaveProperty('demandOption')
   })
 
   it('configures debug with a boolean default of false', () => {
@@ -87,10 +87,10 @@ describe('test-run builder', () => {
 })
 
 describe('test-run handler', () => {
-  it('calls runTestSuite with correct options', async () => {
+  it('calls runEvals with correct options', async () => {
     await handler(defaultArgv)
-    expect(vi.mocked(runTestSuite)).toHaveBeenCalledWith({
-      suites: ['my-suite'],
+    expect(vi.mocked(runEvals)).toHaveBeenCalledWith({
+      evals: ['my-eval'],
       testFilter: undefined,
       debug: false,
       outputDir: '/mock/output',
@@ -101,23 +101,23 @@ describe('test-run handler', () => {
 
   it('passes test filter when provided', async () => {
     await handler({ ...defaultArgv, test: 'my-test' })
-    expect(vi.mocked(runTestSuite)).toHaveBeenCalledWith(expect.objectContaining({ testFilter: 'my-test' }))
+    expect(vi.mocked(runEvals)).toHaveBeenCalledWith(expect.objectContaining({ testFilter: 'my-test' }))
   })
 
   it('passes failures from result to exitWithResult', async () => {
-    vi.mocked(runTestSuite).mockResolvedValue({ ...mockResult, failures: 3 })
+    vi.mocked(runEvals).mockResolvedValue({ ...mockResult, failures: 3 })
     await handler(defaultArgv)
     expect(vi.mocked(exitWithResult)).toHaveBeenCalledWith(3)
   })
 
-  it('runs all discovered suites when --suite is omitted', async () => {
-    await handler({ ...defaultArgv, suite: undefined })
-    expect(vi.mocked(getAllTestSuites)).toHaveBeenCalled()
-    expect(vi.mocked(runTestSuite)).toHaveBeenCalledWith(expect.objectContaining({ suites: ['suite-a', 'suite-b'] }))
+  it('runs all discovered evals when --eval is omitted', async () => {
+    await handler({ ...defaultArgv, eval: undefined })
+    expect(vi.mocked(getAllEvals)).toHaveBeenCalled()
+    expect(vi.mocked(runEvals)).toHaveBeenCalledWith(expect.objectContaining({ evals: ['eval-a', 'eval-b'] }))
   })
 
-  it('does not call getAllTestSuites when --suite is provided', async () => {
+  it('does not call getAllEvals when --eval is provided', async () => {
     await handler(defaultArgv)
-    expect(vi.mocked(getAllTestSuites)).not.toHaveBeenCalled()
+    expect(vi.mocked(getAllEvals)).not.toHaveBeenCalled()
   })
 })

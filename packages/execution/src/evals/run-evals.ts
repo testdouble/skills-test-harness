@@ -8,8 +8,8 @@ import { initTotals } from '../test-runners/steps/step-7-init-totals.js'
 import { runTestCases } from '../test-runners/steps/step-8-run-test-cases.js'
 import { printTotals } from '../test-runners/steps/step-9-print-totals.js'
 
-export interface RunTestSuiteOptions {
-  suites: string[]
+export interface RunEvalsOptions {
+  evals: string[]
   testFilter?: string
   debug: boolean
   outputDir: string
@@ -17,7 +17,7 @@ export interface RunTestSuiteOptions {
   repoRoot: string
 }
 
-export interface RunTestSuiteResult {
+export interface RunEvalsResult {
   testRunId: string
   totalDurationMs: number
   totalInputTokens: number
@@ -25,26 +25,26 @@ export interface RunTestSuiteResult {
   failures: number
 }
 
-export async function runTestSuite(opts: RunTestSuiteOptions): Promise<RunTestSuiteResult> {
+export async function runEvals(opts: RunEvalsOptions): Promise<RunEvalsResult> {
   const testRunId = generateRunId()
   process.stderr.write(`Run ID: ${testRunId}\n`)
   process.stderr.write('Checking sandbox...\n')
   await ensureSandboxExists()
   let totals = initTotals()
 
-  for (const suite of opts.suites) {
-    process.stderr.write(`\nRunning suite: ${suite}\n`)
+  for (const evalName of opts.evals) {
+    process.stderr.write(`\nRunning eval: ${evalName}\n`)
     process.stderr.write('  Resolving paths...\n')
-    const { testSuiteDir } = resolvePaths(suite, opts.testsDir)
+    const { evalDir } = resolvePaths(evalName, opts.testsDir)
     process.stderr.write('  Reading config...\n')
-    const { configFilePath } = await validateConfig(testSuiteDir)
-    const config = await readConfig(configFilePath, testSuiteDir, opts.testFilter)
+    const { configFilePath } = await validateConfig(evalDir)
+    const config = await readConfig(configFilePath, evalDir, opts.testFilter)
     process.stderr.write('  Building flags...\n')
     const { pluginDirs } = buildFlags(config, opts.repoRoot)
     totals = await runTestCases(
       config,
-      suite,
-      testSuiteDir,
+      evalName,
+      evalDir,
       pluginDirs,
       opts.debug,
       testRunId,

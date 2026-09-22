@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { mockParsedMetrics, mockTestSuiteConfig } from './fixtures.js'
+import { mockParsedMetrics, mockEvalConfig } from './fixtures.js'
 import { runTestCases } from './step-8-run-test-cases.js'
 
 vi.mock('../prompt/index.js', () => ({
@@ -43,11 +43,11 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-function callRunTestCases(config = mockTestSuiteConfig, totals = { ...defaultTotals }) {
+function callRunTestCases(config = mockEvalConfig, totals = { ...defaultTotals }) {
   return runTestCases(
     config,
     'code-review',
-    '/mock/test-suites/code-review',
+    '/mock/evals/code-review',
     [],
     false,
     '20260320T094845',
@@ -67,9 +67,9 @@ describe('runTestCases dispatcher — routing', () => {
 
   it('routes skill-call tests to runSkillCallTests', async () => {
     const configWithSkillCall = {
-      ...mockTestSuiteConfig,
+      ...mockEvalConfig,
       tests: [
-        ...mockTestSuiteConfig.tests,
+        ...mockEvalConfig.tests,
         {
           name: 'Skill: code-review trigger',
           type: 'skill-call',
@@ -87,9 +87,9 @@ describe('runTestCases dispatcher — routing', () => {
 
   it('routes agent-call tests to runAgentCallTests', async () => {
     const configWithAgentCall = {
-      ...mockTestSuiteConfig,
+      ...mockEvalConfig,
       tests: [
-        ...mockTestSuiteConfig.tests,
+        ...mockEvalConfig.tests,
         {
           name: 'Agent: gap-analyzer trigger',
           type: 'agent-call',
@@ -107,9 +107,9 @@ describe('runTestCases dispatcher — routing', () => {
 
   it('routes agent-prompt tests to runAgentPromptTests', async () => {
     const configWithAgentPrompt = {
-      ...mockTestSuiteConfig,
+      ...mockEvalConfig,
       tests: [
-        ...mockTestSuiteConfig.tests,
+        ...mockEvalConfig.tests,
         {
           name: 'Agent Prompt: gap analysis',
           type: 'agent-prompt',
@@ -126,7 +126,7 @@ describe('runTestCases dispatcher — routing', () => {
   })
 
   it('passes empty arrays when no tests of a given type exist', async () => {
-    const promptOnlyConfig = { ...mockTestSuiteConfig }
+    const promptOnlyConfig = { ...mockEvalConfig }
     await callRunTestCases(promptOnlyConfig)
     const [skillCallTests] = vi.mocked(runSkillCallTests).mock.calls[0]
     const [agentCallTests] = vi.mocked(runAgentCallTests).mock.calls[0]
@@ -136,9 +136,9 @@ describe('runTestCases dispatcher — routing', () => {
     expect(agentPromptTests).toHaveLength(0)
   })
 
-  it('dispatches mixed suite with all four types correctly', async () => {
+  it('dispatches mixed eval with all four types correctly', async () => {
     const mixedConfig = {
-      ...mockTestSuiteConfig,
+      ...mockEvalConfig,
       tests: [
         { name: 'Skill prompt test', type: 'skill-prompt', promptFile: 'p.md', model: 'sonnet' as const, expect: [] },
         { name: 'Skill test', type: 'skill-call', promptFile: 's.md', skillFile: 'r-and-d:code-review', expect: [] },
@@ -163,7 +163,7 @@ describe('runTestCases dispatcher — routing', () => {
 describe('runTestCases dispatcher — totals threading', () => {
   it('passes initial totals to runPromptTests', async () => {
     const totals = { ...defaultTotals }
-    await callRunTestCases(mockTestSuiteConfig, totals)
+    await callRunTestCases(mockEvalConfig, totals)
     const passedTotals = vi.mocked(runPromptTests).mock.calls[0][7]
     expect(passedTotals).toBe(totals)
   })
@@ -201,41 +201,41 @@ describe('runTestCases dispatcher — totals threading', () => {
 })
 
 describe('runTestCases dispatcher — args forwarding', () => {
-  it('forwards suite, testSuiteDir, pluginDirs, debug, testRunId to runPromptTests', async () => {
+  it('forwards eval, evalDir, pluginDirs, debug, testRunId to runPromptTests', async () => {
     await callRunTestCases()
     const args = vi.mocked(runPromptTests).mock.calls[0]
-    expect(args[2]).toBe('code-review') // suite
-    expect(args[3]).toBe('/mock/test-suites/code-review') // testSuiteDir
+    expect(args[2]).toBe('code-review') // eval
+    expect(args[3]).toBe('/mock/evals/code-review') // evalDir
     // args[4] = pluginDirs
     expect(args[5]).toBe(false) // debug
     expect(args[6]).toBe('20260320T094845') // testRunId
   })
 
-  it('forwards suite, testSuiteDir, debug, testRunId to runSkillCallTests', async () => {
+  it('forwards eval, evalDir, debug, testRunId to runSkillCallTests', async () => {
     await callRunTestCases()
     const args = vi.mocked(runSkillCallTests).mock.calls[0]
-    expect(args[2]).toBe('code-review') // suite
-    expect(args[3]).toBe('/mock/test-suites/code-review') // testSuiteDir
+    expect(args[2]).toBe('code-review') // eval
+    expect(args[3]).toBe('/mock/evals/code-review') // evalDir
     expect(args[4]).toBe(false) // debug
     expect(args[5]).toBe('20260320T094845') // testRunId
   })
 
-  it('forwards suite, testSuiteDir, debug, testRunId, outputDir, repoRoot to runAgentCallTests', async () => {
+  it('forwards eval, evalDir, debug, testRunId, outputDir, repoRoot to runAgentCallTests', async () => {
     await callRunTestCases()
     const args = vi.mocked(runAgentCallTests).mock.calls[0]
-    expect(args[2]).toBe('code-review') // suite
-    expect(args[3]).toBe('/mock/test-suites/code-review') // testSuiteDir
+    expect(args[2]).toBe('code-review') // eval
+    expect(args[3]).toBe('/mock/evals/code-review') // evalDir
     expect(args[4]).toBe(false) // debug
     expect(args[5]).toBe('20260320T094845') // testRunId
     expect(args[7]).toBe('/mock/output') // outputDir
     expect(args[8]).toBe('/mock/repo') // repoRoot
   })
 
-  it('forwards suite, testSuiteDir, pluginDirs, debug, testRunId to runAgentPromptTests', async () => {
+  it('forwards eval, evalDir, pluginDirs, debug, testRunId to runAgentPromptTests', async () => {
     await callRunTestCases()
     const args = vi.mocked(runAgentPromptTests).mock.calls[0]
-    expect(args[2]).toBe('code-review') // suite
-    expect(args[3]).toBe('/mock/test-suites/code-review') // testSuiteDir
+    expect(args[2]).toBe('code-review') // eval
+    expect(args[3]).toBe('/mock/evals/code-review') // evalDir
     // args[4] = pluginDirs
     expect(args[5]).toBe(false) // debug
     expect(args[6]).toBe('20260320T094845') // testRunId

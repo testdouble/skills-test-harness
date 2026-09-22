@@ -1,7 +1,7 @@
 export type { IterationResult, QueryResult, ScilTestCase } from '@testdouble/skillwalker-data'
 
 export interface ScilConfig {
-  suite: string
+  eval: string
   skill?: string
   maxIterations: number
   holdout: number

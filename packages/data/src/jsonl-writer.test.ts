@@ -30,7 +30,7 @@ describe('appendTestConfig', () => {
   it('writes a JSON line to test-config.jsonl', async () => {
     const record: TestConfigRecord = {
       test_run_id: 'run-1',
-      suite: 'my-suite',
+      eval: 'my-eval',
       plugins: ['plugin-a'],
       test: { name: 'test 1', promptFile: 'prompt.md', expect: [] },
     }
@@ -45,7 +45,7 @@ describe('appendTestRun', () => {
       { type: 'system', subtype: 'init', session_id: 'abc' },
       { type: 'assistant', message: {} },
     ]
-    await appendTestRun('/output/run-1', events, 'run-1', 'suite-test-name')
+    await appendTestRun('/output/run-1', events, 'run-1', 'eval-test-name')
     const written = mockAppendFile.mock.calls[0][1] as string
     const lines = written
       .trim()
@@ -60,14 +60,14 @@ describe('appendTestRun', () => {
       { type: 'system', subtype: 'init', session_id: 'abc' },
       { type: 'result', result: 'done' },
     ]
-    await appendTestRun('/output/run-1', events, 'run-1', 'suite-test-name')
+    await appendTestRun('/output/run-1', events, 'run-1', 'eval-test-name')
     const written = mockAppendFile.mock.calls[0][1] as string
     const lines = written
       .trim()
       .split('\n')
       .map((l) => JSON.parse(l))
-    expect(lines[0].test_case).toBe('suite-test-name')
-    expect(lines[1].test_case).toBe('suite-test-name')
+    expect(lines[0].test_case).toBe('eval-test-name')
+    expect(lines[1].test_case).toBe('eval-test-name')
   })
 
   it('writes to test-run.jsonl', async () => {
@@ -87,7 +87,7 @@ describe('appendTestResults', () => {
     const records: TestResultRecord[] = [
       {
         test_run_id: 'run-1',
-        suite: 's',
+        eval: 's',
         test_name: 'n',
         expect_type: 'result-contains',
         expect_value: 'ok',
@@ -95,7 +95,7 @@ describe('appendTestResults', () => {
       },
       {
         test_run_id: 'run-1',
-        suite: 's',
+        eval: 's',
         test_name: 'n',
         expect_type: 'skill-call',
         expect_value: 'my-skill',

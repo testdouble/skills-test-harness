@@ -63,9 +63,9 @@ All four return `false` when no result event exists in the stream (except `evalu
 
 Semantic evaluation that sends skill output to a second Claude model for rubric-based scoring:
 
-1. Reads the rubric markdown file from the suite's `rubrics/` directory.
+1. Reads the rubric markdown file from the eval's `rubrics/` directory.
 2. Parses rubric sections using `parseRubricSections` — produces `RubricSection` objects with `type: 'transcript'` for standard criteria and `type: 'file'` with a `filePath` for file-scoped criteria.
-3. Loads output files from `output-files.jsonl` in the run directory, matching records by `buildTestCaseId(suite, test.name)` (only when the rubric contains file sections).
+3. Loads output files from `output-files.jsonl` in the run directory, matching records by `buildTestCaseId(eval, test.name)` (only when the rubric contains file sections).
 4. Builds a judge prompt containing scaffold files (if any), a conversation transcript, the final skill output, output file content (for file-scoped sections), and the numbered rubric criteria. File-scoped criteria for missing files are separated as auto-fails.
 5. Invokes `runClaude()` with the specified model (default: `opus`) and parses the JSON response. If all criteria are auto-fails, the judge is not invoked.
 6. Merges judge results with auto-fail results. Scores each criterion as passed (1.0), partial (0.5), or failed (0.0). Computes an aggregate score as `passedCount / totalCriteria`.
@@ -134,12 +134,12 @@ All results carry a `status` field:
 - [Data Package](./data.md) — Shared data layer providing JSONL I/O, stream event types, config records, and `getResultText`/`getSkillInvocations`
 - [Claude Integration](./claude-integration.md) — `runClaude()` used to invoke the judge model inside the Test Sandbox
 - [LLM Judge Evaluation](./llm-judge.md) — Detailed judge mechanics: prompt construction, scoring, output format, and error handling
-- [Test Suite Reference](./test-suite-reference.md) — `tests.json` field reference including `llm-judge` and `skill-call` expectation formats
+- [Evals Reference](./evals-reference.md) — `tests.json` field reference including `llm-judge` and `skill-call` expectation formats
 - [Parquet Schema](./parquet-schema.md) — Analytics schema for evaluation results stored as Parquet
 - [Building Rubric Evals](./rubric-evals-guide.md) — Step-by-step guide to writing and running LLM-judge quality evals
 - [Building SCIL Evals](./scil-evals-guide.md) — Step-by-step guide to writing and running trigger accuracy evals
 - [Agent Call Improvement Loop](./agent-call-improvement-loop.md) — ACIL mechanics: agent detection, temp plugin isolation, holdout splits, scoring
-- [Writing Agent-Call Evals](./write-acil-evals.md) — Skill for generating agent-call test suites
+- [Writing Agent-Call Evals](./write-acil-evals.md) — Skill for generating agent-call evals
 
 ---
 

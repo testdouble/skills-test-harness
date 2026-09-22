@@ -1,19 +1,19 @@
 # Building SCIL Evals
 
-> **Tier 2 · Skill authors (trigger accuracy).** This guide covers writing skill-call test suites by hand and running the SCIL (Skill Call Improvement Loop) to refine a skill's trigger description. If you're starting fresh, run [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md) first — it walks the `/write-scil-evals` quick start end to end.
+> **Tier 2 · Skill authors (trigger accuracy).** This guide covers writing skill-call evals by hand and running the SCIL (Skill Call Improvement Loop) to refine a skill's trigger description. If you're starting fresh, run [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md) first — it walks the `/write-scil-evals` quick start end to end.
 
 Write skill-call tests manually, run and evaluate them, then use the `scil` command to iteratively tune a skill's description against real prompts until trigger accuracy holds.
 
-This guide assumes you've completed setup and run at least one test suite — see [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md) if you haven't.
+This guide assumes you've completed setup and run at least one eval — see [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md) if you haven't.
 
-The fastest way to scaffold a SCIL eval suite is the `/write-scil-evals` skill, which interviews you for positive, negative, and sibling trigger prompts and generates the `tests.json` and prompt files. That path is covered in the getting-started guide and in [Writing Skill-Call Evals](write-scil-evals.md). The rest of this guide covers the manual alternative and the SCIL loop.
+The fastest way to scaffold a SCIL eval is the `/write-scil-evals` skill, which interviews you for positive, negative, and sibling trigger prompts and generates the `tests.json` and prompt files. That path is covered in the getting-started guide and in [Writing Skill-Call Evals](write-scil-evals.md). The rest of this guide covers the manual alternative and the SCIL loop.
 
-## Step 1: Write the Test Suite Manually
+## Step 1: Write the Eval Manually
 
-Create a test suite directory with the following structure:
+Create an eval directory with the following structure:
 
 ```
-tests/test-suites/{skill-name}/
+evals/{skill-name}/
   tests.json
   prompts/
     skill-call-{slug}.md
@@ -41,7 +41,7 @@ Can you write documentation for the authentication module?
 
 ### Write tests.json
 
-Configure the test suite with `"type": "skill-call"` tests. Each test points to a prompt file and declares whether the skill should trigger.
+Configure the eval with `"type": "skill-call"` tests. Each test points to a prompt file and declares whether the skill should trigger.
 
 ```json
 {
@@ -88,14 +88,14 @@ Configure the test suite with `"type": "skill-call"` tests. Each test points to 
 - Aim for 3-5 positive triggers and 3+ negative triggers
 - Include sibling triggers when the plugin has multiple skills
 
-For the full field reference, see [Test Suite Reference](test-suite-reference.md).
+For the full field reference, see [Evals Reference](evals-reference.md).
 
 ## Step 2: Run and Evaluate
 
-Run the test suite to check current trigger accuracy:
+Run the eval to check current trigger accuracy:
 
 ```bash
-./build/skillwalker test-run --suite code-review
+./build/skillwalker test-run --eval code-review
 ```
 
 Then evaluate the results:
@@ -109,13 +109,13 @@ The output shows each test with its pass/fail status. If some tests fail, that's
 To run a single test in isolation (useful for debugging):
 
 ```bash
-./build/skillwalker test-run --suite code-review --test "Skill Call: movie review"
+./build/skillwalker test-run --eval code-review --test "Skill Call: movie review"
 ```
 
 To see raw Claude output for debugging:
 
 ```bash
-./build/skillwalker test-run --suite code-review --debug
+./build/skillwalker test-run --eval code-review --debug
 ```
 
 ## Step 3: Improve with SCIL
@@ -125,13 +125,13 @@ The `scil` command automates the evaluate-score-improve cycle. It reads your `sk
 ### Basic Run
 
 ```bash
-./build/skillwalker scil --suite code-review
+./build/skillwalker scil --eval code-review
 ```
 
-SCIL infers the target skill from the test suite. If the suite targets multiple skills, specify one explicitly:
+SCIL infers the target skill from the eval. If the eval targets multiple skills, specify one explicitly:
 
 ```bash
-./build/skillwalker scil --suite code-review --skill r-and-d:code-review
+./build/skillwalker scil --eval code-review --skill r-and-d:code-review
 ```
 
 ### With Holdout Validation
@@ -139,7 +139,7 @@ SCIL infers the target skill from the test suite. If the suite targets multiple 
 Hold out a fraction of tests as a validation set to detect overfitting:
 
 ```bash
-./build/skillwalker scil --suite code-review --holdout 0.4
+./build/skillwalker scil --eval code-review --holdout 0.4
 ```
 
 The holdout set is not shown to the improvement prompt. The best iteration is selected by holdout accuracy, not training accuracy.
@@ -149,7 +149,7 @@ The holdout set is not shown to the improvement prompt. The best iteration is se
 Run multiple sandbox containers in parallel:
 
 ```bash
-./build/skillwalker scil --suite code-review --concurrency 3
+./build/skillwalker scil --eval code-review --concurrency 3
 ```
 
 ### Auto-Apply the Best Description
@@ -157,14 +157,14 @@ Run multiple sandbox containers in parallel:
 Skip the confirmation prompt and write the best description directly to SKILL.md:
 
 ```bash
-./build/skillwalker scil --suite code-review --apply
+./build/skillwalker scil --eval code-review --apply
 ```
 
 ### All CLI Flags
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--suite` | *(required)* | Test suite name |
+| `--eval` | *(required)* | Eval name |
 | `--skill` | *(inferred)* | Target skill in `plugin:skill` format |
 | `--max-iterations` | `5` | Maximum improvement iterations |
 | `--holdout` | `0` | Fraction of tests held out for validation (e.g. `0.4`) |
@@ -216,9 +216,9 @@ Each SCIL run writes to `tests/output/{run-id}/`:
 - **`scil-iteration.jsonl`** — one line per iteration with description, accuracy scores, and per-query results
 - **`scil-summary.json`** — final summary with original description, best description, and accuracy history
 
-## Iterating on Your Eval Suite
+## Iterating on Your Eval
 
-After the first SCIL run, you may want to refine the test suite:
+After the first SCIL run, you may want to refine the eval:
 
 - **Add prompts that exposed edge cases** — if SCIL found failure patterns, add more prompts in that area
 - **Rebalance positive vs. negative** — ensure both sides of the trigger boundary are well-represented
@@ -227,7 +227,7 @@ After the first SCIL run, you may want to refine the test suite:
 
 ## Related References
 
-- [Test Suite Reference](test-suite-reference.md) — full tests.json field reference
+- [Evals Reference](evals-reference.md) — full tests.json field reference
 - [Writing Skill-Call Evals](write-scil-evals.md) — the `/write-scil-evals` skill workflow and prompt categories
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Test Sandbox
 - [CLI Package](cli.md) — CLI implementing the `scil` command and test-run pipeline

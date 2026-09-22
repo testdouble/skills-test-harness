@@ -65,7 +65,7 @@ import type { QueryResult, ScilConfig, ScilTestCase } from './types.js'
 
 function makeConfig(overrides: Partial<ScilConfig> = {}): ScilConfig {
   return {
-    suite: 'my-suite',
+    eval: 'my-eval',
     skill: 'plugin:skill',
     maxIterations: 5,
     holdout: 0,
@@ -345,7 +345,7 @@ describe('runScilLoop', () => {
     expect(runEval).toHaveBeenCalledWith(
       expect.objectContaining({
         tempDir: '/tmp/scil-plugin',
-        suite: 'my-suite',
+        eval: 'my-eval',
         testsDir: '/mock-tests',
         concurrency: 4,
         runsPerQuery: 3,

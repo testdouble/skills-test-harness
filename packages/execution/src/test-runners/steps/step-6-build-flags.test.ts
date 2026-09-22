@@ -1,5 +1,5 @@
 import { resolvePluginDirs } from '@testdouble/claude-integration'
-import type { TestSuiteConfig } from '@testdouble/skillwalker-data'
+import type { EvalConfig } from '@testdouble/skillwalker-data'
 import { describe, expect, it, vi } from 'vitest'
 import { buildFlags } from './step-6-build-flags.js'
 
@@ -7,7 +7,7 @@ vi.mock('@testdouble/claude-integration', () => ({
   resolvePluginDirs: vi.fn(() => ['/mock/repo/r-and-d']),
 }))
 
-const mockConfig: TestSuiteConfig = {
+const mockConfig: EvalConfig = {
   plugins: ['r-and-d'],
   tests: [],
 }

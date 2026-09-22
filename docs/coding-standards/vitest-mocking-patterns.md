@@ -79,8 +79,8 @@ Use `vi.clearAllMocks()` at the start of `beforeEach` to reset call counts and r
 beforeEach(() => {
   vi.clearAllMocks()
 
-  vi.mocked(resolvePaths).mockReturnValue({ testSuiteDir: '/suites/my-suite' })
-  vi.mocked(validateConfig).mockResolvedValue({ configFilePath: '/suites/my-suite/tests.json' })
+  vi.mocked(resolvePaths).mockReturnValue({ evalDir: '/evals/my-eval' })
+  vi.mocked(validateConfig).mockResolvedValue({ configFilePath: '/evals/my-eval/tests.json' })
   vi.mocked(readConfig).mockResolvedValue(mockConfig)
 })
 ```
@@ -90,7 +90,7 @@ beforeEach(() => {
 ```typescript
 // Keep clearAllMocks explicit — Vitest 5 clears call history before each test by default, but the call documents the intent
 beforeEach(() => {
-  vi.mocked(resolvePaths).mockReturnValue({ testSuiteDir: '/suites/my-suite' })
+  vi.mocked(resolvePaths).mockReturnValue({ evalDir: '/evals/my-eval' })
 })
 
 // Don't use restoreAllMocks when you only need to clear call history —
@@ -176,10 +176,10 @@ Chain `.mockResolvedValueOnce()` calls for multi-call scenarios.
 
 ```typescript
 // Sync return
-vi.mocked(resolvePaths).mockReturnValue({ testSuiteDir: '/suites/my-suite' })
+vi.mocked(resolvePaths).mockReturnValue({ evalDir: '/evals/my-eval' })
 
 // Async return
-vi.mocked(validateConfig).mockResolvedValue({ configFilePath: '/suites/my-suite/tests.json' })
+vi.mocked(validateConfig).mockResolvedValue({ configFilePath: '/evals/my-eval/tests.json' })
 
 // Sequential async returns — first call returns firstTotals, second returns secondTotals
 vi.mocked(runTestCases)
@@ -223,8 +223,8 @@ const passedTotals = vi.mocked(runPromptTests).mock.calls[0][7]
 expect(passedTotals).toBe(totals)
 
 // Verify arguments across multiple calls
-expect(vi.mocked(runTestCases).mock.calls[0][1]).toBe('suite-a')
-expect(vi.mocked(runTestCases).mock.calls[1][1]).toBe('suite-b')
+expect(vi.mocked(runTestCases).mock.calls[0][1]).toBe('eval-a')
+expect(vi.mocked(runTestCases).mock.calls[1][1]).toBe('eval-b')
 ```
 
 **What to avoid:**
@@ -243,7 +243,7 @@ const calls = (runPromptTests as any).mock.calls[0]
 
 **Project references:**
 - `packages/cli/src/test-runners/steps/step-8-run-test-cases.test.ts` — destructured `mock.calls[0]` for routing assertions, indexed `mock.calls[0][7]` for totals threading
-- `packages/cli/src/commands/test-run.test.ts` — `mock.calls[0][1]` and `mock.calls[1][1]` for multi-suite argument verification
+- `packages/cli/src/commands/test-run.test.ts` — `mock.calls[0][1]` and `mock.calls[1][1]` for multi-eval argument verification
 
 ### vi.mock Factory Shape
 

@@ -22,7 +22,7 @@ async function readRunData(runDir: string): Promise<{
 
   const eventsByTestCase = new Map<string, StreamJsonEvent[]>()
   for (const record of testConfigs) {
-    const testCaseId = buildTestCaseId(record.suite, record.test.name)
+    const testCaseId = buildTestCaseId(record.eval, record.test.name)
     eventsByTestCase.set(testCaseId, [])
   }
   for (const event of storedEvents) {
@@ -36,18 +36,18 @@ async function readRunData(runDir: string): Promise<{
 
 export async function evaluateTestRun(options: {
   runDir: string
-  suiteDir: string
+  evalDir: string
   testRunId: string
   onProgress?: OnProgress
 }): Promise<EvalResult[]> {
-  const { runDir, suiteDir, testRunId, onProgress } = options
+  const { runDir, evalDir, testRunId, onProgress } = options
   const { testConfigs, eventsByTestCase } = await readRunData(runDir)
 
   const results: EvalResult[] = []
 
   for (const record of testConfigs) {
-    const { suite, test } = record
-    const testCaseId = buildTestCaseId(suite, test.name)
+    const { eval: evalName, test } = record
+    const testCaseId = buildTestCaseId(evalName, test.name)
     const events = eventsByTestCase.get(testCaseId) ?? []
 
     // Boolean expectations
@@ -63,7 +63,7 @@ export async function evaluateTestRun(options: {
       const booleanResult: BooleanEvalResult = {
         kind: 'boolean',
         test_run_id: testRunId,
-        suite,
+        eval: evalName,
         test_name: test.name,
         expect_type: er.expect_type as BooleanEvalResult['expect_type'],
         expect_value: er.expect_value,
@@ -75,7 +75,7 @@ export async function evaluateTestRun(options: {
     }
 
     // LLM judge expectations
-    const judgeResults = await evaluateLlmJudge(record, events, testRunId, suiteDir, runDir, onProgress)
+    const judgeResults = await evaluateLlmJudge(record, events, testRunId, evalDir, runDir, onProgress)
     results.push(...judgeResults)
   }
 

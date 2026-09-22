@@ -1,6 +1,6 @@
 # Improving Skill Trigger Accuracy
 
-> **Tier 1 · Skill authors.** Assumes you've completed [setup](../../README.md#setup). This page gets you a first skill-call test suite run end-to-end, with results you can review.
+> **Tier 1 · Skill authors.** Assumes you've completed [setup](../../README.md#setup). This page gets you a first skill-call eval run end-to-end, with results you can review.
 
 Create skill-call tests, run them, and review whether Claude routes prompts to your skill correctly.
 
@@ -11,13 +11,13 @@ Skill trigger accuracy measures whether Claude correctly routes user prompts to 
 ## What you'll do
 
 1. Write your test configuration using the `/write-scil-evals` skill
-2. Run the test suite to measure current trigger accuracy
+2. Run the eval to measure current trigger accuracy
 3. Import the results into the analytics database
 4. View the results in the skillwalker-web dashboard
 
 ## Step 1: Write your test configuration
 
-Use the `/write-scil-evals` skill to generate a test suite for your skill:
+Use the `/write-scil-evals` skill to generate an eval for your skill:
 
 ```
 /write-scil-evals plugin:skill
@@ -35,19 +35,19 @@ The skill interviews you to collect three categories of prompts:
 - **Negative triggers** — prompts that should not trigger your skill (3+ recommended)
 - **Sibling triggers** — prompts that should trigger other skills in the same plugin, not yours (3+ if applicable)
 
-It generates two things in `tests/test-suites/{skill-name}/`:
+It generates two things in `evals/{skill-name}/`:
 
 - `tests.json` — the test configuration with one entry per prompt
 - `prompts/skill-call-*.md` — individual prompt files
 
-For details on the skill's full workflow and prompt category conventions, see [Writing Skill-Call Evals](../write-scil-evals.md). For the complete `tests.json` field reference, see [Test Suite Reference](../test-suite-reference.md).
+For details on the skill's full workflow and prompt category conventions, see [Writing Skill-Call Evals](../write-scil-evals.md). For the complete `tests.json` field reference, see [Evals Reference](../evals-reference.md).
 
-## Step 2: Run the test suite
+## Step 2: Run the eval
 
-Run all tests in your suite:
+Run all tests in your eval:
 
 ```bash
-./build/skillwalker test-run --suite {skill-name}
+./build/skillwalker test-run --eval {skill-name}
 ```
 
 Skillwalker executes each prompt inside the Test Sandbox, records whether your skill was triggered, and prints a pass/fail summary.
@@ -55,13 +55,13 @@ Skillwalker executes each prompt inside the Test Sandbox, records whether your s
 **Tip:** To run a single test in isolation (useful for debugging):
 
 ```bash
-./build/skillwalker test-run --suite {skill-name} --test "Skill Call: some test name"
+./build/skillwalker test-run --eval {skill-name} --test "Skill Call: some test name"
 ```
 
 **Tip:** To see raw Claude output for troubleshooting:
 
 ```bash
-./build/skillwalker test-run --suite {skill-name} --debug
+./build/skillwalker test-run --eval {skill-name} --debug
 ```
 
 For the full list of CLI flags, see [CLI](../cli.md).

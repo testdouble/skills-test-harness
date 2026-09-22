@@ -2,9 +2,9 @@
 
 > **Tier 2 · Skill and agent authors (effectiveness).** This guide covers writing LLM-judge rubrics by hand and iterating on quality criteria against stored output. If you're starting fresh, run [Getting Started: Skill Effectiveness](getting-started/skill-effectiveness.md) first — it walks the `/write-skill-eval-rubric` quick start end to end.
 
-Write rubric criteria by hand, wire them into an `llm-judge` expectation, run the suite, and refine the rubric by re-scoring stored output without re-running the skill.
+Write rubric criteria by hand, wire them into an `llm-judge` expectation, run the eval, and refine the rubric by re-scoring stored output without re-running the skill.
 
-This guide assumes you've completed setup and run at least one test suite — see [Getting Started: Skill Effectiveness](getting-started/skill-effectiveness.md) if you haven't.
+This guide assumes you've completed setup and run at least one eval — see [Getting Started: Skill Effectiveness](getting-started/skill-effectiveness.md) if you haven't.
 
 Rubric evals use a second Claude invocation (the "judge") to evaluate whether a skill's output meets quality criteria. Unlike code-based expectations (`result-contains`, `skill-call`), rubric evals can assess semantic qualities like "does the review identify the SQL injection on line 23?"
 
@@ -17,7 +17,7 @@ The fastest way to scaffold a rubric is the `/write-skill-eval-rubric` skill, wh
 Rubric files are markdown with bullet-point criteria. Create the file at:
 
 ```
-tests/test-suites/{suite}/rubrics/{skill-name}-quality.md
+evals/{eval}/rubrics/{skill-name}-quality.md
 ```
 
 Organize criteria into four categories:
@@ -98,20 +98,20 @@ Add an `llm-judge` expectation to a skill-prompt test in `tests.json`:
 
 | Field | Required | Default | Description |
 |-------|----------|---------|-------------|
-| `rubricFile` | yes | — | Filename in the suite's `rubrics/` directory |
+| `rubricFile` | yes | — | Filename in the eval's `rubrics/` directory |
 | `model` | no | `"opus"` | Claude model used as the judge |
 | `threshold` | no | `1.0` | Fraction of criteria that must pass (0.0–1.0) |
 
 A threshold of `0.8` with 10 criteria means at least 8 must pass. Skillwalker validates that the rubric file exists at load time.
 
-For the full field reference, see [Test Suite Reference](test-suite-reference.md).
+For the full field reference, see [Evals Reference](evals-reference.md).
 
 ## Step 2: Run the Tests
 
-Run the test suite to produce output for the judge to evaluate:
+Run the eval to produce output for the judge to evaluate:
 
 ```bash
-./build/skillwalker test-run --suite code-review
+./build/skillwalker test-run --eval code-review
 ```
 
 This runs the skill against the prompt and scaffold. The judge does not run yet — it evaluates stored output in the next step.
@@ -119,7 +119,7 @@ This runs the skill against the prompt and scaffold. The judge does not run yet 
 To run a specific test:
 
 ```bash
-./build/skillwalker test-run --suite code-review --test "Prompt: /code-review quality"
+./build/skillwalker test-run --eval code-review --test "Prompt: /code-review quality"
 ```
 
 ## Step 3: Evaluate with the Judge
@@ -184,7 +184,7 @@ The judge re-evaluates from stored output, so you can refine criteria without re
 
 ```bash
 # Edit the rubric
-vim tests/test-suites/code-review/rubrics/code-review-quality.md
+vim evals/code-review/rubrics/code-review-quality.md
 
 # Re-evaluate the same run
 ./build/skillwalker test-eval <run-id>
@@ -216,7 +216,7 @@ For the complete technical details, see [LLM Judge Evaluation](llm-judge.md).
 
 ## Related References
 
-- [Test Suite Reference](test-suite-reference.md) — full tests.json field reference including `llm-judge` expectation format
+- [Evals Reference](evals-reference.md) — full tests.json field reference including `llm-judge` expectation format
 - [Writing Skill Eval Rubrics](write-skill-eval-rubric.md) — the `/write-skill-eval-rubric` skill workflow and criteria categories
 - [Writing Agent Eval Rubrics](write-agent-eval-rubric.md) — the `/write-agent-eval-rubric` skill workflow for agent rubric evals
 - [Test Scaffolding](test-scaffolding.md) — how scaffolds provide project context in the Test Sandbox

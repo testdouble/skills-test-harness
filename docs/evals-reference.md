@@ -1,13 +1,13 @@
-# Test Suite Reference
+# Evals Reference
 
-> **Tier 2 · All Skillwalker users.** The complete `tests.json` field reference: directory layout, test types, expectation types, and validation rules. Assumes you know what a test suite is — if not, start with [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md).
+> **Tier 2 · All Skillwalker users.** The complete `tests.json` field reference: directory layout, test types, expectation types, and validation rules. Assumes you know what an eval is — if not, start with [Getting Started: Skill Trigger Accuracy](getting-started/skill-trigger-accuracy.md).
 
-Look up any `tests.json` field, test type, or expectation type here. Each test suite lives in its own directory under `tests/test-suites/` and is defined by a `tests.json` file; this page documents every key Skillwalker reads and the validation it enforces before a run starts.
+Look up any `tests.json` field, test type, or expectation type here. Each eval lives in its own directory under `evals/` and is defined by a `tests.json` file; this page documents every key Skillwalker reads and the validation it enforces before a run starts.
 
 ## Directory Layout
 
 ```
-tests/test-suites/{suite-name}/
+evals/{eval-name}/
   tests.json              # test configuration (required)
   prompts/                # prompt files referenced by tests
     prompt-code-review.md
@@ -29,7 +29,7 @@ tests/test-suites/{suite-name}/
 
 ### Complete Example
 
-This example from the `code-review` suite shows all test types and expectation types:
+This example from the `code-review` eval shows all test types and expectation types:
 
 ```json
 {
@@ -95,11 +95,11 @@ This example from the `code-review` suite shows all test types and expectation t
 |-------|------|----------|---------|-------------|
 | `name` | string | yes | — | Display name shown in test output. |
 | `type` | string | yes | — | How the test is run: `"skill-prompt"`, `"skill-call"`, `"agent-call"`, or `"agent-prompt"`. See [Test Types](#test-types). |
-| `promptFile` | string | yes | — | Filename of the prompt in the suite's `prompts/` directory. |
+| `promptFile` | string | yes | — | Filename of the prompt in the eval's `prompts/` directory. |
 | `skillFile` | string | skill-call only | — | The skill to isolate, in `plugin:skill` format (e.g. `"r-and-d:code-review"`). Required for `"skill-call"` type tests. |
 | `agentFile` | string | no | — | The agent to check for invocation, in `plugin:agent` format (e.g. `"r-and-d:gap-analyzer"`). Required when using simplified `agent-call` expectations. |
 | `model` | string | no | `"sonnet"` | The Claude model to use: `"opus"`, `"sonnet"`, or `"haiku"`. |
-| `scaffold` | string | no | — | Name of a scaffold directory under the suite's `scaffolds/` folder. See [Test Scaffolding](test-scaffolding.md). |
+| `scaffold` | string | no | — | Name of a scaffold directory under the eval's `scaffolds/` folder. See [Test Scaffolding](test-scaffolding.md). |
 | `expect` | `Expectation[]` | yes | — | Array of expectation objects. All expectations must pass for the test to pass. |
 
 ## Test Types
@@ -267,17 +267,17 @@ Evaluates skill output against a rubric of criteria using a second Claude invoca
 
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `rubricFile` | string | yes | — | Filename of the rubric in the suite's `rubrics/` directory |
+| `rubricFile` | string | yes | — | Filename of the rubric in the eval's `rubrics/` directory |
 | `model` | string | no | `"opus"` | Claude model used as the judge |
 | `threshold` | number | no | `1.0` | Fraction of criteria that must pass (0.0–1.0) for the expectation to pass |
 
-The rubric file must exist at `test-suites/{suite}/rubrics/{rubricFile}` — Skillwalker validates this at load time.
+The rubric file must exist at `evals/{eval}/rubrics/{rubricFile}` — Skillwalker validates this at load time.
 
 For the full details on writing rubrics, judge mechanics, scoring, and output format, see [LLM Judge Evaluation](llm-judge.md). For a step-by-step guide to building rubric evals, see [Building Rubric Evals](rubric-evals-guide.md).
 
 ## Prompt Files
 
-Prompt files are plain markdown files in the suite's `prompts/` directory. Each file contains the exact text sent to Claude Code as the `--print` argument.
+Prompt files are plain markdown files in the eval's `prompts/` directory. Each file contains the exact text sent to Claude Code as the `--print` argument.
 
 Prompt files for skill-call tests should read like something a real user would type. They should NOT reference the skill by its internal name — the point is to test whether natural language triggers the skill.
 
@@ -287,9 +287,9 @@ Please review the code in this project and let me know about any issues you find
 
 ## Validation
 
-Skillwalker validates the test suite configuration before running any tests:
+Skillwalker validates the eval configuration before running any tests:
 
-- Every `promptFile` must exist in the suite's `prompts/` directory
+- Every `promptFile` must exist in the eval's `prompts/` directory
 - Every `scaffold` must point to an existing directory under `scaffolds/`
 - Every `rubricFile` in `llm-judge` expectations must exist in `rubrics/`
 - `skill-call` type tests must have a `skillFile` field
@@ -307,11 +307,11 @@ Missing files or invalid configuration cause an immediate exit with a clear erro
 - [Building Agent Eval Scaffolds](build-agent-eval-scaffold.md) — the `/build-agent-eval-scaffold` skill workflow
 - [Skill Call Improvement Loop](skill-call-improvement-loop.md) — using the `scil` command to iteratively improve skill descriptions
 - [Agent Call Improvement Loop](agent-call-improvement-loop.md) — ACIL mechanics and agent-call test usage
-- [Writing Agent-Call Evals](write-acil-evals.md) — skill for generating agent-call test suites
+- [Writing Agent-Call Evals](write-acil-evals.md) — skill for generating agent-call evals
 - [Parquet Schema](parquet-schema.md) — field reference for analytics data
-- [CLI Package](cli.md) — CLI commands that parse and execute test suite configurations
+- [CLI Package](cli.md) — CLI commands that parse and execute eval configurations
 - [Data Package](data.md) — Config parsing and normalization logic for `tests.json` files
-- [Evals Package](evals.md) — Evaluation engine that processes expectations defined in test suite configs
+- [Evals Package](evals.md) — Evaluation engine that processes expectations defined in eval configs
 
 ---
 

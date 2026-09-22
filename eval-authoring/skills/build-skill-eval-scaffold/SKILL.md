@@ -1,6 +1,6 @@
 ---
 name: build-skill-eval-scaffold
-description: "Creates a realistic project scaffold — a test fixture — for evaluating a Claude Code skill. By default the scaffold carries planted signals the skill should find, for rubric-based skill-prompt tests; with --for trigger it carries the repo context cues that decide whether the skill should fire, for skill-call tests. Analyzes the target skill's SKILL.md, references, and dispatched agent definitions, then interviews the user in three phases (technology and shape, signals or cues to plant, file plan) before writing the scaffold to tests/test-suites/{skill}/scaffolds/{name}/. Use when creating, building, or setting up a test scaffold, fixture project, or sample codebase for a skill eval. Does not create tests.json entries or rubric files — use write-scil-evals or write-skill-eval-rubric. Does not create agent scaffolds — use build-agent-eval-scaffold."
+description: "Creates a realistic project scaffold — a test fixture — for evaluating a Claude Code skill. By default the scaffold carries planted signals the skill should find, for rubric-based skill-prompt tests; with --for trigger it carries the repo context cues that decide whether the skill should fire, for skill-call tests. Analyzes the target skill's SKILL.md, references, and dispatched agent definitions, then interviews the user in three phases (technology and shape, signals or cues to plant, file plan) before writing the scaffold to evals/{skill}/scaffolds/{name}/. Use when creating, building, or setting up a test scaffold, fixture project, or sample codebase for a skill eval. Does not create tests.json entries or rubric files — use write-scil-evals or write-skill-eval-rubric. Does not create agent scaffolds — use build-agent-eval-scaffold."
 argument-hint: "[plugin:skill] [optional description] [--for trigger] e.g. example-plugin:code-review for a rails 7 project with postgres"
 allowed-tools: Read, Write, Glob, Grep, Bash(mkdir *)
 ---
@@ -11,7 +11,7 @@ Build a realistic project fixture Skillwalker runs the target skill against. In 
 
 These apply to every scaffold and shape both the file plan (Step 5) and generation (Step 6):
 
-- Always write the scaffold to `tests/test-suites/{skill}/scaffolds/{name}/`, relative to the repository root, BECAUSE Skillwalker discovers scaffolds at that path when it builds the Test Sandbox.
+- Always write the scaffold to `evals/{skill}/scaffolds/{name}/`, relative to the repository root, BECAUSE Skillwalker discovers scaffolds at that path when it builds the Test Sandbox.
 - Never write a `.git` directory BECAUSE Skillwalker auto-initializes a git repo with `git init` and commits all scaffold files itself.
 - Never write lock files (`package-lock.json`, `Gemfile.lock`, `go.sum`) or dependency directories (`node_modules`, `vendor`, `__pycache__`) unless one is itself a planted signal BECAUSE they add hundreds of generated lines the target skill never inspects and bury the signals that matter.
 - Never mark a signal with comments like `BUG HERE` or `INTENTIONAL ISSUE` BECAUSE a signal the skill can find by reading a comment measures nothing about its analysis; signals must require the same work a real codebase would.
@@ -60,9 +60,9 @@ Present the following in one message:
 3. **Expected inputs** — what file types, config files, and project structure the skill expects to find in a working directory
 4. **Signal categories** (quality mode) or **trigger conditions and boundaries** (trigger mode) — the kinds of issues the skill detects, grouped, or the description clauses and sibling boundaries a cue could exercise
 5. **Environment requirements** — any specific project conventions the scaffold needs to follow (e.g., needs a Gemfile for Ruby, needs a go.mod for Go)
-6. **Existing scaffolds** — use Glob on `tests/test-suites/{skill}/scaffolds/*/` and list any found by name so the user can avoid duplicating one; if the suite directory does not exist yet, note that it will be created
+6. **Existing scaffolds** — use Glob on `evals/{skill}/scaffolds/*/` and list any found by name so the user can avoid duplicating one; if the eval directory does not exist yet, note that it will be created
 7. **Proposed project** — if a description was provided in the arguments, restate the tech stack and project shape it implies; otherwise propose one or two options that fit the skill's expected environment from Step 2. In trigger mode a minimal shape is enough; the project only has to look real at a glance.
-8. **Proposed scaffold name** — derive it from the description: kebab-case with a `-project` suffix in quality mode (e.g., "rails 7 with postgres" becomes `rails-postgres-project`) or a `-context-project` suffix in trigger mode (e.g., `rails-postgres-context-project`). If `tests/test-suites/{skill}/scaffolds/{name}/` already exists, say so and ask whether to overwrite it or choose a different name.
+8. **Proposed scaffold name** — derive it from the description: kebab-case with a `-project` suffix in quality mode (e.g., "rails 7 with postgres" becomes `rails-postgres-project`) or a `-context-project` suffix in trigger mode (e.g., `rails-postgres-context-project`). If `evals/{skill}/scaffolds/{name}/` already exists, say so and ask whether to overwrite it or choose a different name.
 
 Ask the user to confirm or correct the analysis, the tech stack, and the scaffold name in one reply. Wait for their answer, and carry any corrections into the remaining steps.
 
@@ -119,10 +119,10 @@ Present the file plan and wait for the user to approve it. The user may request 
 
 After the user approves the file plan:
 
-1. Create the directory structure using `mkdir -p tests/test-suites/{skill}/scaffolds/{name}/` including any subdirectories needed for the planned files.
+1. Create the directory structure using `mkdir -p evals/{skill}/scaffolds/{name}/` including any subdirectories needed for the planned files.
 
 2. Write each file using the Write tool. For each file, generate realistic content that matches the tech stack and project context, and include its planned signals or cues the way a real developer would have written them — the Constraints above govern what the content may and may not contain.
 
-3. Validate the result by running `${CLAUDE_SKILL_DIR}/scripts/validate-scaffold.sh tests/test-suites/{skill}/scaffolds/{name}`. It checks the Constraints mechanically and prints one finding per line between `findings-start` and `findings-end` as `{error|warning} {path} {message}`, plus `errors`, `warnings`, and `status`. Fix every `error` (delete the offending file or rewrite it), review each `warning` and fix the ones that are not deliberate, then re-run until `errors: 0`. A syntax error in `package.json` can make every `.js` file fail its check, so fix invalid JSON first. Extensions listed under `syntax-unchecked` had no parser available on this machine; re-read those files yourself for syntax problems. In trigger mode, short-file warnings are expected and stay.
+3. Validate the result by running `${CLAUDE_SKILL_DIR}/scripts/validate-scaffold.sh evals/{skill}/scaffolds/{name}`. It checks the Constraints mechanically and prints one finding per line between `findings-start` and `findings-end` as `{error|warning} {path} {message}`, plus `errors`, `warnings`, and `status`. Fix every `error` (delete the offending file or rewrite it), review each `warning` and fix the ones that are not deliberate, then re-run until `errors: 0`. A syntax error in `package.json` can make every `.js` file fail its check, so fix invalid JSON first. Extensions listed under `syntax-unchecked` had no parser available on this machine; re-read those files yourself for syntax problems. In trigger mode, short-file warnings are expected and stay.
 
 4. Report the outcome: the scaffold path first, then the complete list of files created with their paths relative to the repository root, then any warnings you left in place and why. In trigger mode, add the next step: run `/write-scil-evals {plugin}:{skill}` and name this scaffold for the prompts that depend on it.

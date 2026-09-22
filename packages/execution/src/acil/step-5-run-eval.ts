@@ -8,7 +8,7 @@ import type { AcilQueryResult, AcilTestCase } from './types.js'
 export interface RunEvalOptions {
   tempDir: string
   testCases: AcilTestCase[]
-  suite: string
+  eval: string
   testsDir: string
   concurrency: number
   runsPerQuery: number
@@ -18,11 +18,11 @@ export interface RunEvalOptions {
 }
 
 async function runSingleQuery(test: AcilTestCase, runIndex: number, opts: RunEvalOptions): Promise<AcilQueryResult> {
-  const testSuiteDir = path.join(opts.testsDir, 'test-suites', opts.suite)
-  const promptPath = resolvePromptPath(testSuiteDir, test.promptFile)
+  const evalDir = path.join(opts.testsDir, 'evals', opts.eval)
+  const promptPath = resolvePromptPath(evalDir, test.promptFile)
   const promptContent = await readPromptFile(promptPath)
 
-  const scaffoldPath = test.scaffold ? path.join(testSuiteDir, 'scaffolds', test.scaffold) : null
+  const scaffoldPath = test.scaffold ? path.join(evalDir, 'scaffolds', test.scaffold) : null
 
   const { stdout } = await runClaude({
     model: test.model ?? 'sonnet',

@@ -35,7 +35,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   stderrSpy.mockClear()
 
-  vi.mocked(resolvePromptPath).mockReturnValue('/tests/test-suites/my-suite/prompts/test-1.md')
+  vi.mocked(resolvePromptPath).mockReturnValue('/evals/my-eval/prompts/test-1.md')
   vi.mocked(readPromptFile).mockResolvedValue('test prompt content')
   vi.mocked(runClaude).mockResolvedValue({ stdout: 'stream output', stderr: '', exitCode: 0 })
   vi.mocked(parseStreamJsonLines).mockReturnValue([])
@@ -47,7 +47,7 @@ describe('runEval (ACIL)', () => {
     const results = await runEval({
       tempDir: '/tmp/acil-plugin',
       testCases: [makeTestCase()],
-      suite: 'my-suite',
+      eval: 'my-eval',
       testsDir: '/tests',
       concurrency: 1,
       runsPerQuery: 1,
@@ -66,7 +66,7 @@ describe('runEval (ACIL)', () => {
     await runEval({
       tempDir: '/tmp/acil-plugin',
       testCases: [makeTestCase()],
-      suite: 'my-suite',
+      eval: 'my-eval',
       testsDir: '/tests',
       concurrency: 1,
       runsPerQuery: 1,
@@ -84,7 +84,7 @@ describe('runEval (ACIL)', () => {
     const results = await runEval({
       tempDir: '/tmp/acil-plugin',
       testCases: [makeTestCase()],
-      suite: 'my-suite',
+      eval: 'my-eval',
       testsDir: '/tests',
       concurrency: 1,
       runsPerQuery: 1,
@@ -108,7 +108,7 @@ describe('runEval (ACIL)', () => {
     const results = await runEval({
       tempDir: '/tmp/acil-plugin',
       testCases: [testCase],
-      suite: 'my-suite',
+      eval: 'my-eval',
       testsDir: '/tests',
       concurrency: 1,
       runsPerQuery: 1,
@@ -127,7 +127,7 @@ describe('runEval (ACIL)', () => {
     const results = await runEval({
       tempDir: '/tmp/acil-plugin',
       testCases: [makeTestCase()],
-      suite: 'my-suite',
+      eval: 'my-eval',
       testsDir: '/tests',
       concurrency: 1,
       runsPerQuery: 3,
@@ -144,7 +144,7 @@ describe('runEval (ACIL)', () => {
     await runEval({
       tempDir: '/tmp/acil-plugin',
       testCases: [makeTestCase()],
-      suite: 'my-suite',
+      eval: 'my-eval',
       testsDir: '/tests',
       concurrency: 1,
       runsPerQuery: 1,
@@ -164,7 +164,7 @@ describe('runEval (ACIL)', () => {
     const results = await runEval({
       tempDir: '/tmp/acil-plugin',
       testCases: [],
-      suite: 'my-suite',
+      eval: 'my-eval',
       testsDir: '/tests',
       concurrency: 1,
       runsPerQuery: 1,
@@ -185,7 +185,7 @@ describe('runEval (ACIL)', () => {
     const results = await runEval({
       tempDir: '/tmp/acil-plugin',
       testCases: [makeTestCase({ name: 'will-fail' }), makeTestCase({ name: 'will-succeed' })],
-      suite: 'my-suite',
+      eval: 'my-eval',
       testsDir: '/tests',
       concurrency: 1,
       runsPerQuery: 1,
@@ -206,7 +206,7 @@ describe('runEval (ACIL)', () => {
     const results = await runEval({
       tempDir: '/tmp/acil-plugin',
       testCases: [makeTestCase()],
-      suite: 'my-suite',
+      eval: 'my-eval',
       testsDir: '/tests',
       concurrency: 1,
       runsPerQuery: 2,
@@ -226,7 +226,7 @@ describe('runEval (ACIL)', () => {
     await runEval({
       tempDir: '/tmp/acil-plugin',
       testCases: [testCase],
-      suite: 'my-suite',
+      eval: 'my-eval',
       testsDir: '/tests',
       concurrency: 1,
       runsPerQuery: 1,
@@ -237,7 +237,7 @@ describe('runEval (ACIL)', () => {
 
     expect(runClaude).toHaveBeenCalledWith(
       expect.objectContaining({
-        scaffold: '/tests/test-suites/my-suite/scaffolds/my-scaffold',
+        scaffold: '/tests/evals/my-eval/scaffolds/my-scaffold',
       }),
     )
   })
@@ -246,7 +246,7 @@ describe('runEval (ACIL)', () => {
     await runEval({
       tempDir: '/tmp/acil-plugin',
       testCases: [makeTestCase()],
-      suite: 'my-suite',
+      eval: 'my-eval',
       testsDir: '/tests',
       concurrency: 1,
       runsPerQuery: 1,
@@ -267,7 +267,7 @@ describe('runEval (ACIL)', () => {
     await runEval({
       tempDir: '/tmp/acil-plugin',
       testCases: [makeTestCase()],
-      suite: 'my-suite',
+      eval: 'my-eval',
       testsDir: '/tests',
       concurrency: 1,
       runsPerQuery: 1,
@@ -289,7 +289,7 @@ describe('runEval (ACIL)', () => {
     await runEval({
       tempDir: '/tmp/acil-plugin',
       testCases: [testCase],
-      suite: 'my-suite',
+      eval: 'my-eval',
       testsDir: '/tests',
       concurrency: 1,
       runsPerQuery: 1,
@@ -315,7 +315,7 @@ describe('runEval (ACIL)', () => {
     const results = await runEval({
       tempDir: '/tmp/acil-plugin',
       testCases: [testCase],
-      suite: 'my-suite',
+      eval: 'my-eval',
       testsDir: '/tests',
       concurrency: 1,
       runsPerQuery: 1,
@@ -332,7 +332,7 @@ describe('runEval (ACIL)', () => {
     const results = await runEval({
       tempDir: '/tmp/acil-plugin',
       testCases: [makeTestCase({ name: 'test-a' }), makeTestCase({ name: 'test-b' }), makeTestCase({ name: 'test-c' })],
-      suite: 'my-suite',
+      eval: 'my-eval',
       testsDir: '/tests',
       concurrency: 2,
       runsPerQuery: 1,
@@ -352,7 +352,7 @@ describe('runEval (ACIL)', () => {
     const results = await runEval({
       tempDir: '/tmp/acil-plugin',
       testCases: [makeTestCase({ name: 'test-a' }), makeTestCase({ name: 'test-b' })],
-      suite: 'my-suite',
+      eval: 'my-eval',
       testsDir: '/tests',
       concurrency: 1,
       runsPerQuery: 1,
@@ -373,7 +373,7 @@ describe('runEval (ACIL)', () => {
     const results = await runEval({
       tempDir: '/tmp/acil-plugin',
       testCases: [makeTestCase()],
-      suite: 'my-suite',
+      eval: 'my-eval',
       testsDir: '/tests',
       concurrency: 1,
       runsPerQuery: 3,

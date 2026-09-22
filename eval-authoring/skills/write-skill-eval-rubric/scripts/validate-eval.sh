@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Validate a test suite directory the way Skillwalker will before a run.
+# Validate an eval directory the way Skillwalker will before a run.
 #
-# Usage: validate-suite.sh {suite-dir}
+# Usage: validate-eval.sh {eval-dir}
 #
 # Emits structured key: value pairs on stdout and always exits 0 so the skill
 # can read the findings and fix them rather than crash on a violation.
@@ -9,7 +9,7 @@
 # Output keys:
 #   status            one of: ok | violations | error
 #   reason            (only when status=error) explanation for the operator
-#   suite-dir         the directory that was checked
+#   eval-dir         the directory that was checked
 #   tests             number of test entries in tests.json
 #   by-type           space-separated `{type}={count}` pairs
 #   errors            count of findings
@@ -27,12 +27,12 @@
 #   skill-call tests have skillFile; agent-prompt tests have agentFile
 #   a simplified `{ "skill-call": bool }` needs skillFile; `{ "agent-call": bool }` needs agentFile
 #   skillFile / agentFile values are in plugin:name form
-#   promptFile names are unique across the suite
+#   promptFile names are unique across the eval
 
 DIR="${1%/}"
 
 if [ -z "$DIR" ]; then
-  echo "status: error"; echo "reason: usage: validate-suite.sh {suite-dir}"; exit 0
+  echo "status: error"; echo "reason: usage: validate-eval.sh {eval-dir}"; exit 0
 fi
 if [ ! -d "$DIR" ]; then
   echo "status: error"; echo "reason: $DIR is not a directory"; exit 0
@@ -44,7 +44,7 @@ if ! command -v python3 >/dev/null 2>&1; then
   echo "status: error"; echo "reason: python3 is required to parse tests.json"; exit 0
 fi
 
-echo "suite-dir: $DIR"
+echo "eval-dir: $DIR"
 
 python3 - "$DIR" <<'PY'
 import json, os, re, sys, collections

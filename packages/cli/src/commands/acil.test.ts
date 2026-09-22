@@ -28,7 +28,7 @@ beforeEach(() => {
 
 function fullArgv(): Record<string, unknown> {
   return {
-    suite: 'my-suite',
+    eval: 'my-eval',
     agent: 'plugin:agent',
     'max-iterations': 10,
     holdout: 0.2,
@@ -65,9 +65,9 @@ describe('acil builder', () => {
     return options
   }
 
-  it('configures suite as a required string option', () => {
+  it('configures eval as a required string option', () => {
     const options = buildOptions()
-    expect(options.suite).toMatchObject({ type: 'string', demandOption: true })
+    expect(options.eval).toMatchObject({ type: 'string', demandOption: true })
   })
 
   it('configures max-iterations with default 5', () => {
@@ -123,7 +123,7 @@ describe('acil handler', () => {
 
     expect(runAcilLoop).toHaveBeenCalledOnce()
     expect(runAcilLoop).toHaveBeenCalledWith({
-      suite: 'my-suite',
+      eval: 'my-eval',
       agent: 'plugin:agent',
       maxIterations: 10,
       holdout: 0.2,
