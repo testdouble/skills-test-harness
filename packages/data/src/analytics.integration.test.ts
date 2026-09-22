@@ -806,6 +806,21 @@ describe('queryScilHistory', () => {
       best_train_accuracy: 1.0,
     })
   })
+
+  it('returns best_train_accuracy as a number when every iteration scored a whole number', async () => {
+    const outputDir = path.join(tmpDir, 'output')
+    const dataDir = path.join(tmpDir, 'analytics')
+    await writeScilRunFixture({
+      outputDir,
+      runId: '20260101T200001',
+      iterations: [makeScilIterationRecord({ trainAccuracy: 1 })],
+    })
+    await updateAllParquet({ outputDir, dataDir })
+
+    const rows = await queryScilHistory(dataDir)
+
+    expect(rows[0].best_train_accuracy).toBe(1)
+  })
 })
 
 // ─── SCIL: queryScilRunDetails ───────────────────────────────────────────────
@@ -1486,6 +1501,21 @@ describe('queryAcilHistory', () => {
       iteration_count: 3,
       best_train_accuracy: 1.0,
     })
+  })
+
+  it('returns best_train_accuracy as a number when every iteration scored a whole number', async () => {
+    const outputDir = path.join(tmpDir, 'output')
+    const dataDir = path.join(tmpDir, 'analytics')
+    await writeAcilRunFixture({
+      outputDir,
+      runId: '20260101T300001',
+      iterations: [makeAcilIterationRecord({ trainAccuracy: 1 })],
+    })
+    await updateAllParquet({ outputDir, dataDir })
+
+    const rows = await queryAcilHistory(dataDir)
+
+    expect(rows[0].best_train_accuracy).toBe(1)
   })
 
   it('returns multiple runs ordered by test_run_id DESC', async () => {
