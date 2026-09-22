@@ -1,11 +1,18 @@
 import { spawnSync } from 'node:child_process'
+import { chmod, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 const entryPoint = fileURLToPath(new URL('../index.ts', import.meta.url))
 
 function runCli(...args: string[]): { status: number; output: string } {
-  const result = spawnSync('bun', [entryPoint, ...args], { encoding: 'utf8' })
+  return runCliWithEnv(process.env, ...args)
+}
+
+function runCliWithEnv(env: NodeJS.ProcessEnv, ...args: string[]): { status: number; output: string } {
+  const result = spawnSync('bun', [entryPoint, ...args], { encoding: 'utf8', env })
   return { status: result.status ?? 1, output: `${result.stdout}${result.stderr}` }
 }
 
@@ -65,5 +72,31 @@ describe('command handler errors', () => {
     expect(output).toMatch(/^Error: Test run directory not found:/m)
     expect(output).not.toContain('Options:')
     expect(output).not.toContain('RunNotFoundError')
+  })
+
+  describe('when sbx fails', () => {
+    let fakeBinDir: string
+
+    beforeEach(async () => {
+      fakeBinDir = await mkdtemp(path.join(tmpdir(), 'skillwalker-fake-sbx-'))
+      const fakeSbx = path.join(fakeBinDir, 'sbx')
+      await writeFile(fakeSbx, '#!/bin/sh\necho "You are not logged in." >&2\nexit 1\n', 'utf8')
+      await chmod(fakeSbx, 0o755)
+    })
+
+    afterEach(async () => {
+      await rm(fakeBinDir, { recursive: true, force: true })
+    })
+
+    it('prints a sandbox error as a single Error line without help text or a stack trace', () => {
+      const env = { ...process.env, PATH: `${fakeBinDir}${path.delimiter}${process.env.PATH}` }
+
+      const { status, output } = runCliWithEnv(env, 'sandbox', 'shell')
+
+      expect(status).toBe(1)
+      expect(output).toMatch(/^Error: Unable to list sandboxes with sbx/m)
+      expect(output).not.toContain('Options:')
+      expect(output).not.toMatch(/^\s+at /m)
+    })
   })
 })

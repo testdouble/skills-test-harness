@@ -44,7 +44,7 @@ export async function queryScilHistory(dataDir: string): Promise<ScilHistoryRow[
         i.test_run_id,
         i.skill_file,
         CAST(MAX(i.iteration) AS INTEGER) AS iteration_count,
-        MAX(i.trainAccuracy) AS best_train_accuracy
+        CAST(MAX(i.trainAccuracy) AS DOUBLE) AS best_train_accuracy
       FROM read_parquet('${dataDir}/scil-iteration.parquet') i
       GROUP BY i.test_run_id, i.skill_file
       ORDER BY i.test_run_id DESC
@@ -105,7 +105,7 @@ export async function queryAcilHistory(dataDir: string): Promise<AcilHistoryRow[
         i.test_run_id,
         i.agent_file,
         CAST(MAX(i.iteration) AS INTEGER) AS iteration_count,
-        MAX(i.trainAccuracy) AS best_train_accuracy
+        CAST(MAX(i.trainAccuracy) AS DOUBLE) AS best_train_accuracy
       FROM read_parquet('${dataDir}/acil-iteration.parquet') i
       GROUP BY i.test_run_id, i.agent_file
       ORDER BY i.test_run_id DESC
