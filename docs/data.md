@@ -206,7 +206,7 @@ Test-only exports `_resetCache()` and `_cacheSize()` allow test isolation.
 
 The optional `filter` callback enables pre-filtering JSONL rows (used by `test-run` to keep only `type === 'result'` events). Old all-events schema is detected by the presence of a `message` column and auto-migrated by deleting and rebuilding.
 
-`updateAllParquet()` orchestrates import for eight tables: `test-config`, `test-run`, `test-results`, `output-files`, `scil-iteration`, `scil-summary`, `acil-iteration`, and `acil-summary`. SCIL and ACIL summaries each require a special step that converts per-run `.json` files to a temp JSONL before import.
+`updateAllParquet()` orchestrates import for eight tables: `test-config`, `test-run`, `test-results`, `output-files`, `scil-iteration`, `scil-summary`, `acil-iteration`, and `acil-summary`. SCIL and ACIL summaries each require a special step that converts per-run `.json` files to a temp JSONL before import. It creates the data directory first if it does not exist, since DuckDB's `COPY ... TO` will not create parent directories.
 
 ### Analytics Queries (`analytics.ts`, `run-status.ts`)
 
