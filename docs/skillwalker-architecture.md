@@ -78,7 +78,7 @@ flowchart LR
 
     cli --> exec
     cli -->|"update-analytics command"| data
-    cli -->|"sandbox create/clean/shell sub-commands"| sandbox
+    cli -->|"sandbox create/update/clean/shell sub-commands"| sandbox
 
     exec --> data
     exec --> evals
@@ -116,6 +116,7 @@ The command-line entry point. A thin Yargs wrapper that parses arguments, resolv
 | `acil` | Iterative agent-call description improvement loop | `runAcilLoop()` |
 | `update-analytics` | Import JSONL output to Parquet via DuckDB | `skillwalker-data` directly |
 | `sandbox create` | Create the Test Sandbox | `sandbox-integration` directly |
+| `sandbox update` | Recreate the Test Sandbox from the latest Claude Code template | `sandbox-integration` directly |
 | `sandbox clean` | Remove the Test Sandbox | `sandbox-integration` directly |
 | `sandbox shell` | Open an interactive bash session in the Test Sandbox | `sandbox-integration` directly |
 
@@ -228,6 +229,7 @@ The sandbox execution layer. Manages Test Sandbox lifecycle and runs commands in
 | `execInSandbox(args, scaffoldPath, debug)` | Execute a command in sandbox with optional scaffold directory |
 | `ensureSandboxExists()` | Verify the named sandbox is running |
 | `createSandbox(repoRoot)` | Create a new Test Sandbox with repo mount |
+| `updateSandbox(repoRoot)` | Remove the sandbox and cached Claude Code templates, then recreate it |
 | `removeSandbox()` | Remove the Test Sandbox |
 | `openShell()` | Open interactive bash in sandbox |
 | `SANDBOX_NAME` | `'claude-skills-skillwalker'` constant |

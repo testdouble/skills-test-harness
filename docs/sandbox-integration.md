@@ -13,14 +13,14 @@ Centralized package for all Test Sandbox interactions in Skillwalker — creatin
 ## Summary
 
 - The `@testdouble/sandbox-integration` package is the single point of contact for all Sandbox CLI commands in Skillwalker. No other package spawns `sbx` processes directly.
-- Provides two categories of functions: **sandbox execution** (`ensureSandboxExists`, `execInSandbox`) for running Claude inside the sandbox, and **lifecycle management** (`createSandbox`, `removeSandbox`, `openShell`) for managing the sandbox itself.
+- Provides two categories of functions: **sandbox execution** (`ensureSandboxExists`, `execInSandbox`) for running Claude inside the sandbox, and **lifecycle management** (`createSandbox`, `updateSandbox`, `removeSandbox`, `openShell`) for managing the sandbox itself.
 - Uses Docker Desktop sandboxes (not traditional containers) via the `sbx` CLI subcommands.
 - Returns a clean `SandboxResult` type instead of exposing raw `Bun.spawn` process handles.
 
 Key files:
 - `packages/sandbox-integration/index.ts` — Public API barrel export
 - `packages/sandbox-integration/src/sandbox.ts` — `ensureSandboxExists`, `execInSandbox`, `SANDBOX_NAME`
-- `packages/sandbox-integration/src/lifecycle.ts` — `createSandbox`, `removeSandbox`, `openShell`
+- `packages/sandbox-integration/src/lifecycle.ts` — `createSandbox`, `updateSandbox`, `removeSandbox`, `openShell`
 - `packages/sandbox-integration/sandbox-run.sh` — Shell script executed inside the sandbox to prepare the working directory and invoke Claude
 
 ## Architecture
@@ -37,7 +37,7 @@ flowchart TB
     subgraph si["@testdouble/sandbox-integration"]
         direction TB
         sandboxts["<b>sandbox.ts</b><br>ensureSandboxExists()<br>execInSandbox()<br>SANDBOX_NAME"]
-        lifecycle["<b>lifecycle.ts</b><br>createSandbox()<br>removeSandbox()<br>openShell()"]
+        lifecycle["<b>lifecycle.ts</b><br>createSandbox()<br>updateSandbox()<br>removeSandbox()<br>openShell()"]
         runsh["<b>sandbox-run.sh</b><br>(runs inside Docker)"]
 
         lifecycle --> sandboxts
@@ -59,7 +59,7 @@ flowchart TB
 | `packages/sandbox-integration/package.json` | Package metadata (`@testdouble/sandbox-integration`) |
 | `packages/sandbox-integration/index.ts` | Barrel re-export of all public symbols |
 | `packages/sandbox-integration/src/sandbox.ts` | `SANDBOX_NAME`, `ensureSandboxExists`, `execInSandbox` |
-| `packages/sandbox-integration/src/lifecycle.ts` | `createSandbox`, `removeSandbox`, `openShell` |
+| `packages/sandbox-integration/src/lifecycle.ts` | `createSandbox`, `updateSandbox`, `removeSandbox`, `openShell` |
 | `packages/sandbox-integration/src/types.ts` | `SandboxResult` interface |
 | `packages/sandbox-integration/src/errors.ts` | `SandboxError` class |
 | `packages/sandbox-integration/sandbox-run.sh` | Scaffold setup and Claude invocation inside the sandbox |
@@ -173,6 +173,16 @@ Checks if the sandbox already exists via an internal `sandboxExists()` helper. I
 
 Called by `commands/sandbox/create.ts`.
 
+#### updateSandbox
+
+```typescript
+export async function updateSandbox(repoRoot: string): Promise<void>
+```
+
+Removes the sandbox if it exists, then removes every cached `docker/sandbox-templates` image tagged `claude-code*` (found with `sbx template ls`). Finally it calls `createSandbox`, so `sbx run` fetches the latest Claude Code template. `sbx` has no pull command, so deleting the cached image is the only way to get a newer one. Throws `SandboxError` if a template cannot be listed or removed — for example, because another sandbox still uses it.
+
+Called by `commands/sandbox/update.ts`, which catches `SandboxError` and re-throws as `SkillwalkerError`.
+
 #### removeSandbox
 
 ```typescript
@@ -231,7 +241,7 @@ See [Cross-Runtime Meta Property Resolution](coding-standards/cross-runtime-meta
 
 - `packages/sandbox-integration/src/errors.test.ts` — `SandboxError` construction and properties
 - `packages/sandbox-integration/src/sandbox.test.ts` — `ensureSandboxExists` and `execInSandbox` with mocked `Bun.spawn`
-- `packages/sandbox-integration/src/lifecycle.test.ts` — `removeSandbox`, `createSandbox`, `openShell` with mocked `Bun.spawn` and `sandbox.js`
+- `packages/sandbox-integration/src/lifecycle.test.ts` — `removeSandbox`, `createSandbox`, `updateSandbox`, `openShell` with mocked `Bun.spawn` and `sandbox.js`
 
 ### Test Patterns
 
@@ -277,6 +287,8 @@ If `ensureSandboxExists` throws `SandboxError`, run:
 
 1. `sbx rm --force claude-skills-skillwalker`
 2. `./build/skillwalker sandbox create`
+
+To recreate it from the latest Claude Code template instead, run `./build/skillwalker sandbox update`.
 
 ### Tests fail with "Cannot read properties of undefined (reading 'exited')"
 
