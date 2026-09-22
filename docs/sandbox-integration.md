@@ -179,7 +179,7 @@ Called by `commands/sandbox/create.ts`.
 export async function updateSandbox(repoRoot: string): Promise<void>
 ```
 
-Removes the sandbox if it exists, then removes every cached `docker/sandbox-templates` image tagged `claude-code*` (found with `sbx template ls`). Finally it calls `createSandbox`, so `sbx run` fetches the latest Claude Code template. `sbx` has no pull command, so deleting the cached image is the only way to get a newer one. Throws `SandboxError` if a template cannot be listed or removed — for example, because another sandbox still uses it.
+Removes the sandbox if it exists, then removes every cached `docker/sandbox-templates` image tagged `claude-code*` (found with `sbx template ls`). Finally it calls `createSandbox`, so `sbx run` fetches the latest Claude Code template. `sbx` has no pull command, so deleting the cached image is the only way to get a newer one. An `rm` that reports `no template image` counts as already removed, because `sbx template ls` can list one image under several IDs. Any other listing or removal failure throws `SandboxError`.
 
 Called by `commands/sandbox/update.ts`, which catches `SandboxError` and re-throws as `SkillwalkerError`.
 

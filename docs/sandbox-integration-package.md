@@ -134,7 +134,7 @@ Replaces the sandbox with one built from the latest Claude Code template. `sbx` 
 2. Lists templates with `sbx template ls` and removes each cached image whose repository is `docker/sandbox-templates` and whose tag starts with `claude-code`, using `sbx template rm <image id>`.
 3. Calls `createSandbox(repoRoot)`, which makes `sbx run` fetch the current template.
 
-Throws `SandboxError` if listing or removing a template fails. Removal fails when another sandbox still uses the image. By that point the Skillwalker sandbox is already gone, so the error message tells the user to remove the other sandbox and retry.
+`sbx template ls` can list one image under several IDs, and removing the first ID removes them all. A later `rm` that reports `no template image` is therefore treated as already removed. Any other listing or removal failure throws `SandboxError`.
 
 **Consumer:** `cli/src/commands/sandbox/update.ts` -- catches `SandboxError` and re-throws as `SkillwalkerError`
 

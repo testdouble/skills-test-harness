@@ -3,6 +3,7 @@ import { ensureSandboxExists, listSandboxNames, SANDBOX_NAME, spawnSbx } from '.
 
 const CLAUDE_TEMPLATE_REPOSITORY = 'docker/sandbox-templates'
 const CLAUDE_TEMPLATE_TAG_PREFIX = 'claude-code'
+const TEMPLATE_ALREADY_REMOVED_MESSAGE = 'no template image'
 
 async function sandboxExists(): Promise<boolean> {
   return (await listSandboxNames()).includes(SANDBOX_NAME)
@@ -67,12 +68,14 @@ async function listClaudeTemplateImageIds(): Promise<string[]> {
 async function removeTemplateImage(imageId: string): Promise<void> {
   const { exitCode, output } = await runSbxCaptured(['template', 'rm', imageId])
 
-  if (exitCode !== 0) {
-    throw new SandboxError(
-      `sbx template rm ${imageId} failed (exit code ${exitCode ?? 1}): ${output}\nIf another sandbox still uses this image, remove it with \`sbx rm\`, then retry \`./build/skillwalker sandbox update\`.`,
-      exitCode,
-    )
-  }
+  // `sbx template ls` can list one image under several IDs. Removing the first
+  // removes them all, so a later ID reports that the image no longer exists.
+  if (exitCode === 0 || output.includes(TEMPLATE_ALREADY_REMOVED_MESSAGE)) return
+
+  throw new SandboxError(
+    `sbx template rm ${imageId} failed (exit code ${exitCode ?? 1}): ${output}\nRetry with \`./build/skillwalker sandbox update\`.`,
+    exitCode,
+  )
 }
 
 export async function createSandbox(repoRoot: string): Promise<void> {

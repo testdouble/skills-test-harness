@@ -174,6 +174,25 @@ describe('updateSandbox', () => {
     stderrSpy.mockRestore()
   })
 
+  it('continues when a template image was already removed along with an earlier one', async () => {
+    ;(globalThis as any).Bun.spawn
+      .mockReturnValueOnce(makeCapturedProc('other-sandbox\n'))
+      .mockReturnValueOnce(makeCapturedProc(templateList))
+      .mockReturnValueOnce(makeCapturedProc(''))
+      .mockReturnValueOnce(makeCapturedProc("ERROR: sandboxd error: status 404: no template image '94670d5b2a24'", 1))
+      .mockReturnValueOnce(makeCapturedProc('other-sandbox\n'))
+      .mockReturnValueOnce({ exited: Promise.resolve() })
+
+    const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
+
+    const { updateSandbox } = await import('./lifecycle.js')
+    await updateSandbox('/repo/root')
+
+    expect(spawnedArgs().at(-1)).toEqual(['sbx', 'run', '--name', 'claude-skills-skillwalker', 'claude', '/repo/root'])
+
+    stderrSpy.mockRestore()
+  })
+
   it('throws SandboxError when a template image cannot be removed', async () => {
     ;(globalThis as any).Bun.spawn
       .mockReturnValueOnce(makeCapturedProc('other-sandbox\n'))
