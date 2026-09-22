@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+import { SandboxError } from '@testdouble/sandbox-integration'
 import { SkillwalkerError } from '@testdouble/skillwalker-execution'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
@@ -17,7 +18,7 @@ try {
     .showHelpOnFail(true)
     .parseAsync()
 } catch (err) {
-  if (err instanceof SkillwalkerError) {
+  if (err instanceof SkillwalkerError || err instanceof SandboxError) {
     process.stderr.write(`Error: ${err.message}\n`)
     process.exit(1)
   }

@@ -3,6 +3,10 @@ import type { SandboxResult } from './types.js'
 
 export const SANDBOX_NAME = 'claude-skills-skillwalker'
 
+// `sbx exec` prints this and still exits 0 when the command cannot be started,
+// such as when its host path is not under one of the sandbox's workspaces.
+const EXEC_FAILED_MESSAGE = 'OCI runtime exec failed'
+
 export function spawnSbx(args: string[], options: Parameters<typeof Bun.spawn>[1]) {
   try {
     return Bun.spawn(['sbx', ...args], options)
@@ -51,6 +55,10 @@ function isMissingExecutableError(error: unknown): boolean {
   return (error as Error & { code?: string }).code === 'ENOENT'
 }
 
+function reportsExecFailure(output: string): boolean {
+  return output.split('\n').some((line) => line.startsWith(EXEC_FAILED_MESSAGE))
+}
+
 export async function execInSandbox(
   command: string,
   args: string[],
@@ -77,5 +85,13 @@ export async function execInSandbox(
   if (debug && stderr) process.stderr.write(stderr)
 
   await proc.exited
+
+  if (reportsExecFailure(stdout) || reportsExecFailure(stderr)) {
+    throw new SandboxError(
+      `Unable to run ${command} in sandbox "${SANDBOX_NAME}": ${`${stdout}${stderr}`.trim()}\nThe sandbox must mount the directory holding this file. Run \`skillwalker sandbox update\` from the target repo to recreate it with both mounts.`,
+      proc.exitCode,
+    )
+  }
+
   return { exitCode: proc.exitCode ?? 1, stdout, stderr }
 }

@@ -138,4 +138,47 @@ describe('execInSandbox', () => {
 
     expect(result.exitCode).toBe(1)
   })
+
+  it('throws SandboxError when sbx reports the command could not be started, despite exit code 0', async () => {
+    ;(globalThis as any).Bun.spawn.mockReturnValue({
+      stdout: makeStream(
+        'OCI runtime exec failed: executable file `/host/build/sandbox-run.sh` not found: No such file or directory\n',
+      ),
+      stderr: makeStream('Sandbox claude-skills-skillwalker started successfully\nINFO: Starting Docker daemon\n'),
+      exited: Promise.resolve(),
+      exitCode: 0,
+    })
+
+    const { execInSandbox } = await import('./sandbox.js')
+    const result = execInSandbox('/host/build/sandbox-run.sh', [], null, false)
+
+    await expect(result).rejects.toThrow(SandboxError)
+    await expect(result).rejects.toThrow(/sandbox update/)
+  })
+
+  it('throws SandboxError when the exec failure is reported on stderr after other lines', async () => {
+    ;(globalThis as any).Bun.spawn.mockReturnValue({
+      stdout: makeStream(''),
+      stderr: makeStream('INFO: Starting Docker daemon\nOCI runtime exec failed: executable file not found\n'),
+      exited: Promise.resolve(),
+      exitCode: 0,
+    })
+
+    const { execInSandbox } = await import('./sandbox.js')
+    await expect(execInSandbox('/path/to/script', [], null, false)).rejects.toThrow(SandboxError)
+  })
+
+  it('does not throw when the message appears mid-line in command output', async () => {
+    ;(globalThis as any).Bun.spawn.mockReturnValue({
+      stdout: makeStream('{"text":"OCI runtime exec failed is a docker error"}\n'),
+      stderr: makeStream(''),
+      exited: Promise.resolve(),
+      exitCode: 0,
+    })
+
+    const { execInSandbox } = await import('./sandbox.js')
+    const result = await execInSandbox('/path/to/script', [], null, false)
+
+    expect(result.exitCode).toBe(0)
+  })
 })
