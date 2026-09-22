@@ -1,4 +1,5 @@
 import { type JSX, useEffect, useState } from 'react'
+import { errorMessage, fetchJson } from '../lib/fetch-json.js'
 
 interface PerTestRow {
   test_run_id: string
@@ -71,14 +72,13 @@ export function PerTestAnalytics(): JSX.Element {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('/api/analytics/per-test')
-      .then((res) => res.json())
+    fetchJson<{ rows: PerTestRow[] }>('/api/analytics/per-test')
       .then((data) => {
         setAllRows(data.rows)
         setLoading(false)
       })
       .catch((err) => {
-        setError(String(err))
+        setError(errorMessage(err))
         setLoading(false)
       })
   }, [])
@@ -86,6 +86,13 @@ export function PerTestAnalytics(): JSX.Element {
   if (loading) return <div className="flex items-center justify-center h-64 text-[#4f4f4f]">Loading...</div>
   if (error)
     return <div className="mx-10 mt-8 p-4 bg-[#1f1000] border border-[#d63c00] rounded-lg text-[#d63c00]">{error}</div>
+  if (allRows.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-64 text-[#4f4f4f]">
+        No test results found. Run tests with: skillwalker run-test --eval &lt;name&gt;
+      </div>
+    )
+  }
 
   // Aggregate stats
   const totalRuns = new Set(allRows.map((r) => r.test_run_id)).size

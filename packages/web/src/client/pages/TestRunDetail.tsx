@@ -1,6 +1,7 @@
 import { marked } from 'marked'
 import { Fragment, type JSX, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { errorMessage, fetchJson } from '../lib/fetch-json.js'
 
 interface TestRunDetailRow {
   test_run_id: string
@@ -267,18 +268,13 @@ export function TestRunDetail(): JSX.Element {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`/api/test-runs/${runId}`)
-      .then((res) => res.json())
+    fetchJson<Details>(`/api/test-runs/${runId}`)
       .then((data) => {
-        if (data.error) {
-          setError(data.error)
-        } else {
-          setDetails(data)
-        }
+        setDetails(data)
         setLoading(false)
       })
       .catch((err) => {
-        setError(String(err))
+        setError(errorMessage(err))
         setLoading(false)
       })
   }, [runId])

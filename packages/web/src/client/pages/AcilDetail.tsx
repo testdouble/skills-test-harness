@@ -1,5 +1,6 @@
 import { type JSX, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { errorMessage, fetchJson } from '../lib/fetch-json.js'
 
 interface AcilTrainResult {
   testName: string
@@ -139,22 +140,14 @@ export function AcilDetail(): JSX.Element {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch(`/api/acil/${runId}`)
-        let data: { error?: string; summary?: AcilSummaryRow; iterations?: AcilIterationRow[] }
-        if (!res.ok) {
-          data = await res.json().catch(() => ({ error: res.statusText || `HTTP ${res.status}` }))
-        } else {
-          data = await res.json()
-        }
-        if (data.error) {
-          setError(data.error)
-        } else if (!data.summary || !data.iterations) {
+        const data = await fetchJson<Partial<AcilRunDetails>>(`/api/acil/${runId}`)
+        if (!data.summary || !data.iterations) {
           setError('Invalid response from server')
         } else {
           setDetails(data as AcilRunDetails)
         }
       } catch (err) {
-        setError(String(err))
+        setError(errorMessage(err))
       } finally {
         setLoading(false)
       }
