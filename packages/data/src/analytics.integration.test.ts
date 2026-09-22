@@ -356,6 +356,17 @@ describe('queryPerTest', () => {
     const rows = await queryPerTest(dataDir)
     expect(rows[0].total_cost_usd).toBe(0.12)
   })
+
+  it('returns total_cost_usd as a number when every run cost a whole number', async () => {
+    const outputDir = path.join(tmpDir, 'output')
+    const dataDir = path.join(tmpDir, 'analytics')
+    await writeRunFixture({ outputDir, testRunId: '20260101T100001', eval: 's', testName: 'test one', totalCostUsd: 0 })
+    await updateAllParquet({ outputDir, dataDir })
+
+    const rows = await queryPerTest(dataDir)
+
+    expect(rows[0].total_cost_usd).toBe(0)
+  })
 })
 
 // ─── queryTestRunSummaries ────────────────────────────────────────────────────
@@ -481,6 +492,17 @@ describe('queryTestRunDetails', () => {
 
     const details = await queryTestRunDetails(dataDir, '20260101T000008')
     expect(details.summary[0].total_cost_usd).toBe(0.1235)
+  })
+
+  it('returns total_cost_usd as a number in details when every run cost a whole number', async () => {
+    const outputDir = path.join(tmpDir, 'output')
+    const dataDir = path.join(tmpDir, 'analytics')
+    await writeRunFixture({ outputDir, testRunId: '20260101T100001', eval: 's', testName: 'test one', totalCostUsd: 0 })
+    await updateAllParquet({ outputDir, dataDir })
+
+    const details = await queryTestRunDetails(dataDir, '20260101T100001')
+
+    expect(details.summary[0].total_cost_usd).toBe(0)
   })
 })
 

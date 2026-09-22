@@ -345,7 +345,7 @@ export async function queryPerTest(dataDir: string): Promise<PerTestRow[]> {
         c.test.name AS test_name,
         c.eval,
         e.all_expectations_passed,
-        ROUND(r.total_cost_usd, 2) AS total_cost_usd,
+        CAST(ROUND(r.total_cost_usd, 2) AS DOUBLE) AS total_cost_usd,
         CAST(r.num_turns AS INTEGER) AS num_turns,
         CAST(r.usage.input_tokens AS INTEGER) AS input_tokens,
         CAST(r.usage.output_tokens AS INTEGER) AS output_tokens
@@ -464,7 +464,7 @@ export async function queryTestRunDetails(dataDir: string, testRunId: string): P
         r.is_error,
         e.all_expectations_passed,
         r.result,
-        ROUND(r.total_cost_usd, 4) AS total_cost_usd,
+        CAST(ROUND(r.total_cost_usd, 4) AS DOUBLE) AS total_cost_usd,
         CAST(r.num_turns AS INTEGER) AS num_turns,
         CAST(r.usage.input_tokens AS INTEGER) AS input_tokens,
         CAST(r.usage.output_tokens AS INTEGER) AS output_tokens
