@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@testdouble/skillwalker-data', () => ({
+vi.mock('@testdouble/skillwalker-data', async (importOriginal) => ({
+  InvalidRunIdError: (await importOriginal<typeof import('@testdouble/skillwalker-data')>()).InvalidRunIdError,
   queryScilHistory: vi.fn(),
   queryScilRunDetails: vi.fn(),
 }))
 
-import { queryScilHistory, queryScilRunDetails } from '@testdouble/skillwalker-data'
+import { InvalidRunIdError, queryScilHistory, queryScilRunDetails } from '@testdouble/skillwalker-data'
 import { getScilHistory, getScilRunById } from './scil.js'
 
 function makeMockContext(overrides?: { param?: Record<string, string> }) {
@@ -58,17 +59,6 @@ describe('getScilHistory', () => {
     expect(runs).toEqual([])
   })
 
-  it('returns empty runs when parquet file does not exist (TP-003)', async () => {
-    vi.mocked(queryScilHistory).mockRejectedValue(
-      new Error('IO Error: No such file or directory: scil-iteration.parquet'),
-    )
-    const { c, jsonMock } = makeMockContext()
-
-    await getScilHistory(c, '/data')
-
-    expect(jsonMock).toHaveBeenCalledWith({ runs: [] })
-  })
-
   it('re-throws unexpected errors (TP-004)', async () => {
     vi.mocked(queryScilHistory).mockRejectedValue(new Error('Database connection failed'))
     const { c } = makeMockContext()
@@ -105,6 +95,15 @@ describe('getScilRunById', () => {
     expect(jsonMock).toHaveBeenCalledWith({ error: 'Not found' }, 404)
   })
 
+  it('returns 404 JSON when the run ID is malformed', async () => {
+    vi.mocked(queryScilRunDetails).mockRejectedValue(new InvalidRunIdError('bad-id'))
+    const { c, jsonMock } = makeMockContext({ param: { runId: 'bad-id' } })
+
+    await getScilRunById(c, '/data')
+
+    expect(jsonMock).toHaveBeenCalledWith({ error: 'Not found' }, 404)
+  })
+
   it('defaults to empty string runId when param is missing', async () => {
     vi.mocked(queryScilRunDetails).mockRejectedValue(new Error('SCIL run not found: '))
     const { c, jsonMock } = makeMockContext()
@@ -120,17 +119,6 @@ describe('getScilRunById', () => {
     const { c } = makeMockContext({ param: { runId: 'run-abc' } })
 
     await expect(getScilRunById(c, '/data')).rejects.toThrow('Database connection failed')
-  })
-
-  it('returns 404 when parquet file does not exist (EC5)', async () => {
-    vi.mocked(queryScilRunDetails).mockRejectedValue(
-      new Error('IO Error: No such file or directory: scil-summary.parquet'),
-    )
-    const { c, jsonMock } = makeMockContext({ param: { runId: 'run-abc' } })
-
-    await getScilRunById(c, '/data')
-
-    expect(jsonMock).toHaveBeenCalledWith({ error: 'Not found' }, 404)
   })
 
   it('re-throws non-Error throwable even if message matches "not found" pattern', async () => {

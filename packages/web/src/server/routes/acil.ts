@@ -1,16 +1,9 @@
-import { queryAcilHistory, queryAcilRunDetails } from '@testdouble/skillwalker-data'
+import { InvalidRunIdError, queryAcilHistory, queryAcilRunDetails } from '@testdouble/skillwalker-data'
 import type { Context } from 'hono'
 
 export async function getAcilHistory(c: Context, dataDir: string): Promise<Response> {
-  try {
-    const runs = await queryAcilHistory(dataDir)
-    return c.json({ runs })
-  } catch (err) {
-    if (err instanceof Error && err.message.includes('No such file or directory')) {
-      return c.json({ runs: [] })
-    }
-    throw err
-  }
+  const runs = await queryAcilHistory(dataDir)
+  return c.json({ runs })
 }
 
 export async function getAcilRunById(c: Context, dataDir: string): Promise<Response> {
@@ -19,10 +12,7 @@ export async function getAcilRunById(c: Context, dataDir: string): Promise<Respo
     const { summary, iterations } = await queryAcilRunDetails(dataDir, runId)
     return c.json({ summary, iterations })
   } catch (err) {
-    if (
-      err instanceof Error &&
-      (err.message.startsWith('ACIL run not found:') || err.message.includes('No such file or directory'))
-    ) {
+    if (err instanceof InvalidRunIdError || (err instanceof Error && err.message.startsWith('ACIL run not found:'))) {
       return c.json({ error: 'Not found' }, 404)
     }
     throw err

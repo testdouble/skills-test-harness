@@ -8,6 +8,7 @@ import _indexHtml from '../../dist/client/index.html' with { type: 'file' }
 import indexJs from '../../dist/client/index.js' with { type: 'file' }
 import { getAcilHistory, getAcilRunById } from './routes/acil'
 import { getPerTestAnalytics } from './routes/analytics'
+import { jsonErrorHandler } from './routes/error-handler'
 import { getScilHistory, getScilRunById } from './routes/scil'
 import { getTestRunById, getTestRuns } from './routes/test-runs'
 
@@ -37,6 +38,8 @@ const port = argv.port
 const dataDir = argv['data-dir']
 
 const app = new Hono()
+
+app.onError(jsonErrorHandler)
 
 app.get('/api/health', (c) => c.json({ status: 'ok' }))
 app.get('/api/test-runs', (c) => getTestRuns(c, dataDir))
