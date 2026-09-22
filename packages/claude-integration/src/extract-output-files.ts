@@ -6,11 +6,7 @@ export interface OutputFile {
   content: string
 }
 
-const extractScript = resolveRelativePath(
-  import.meta,
-  '../sandbox-extract.sh',
-  'packages/claude-integration/sandbox-extract.sh',
-)
+const extractScript = resolveRelativePath(import.meta, '../sandbox-extract.sh', 'sandbox-extract.sh')
 
 export async function extractOutputFiles(debug: boolean): Promise<OutputFile[]> {
   const { stdout } = await execInSandbox(extractScript, [], null, debug)

@@ -121,7 +121,7 @@ export function resolveRelativePath(meta: ImportMeta, sourcePath: string, compil
 
 **Source mode:** Resolves `sourcePath` relative to the calling file's directory (via `currentDir`). This is the standard relative path resolution used during development and testing.
 
-**Compiled mode:** Resolves `compiledPath` relative to the directory containing the compiled binary (`process.execPath`). The Makefile compiles binaries to the `tests/` directory, so `compiledPath` values are relative to that location.
+**Compiled mode:** Resolves `compiledPath` relative to the directory containing the compiled binary (`process.execPath`). `scripts/build.ts` compiles binaries into `build/` and copies each runtime asset in beside them, so `compiledPath` is just the asset's filename.
 
 **Existence guard:** Both modes verify the resolved path exists on disk and throw with a diagnostic error message that includes the resolution mode and directory, aiding debugging when paths are misconfigured.
 

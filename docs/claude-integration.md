@@ -127,14 +127,14 @@ The `--print` flag is always placed last in the argument array, after all other 
 
 ### Sandbox Script Resolution
 
-The `sandbox-run.sh` script path is resolved at module load time using `resolveRelativePath` from `@testdouble/bun-helpers`. This utility handles cross-runtime path resolution between Bun and Vitest environments:
+The `sandbox-run.sh` script path is resolved at module load time using `resolveRelativePath` from `@testdouble/bun-helpers`. This utility handles cross-runtime path resolution across Bun, Vitest, and the compiled binaries. In a compiled binary the script is read from beside the executable, where `scripts/build.ts` copies it:
 
 ```typescript
 // packages/claude-integration/src/run-claude.ts
 const sandboxRunScript = resolveRelativePath(
   import.meta,
   '../sandbox-run.sh',
-  'packages/claude-integration/sandbox-run.sh'
+  'sandbox-run.sh',
 )
 ```
 

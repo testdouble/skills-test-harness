@@ -1,6 +1,6 @@
 # Analytics
 
-> **Tier 1 · Anyone querying results.** Assumes you've completed [setup](../../README.md#setup), run at least one test suite, and imported data with `./harness update-analytics-data`. This page gets you queryable cross-run metrics from the CLI.
+> **Tier 1 · Anyone querying results.** Assumes you've completed [setup](../../README.md#setup), run at least one test suite, and imported data with `./build/harness update-analytics-data`. This page gets you queryable cross-run metrics from the CLI.
 
 Import test run data into a DuckDB database backed by Parquet files, then query it from the CLI or the web dashboard. This page covers importing data, running queries, and finding your way around the analytics output.
 
@@ -9,7 +9,7 @@ Import test run data into a DuckDB database backed by Parquet files, then query 
 After running tests (and optionally evaluating them with `test-eval`), import the results:
 
 ```bash
-./harness update-analytics-data
+./build/harness update-analytics-data
 ```
 
 This scans `tests/output/` for test run directories and converts their JSONL files into Parquet tables under `analytics/data/`. The conversion is idempotent — runs already imported are skipped, so you can run this command as often as you like.
@@ -31,7 +31,7 @@ The harness provides two built-in analytics queries:
 Aggregate pass/fail metrics across all runs, grouped by test name:
 
 ```bash
-./harness analytics per-test
+./build/harness analytics per-test
 ```
 
 Use this to spot trends — which tests pass reliably, which ones are flaky, and how pass rates change over time.
@@ -41,7 +41,7 @@ Use this to spot trends — which tests pass reliably, which ones are flaky, and
 Drill into a specific run:
 
 ```bash
-./harness analytics test-run-details --run-id <run-id>
+./build/harness analytics test-run-details --run-id <run-id>
 ```
 
 Use this to inspect a single run's results without opening the web dashboard. Run IDs are timestamps in `YYYYMMDDTHHmmss` format — you can find them in the `tests/output/` directory names or in the web dashboard's Test Run History page.
@@ -51,8 +51,8 @@ Use this to inspect a single run's results without opening the web dashboard. Ru
 Both queries support JSON and CSV output:
 
 ```bash
-./harness analytics per-test --format json
-./harness analytics per-test --format csv
+./build/harness analytics per-test --format json
+./build/harness analytics per-test --format csv
 ```
 
 ## Data location and schema

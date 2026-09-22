@@ -1,6 +1,6 @@
 # Viewing Results in the Dashboard
 
-> **Tier 1 · Anyone reviewing results.** Assumes you've completed [setup](../../README.md#setup), run at least one test suite, and imported data with `./harness update-analytics-data` (see [Analytics](analytics.md) for the import command). This page gets you a browser dashboard for inspecting every test run, improvement loop, and cross-run trend.
+> **Tier 1 · Anyone reviewing results.** Assumes you've completed [setup](../../README.md#setup), run at least one test suite, and imported data with `./build/harness update-analytics-data` (see [Analytics](analytics.md) for the import command). This page gets you a browser dashboard for inspecting every test run, improvement loop, and cross-run trend.
 
 Launch the harness-web dashboard and use each page to inspect test run results, SCIL and ACIL improvement loop history, and cross-run analytics — all from your browser.
 
@@ -9,7 +9,7 @@ Launch the harness-web dashboard and use each page to inspect test run results, 
 From the `tests/` directory:
 
 ```bash
-./harness-web
+./build/harness-web
 ```
 
 Open `http://localhost:3099` in your browser.
@@ -17,7 +17,7 @@ Open `http://localhost:3099` in your browser.
 To use a different port:
 
 ```bash
-./harness-web --port 8080
+./build/harness-web --port 8080
 ```
 
 **Note:** The dashboard reads from the analytics Parquet files. Make sure you've imported your test data first — see [Analytics](analytics.md) for the import command.

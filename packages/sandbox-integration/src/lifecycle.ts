@@ -38,7 +38,7 @@ export async function createSandbox(repoRoot: string): Promise<void> {
   if (await sandboxExists()) {
     process.stderr.write(`Sandbox "${SANDBOX_NAME}" already exists. To recreate, run:\n`)
     process.stderr.write(`  sbx rm --force ${SANDBOX_NAME}\n`)
-    process.stderr.write(`  ./harness sandbox-setup\n`)
+    process.stderr.write(`  ./build/harness sandbox-setup\n`)
     return
   }
 

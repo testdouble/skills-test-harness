@@ -2,6 +2,7 @@
   "name": "@testdouble/harness-web",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "bin": {
     "harness-web": "./src/server/index.ts"
   },

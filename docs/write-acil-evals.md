@@ -110,12 +110,12 @@ After generating the test suite, you can:
 
 1. **Run the tests** to check trigger accuracy:
    ```bash
-   ./harness test-run --suite {agent-name}
+   ./build/harness test-run --suite {agent-name}
    ```
 
 2. **Evaluate results**:
    ```bash
-   ./harness test-eval
+   ./build/harness test-eval
    ```
 
 3. **Run ACIL** to iteratively improve the agent's trigger description based on eval results. See [Agent Call Improvement Loop](agent-call-improvement-loop.md).

@@ -109,7 +109,8 @@
 
 ### Infrastructure
 
-- Native library: `libduckdb.dylib` (platform-specific, copied during build)
+- Build output: `build/` (compiled `harness` and `harness-web` binaries plus their runtime assets)
+- Native library: `libduckdb.dylib` (platform-specific, copied into `build/` beside the binaries)
 - Analytics store: `analytics/` (Parquet files)
 - Test output: `output/` (timestamped JSONL run data)
 - Test Sandbox: `packages/sandbox-integration/` (see [docs/sandbox-integration.md](sandbox-integration.md))

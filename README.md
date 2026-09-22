@@ -29,7 +29,7 @@ pick the one that matches what you're improving.
 All commands run from the **repository root**.
 
 1. **Build the harness.** This installs dependencies and compiles the `harness`
-   and `harness-web` binaries:
+   and `harness-web` binaries into `build/`:
 
    ```bash
    make build
@@ -40,7 +40,7 @@ All commands run from the **repository root**.
 
    ```bash
    sbx login
-   ./harness sandbox-setup
+   ./build/harness sandbox-setup
    ```
 
    Complete the login in the Claude TUI. If you aren't prompted, run `/login`.

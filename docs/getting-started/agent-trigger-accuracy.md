@@ -47,7 +47,7 @@ For details on the skill's full workflow and prompt category conventions, see [W
 Run all tests in your suite:
 
 ```bash
-./harness test-run --suite {agent-name}
+./build/harness test-run --suite {agent-name}
 ```
 
 The harness executes each prompt inside the Test Sandbox, records whether your agent was delegated to, and prints a pass/fail summary.
@@ -55,13 +55,13 @@ The harness executes each prompt inside the Test Sandbox, records whether your a
 **Tip:** To run a single test in isolation (useful for debugging):
 
 ```bash
-./harness test-run --suite {agent-name} --test "Agent Call: some test name"
+./build/harness test-run --suite {agent-name} --test "Agent Call: some test name"
 ```
 
 **Tip:** To see raw Claude output for troubleshooting:
 
 ```bash
-./harness test-run --suite {agent-name} --debug
+./build/harness test-run --suite {agent-name} --debug
 ```
 
 For the full list of CLI flags, see [CLI](../cli.md).
@@ -71,7 +71,7 @@ For the full list of CLI flags, see [CLI](../cli.md).
 Import your test run results into the analytics database:
 
 ```bash
-./harness update-analytics-data
+./build/harness update-analytics-data
 ```
 
 This is idempotent — runs already imported are skipped. For more detail on analytics data and CLI queries, see [Analytics](analytics.md).
@@ -81,7 +81,7 @@ This is idempotent — runs already imported are skipped. For more detail on ana
 Launch the harness-web dashboard to inspect your test run:
 
 ```bash
-./harness-web
+./build/harness-web
 ```
 
 Open `http://localhost:3099` in your browser. You'll see your test run in the Test Run History page, and can click through to see per-test pass/fail results. For a full walkthrough of the dashboard, see [Viewing Results](viewing-results.md).

@@ -112,12 +112,12 @@ After generating the scaffold, you can:
 
 2. **Run the tests** to produce output for the judge to evaluate:
    ```bash
-   ./harness test-run --suite {agent-name}
+   ./build/harness test-run --suite {agent-name}
    ```
 
 3. **Evaluate results**:
    ```bash
-   ./harness test-eval
+   ./build/harness test-eval
    ```
 
 ## References

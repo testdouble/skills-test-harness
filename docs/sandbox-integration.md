@@ -222,7 +222,7 @@ See [Cross-Runtime Meta Property Resolution](coding-standards/cross-runtime-meta
 
 | Scenario | Error Type | Behavior |
 |----------|------------|----------|
-| Sandbox not found by `ensureSandboxExists` | `SandboxError` (exitCode: `null`) | Thrown with message suggesting `./harness sandbox-setup` |
+| Sandbox not found by `ensureSandboxExists` | `SandboxError` (exitCode: `null`) | Thrown with message suggesting `./build/harness sandbox-setup` |
 | `sbx rm` fails | `SandboxError` (exitCode: process code) | Thrown with stdout+stderr in message |
 | Non-zero exit code from `execInSandbox` | No error thrown | Returned in `SandboxResult.exitCode`; caller decides |
 | `execInSandbox` with `proc.exitCode` null | No error thrown | `exitCode` defaults to `1` in `SandboxResult` |
@@ -278,7 +278,7 @@ Modules under test are imported dynamically inside each `it` block via `await im
 
 If `ensureSandboxExists` throws `SandboxError`, run:
 
-1. `./harness sandbox-setup` — creates the sandbox and completes OAuth
+1. `./build/harness sandbox-setup` — creates the sandbox and completes OAuth
 2. Verify with `sbx ls --quiet` — should list `claude-skills-harness`
 
 ### Sandbox already exists during setup
@@ -286,7 +286,7 @@ If `ensureSandboxExists` throws `SandboxError`, run:
 `createSandbox` returns early with a help message. To recreate:
 
 1. `sbx rm --force claude-skills-harness`
-2. `./harness sandbox-setup`
+2. `./build/harness sandbox-setup`
 
 ### Tests fail with "Cannot read properties of undefined (reading 'exited')"
 
