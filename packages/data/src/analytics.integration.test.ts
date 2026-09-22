@@ -205,6 +205,17 @@ describe('updateAllParquet', () => {
     expect(rows.every((r) => r.type === 'result')).toBe(true)
   })
 
+  it('creates the data directory when it does not exist yet', async () => {
+    const outputDir = path.join(tmpDir, 'output')
+    const dataDir = path.join(tmpDir, 'analytics')
+    await writeRunFixture({ outputDir, testRunId: '20260101T100001', eval: 's', testName: 't' })
+
+    const { updated } = await updateAllParquet({ outputDir, dataDir })
+
+    expect(updated).toEqual(expect.arrayContaining(['test-config', 'test-run', 'test-results']))
+    expect(existsSync(path.join(dataDir, 'test-config.parquet'))).toBe(true)
+  })
+
   it('returns empty updated list when no JSONL files exist', async () => {
     const outputDir = path.join(tmpDir, 'output-empty')
     const dataDir = path.join(tmpDir, 'analytics')
