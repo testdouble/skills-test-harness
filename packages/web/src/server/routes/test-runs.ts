@@ -1,4 +1,4 @@
-import { queryTestRunDetails, queryTestRunSummaries } from '@testdouble/skillwalker-data'
+import { InvalidRunIdError, queryTestRunDetails, queryTestRunSummaries } from '@testdouble/skillwalker-data'
 import type { Context } from 'hono'
 
 export async function getTestRuns(c: Context, dataDir: string): Promise<Response> {
@@ -12,7 +12,7 @@ export async function getTestRunById(c: Context, dataDir: string): Promise<Respo
     const { summary, expectations, llmJudgeGroups, outputFiles } = await queryTestRunDetails(dataDir, runId)
     return c.json({ summary, expectations, llmJudgeGroups, outputFiles })
   } catch (err) {
-    if (err instanceof Error && err.message.startsWith('Test run not found:')) {
+    if (err instanceof InvalidRunIdError || (err instanceof Error && err.message.startsWith('Test run not found:'))) {
       return c.json({ error: 'Not found' }, 404)
     }
     throw err

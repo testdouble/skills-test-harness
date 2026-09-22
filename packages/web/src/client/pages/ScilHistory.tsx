@@ -1,5 +1,6 @@
 import { type JSX, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { errorMessage, fetchJson } from '../lib/fetch-json.js'
 
 interface ScilHistoryRow {
   test_run_id: string
@@ -14,14 +15,13 @@ export function ScilHistory(): JSX.Element {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/scil')
-      .then((res) => res.json())
+    fetchJson<{ runs: ScilHistoryRow[] }>('/api/scil')
       .then((data) => {
         setRuns(data.runs)
         setLoading(false)
       })
       .catch((err) => {
-        setError(String(err))
+        setError(errorMessage(err))
         setLoading(false)
       })
   }, [])

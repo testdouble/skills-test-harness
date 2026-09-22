@@ -1,11 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('@testdouble/skillwalker-data', () => ({
+vi.mock('@testdouble/skillwalker-data', async (importOriginal) => ({
+  InvalidRunIdError: (await importOriginal<typeof import('@testdouble/skillwalker-data')>()).InvalidRunIdError,
   queryTestRunSummaries: vi.fn(),
   queryTestRunDetails: vi.fn(),
 }))
 
-import { queryTestRunDetails, queryTestRunSummaries } from '@testdouble/skillwalker-data'
+import { InvalidRunIdError, queryTestRunDetails, queryTestRunSummaries } from '@testdouble/skillwalker-data'
 import { getTestRunById, getTestRuns } from './test-runs.js'
 
 function makeMockContext(overrides?: { param?: Record<string, string> }) {
@@ -113,6 +114,15 @@ describe('getTestRunById', () => {
   it('returns 404 JSON when run is not found', async () => {
     vi.mocked(queryTestRunDetails).mockRejectedValue(new Error('Test run not found: run-xyz'))
     const { c, jsonMock } = makeMockContext({ param: { runId: 'run-xyz' } })
+
+    await getTestRunById(c, '/data')
+
+    expect(jsonMock).toHaveBeenCalledWith({ error: 'Not found' }, 404)
+  })
+
+  it('returns 404 JSON when the run ID is malformed', async () => {
+    vi.mocked(queryTestRunDetails).mockRejectedValue(new InvalidRunIdError('bad-id'))
+    const { c, jsonMock } = makeMockContext({ param: { runId: 'bad-id' } })
 
     await getTestRunById(c, '/data')
 

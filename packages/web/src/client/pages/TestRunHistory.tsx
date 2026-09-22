@@ -1,5 +1,6 @@
 import { type JSX, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { errorMessage, fetchJson } from '../lib/fetch-json.js'
 
 interface TestRunSummary {
   test_run_id: string
@@ -16,14 +17,13 @@ export function TestRunHistory(): JSX.Element {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/test-runs')
-      .then((res) => res.json())
+    fetchJson<{ runs: TestRunSummary[] }>('/api/test-runs')
       .then((data) => {
         setRuns(data.runs)
         setLoading(false)
       })
       .catch((err) => {
-        setError(String(err))
+        setError(errorMessage(err))
         setLoading(false)
       })
   }, [])

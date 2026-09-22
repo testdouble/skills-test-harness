@@ -72,6 +72,7 @@ flowchart TB
 | `packages/data/src/jsonl-reader.ts` | Generic JSONL file reader (returns typed array) |
 | `packages/data/src/analytics.ts` | DuckDB JSONL-to-Parquet import, test run summaries, per-test queries, detail views |
 | `packages/data/src/run-status.ts` | SCIL and ACIL analytics: history and run detail queries over Parquet |
+| `packages/data/src/parquet-files.ts` | `parquetFile()` and `hasParquet()` helpers for checking which Parquet files exist before querying |
 | `packages/data/src/re-eval-marker.ts` | Tracks re-evaluated run IDs via `.re-evaluated-runs.json` marker file |
 | `packages/data/src/scil-split.ts` | Deterministic stratified train/test splitting with seeded PRNG |
 | `packages/data/src/scil-prompt.ts` | Builds LLM improvement prompts from SCIL iteration results |
@@ -215,6 +216,22 @@ Three main query functions join across Parquet files:
 - **`queryPerTest()`** — Joins `test-run`, `test-config`, and `test-results` to produce per-test rows with pass/fail, cost, turns, and token counts
 - **`queryTestRunSummaries()`** — Aggregates per-test results into run-level pass/fail counts by eval
 - **`queryTestRunDetails()`** — Returns detailed per-test summaries, individual expectation results, grouped LLM judge criteria, and output files for a single run
+
+#### Missing Parquet files
+
+Any Parquet file may be missing: the data directory may not exist yet, and `updateAllParquet()` skips any table with no source JSONL. DuckDB's `read_parquet` throws `IO Error: No files found that match the pattern` for a missing file, so every query checks with `hasParquet()` before reading:
+
+| Missing file | List queries (`queryTestRunSummaries`, `queryPerTest`, `queryScilHistory`, `queryAcilHistory`) | Detail queries |
+|---|---|---|
+| `test-run` or `test-config` | Return `[]` | `queryTestRunDetails` throws `Test run not found: <id>` |
+| `test-results` | Return rows with `all_expectations_passed: null` | `queryTestRunDetails` returns empty `expectations` and `llmJudgeGroups` |
+| `scil-iteration` / `acil-iteration` | Return `[]` | Return `iterations: []` |
+| `scil-summary` / `acil-summary` | — | Throw `SCIL run not found: <id>` / `ACIL run not found: <id>` |
+
+Two caveats apply:
+
+- A partial write that leaves `test-run.parquet` without `test-config.parquet` reads as "no data", not as an error.
+- The first write of each Parquet file goes straight to its final path, with no temp file and rename. An interrupted first write can leave a corrupt file that passes `hasParquet()` and still makes the query throw.
 
 All queries filter out `infrastructure-error` status rows when the `status` column exists in the Parquet schema (backward compatibility with older data).
 

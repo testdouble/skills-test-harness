@@ -545,25 +545,58 @@ describe('queryPerTest (JOIN edge cases)', () => {
     expect(rows).toHaveLength(1)
     expect(rows[0].all_expectations_passed).toBeNull()
   })
-
-  it('throws DuckDB IO error when any parquet file is missing', async () => {
-    // dataDir exists but contains no parquet files
-    const dataDir = path.join(tmpDir, 'empty-analytics')
-    await mkdir(dataDir, { recursive: true })
-
-    await expect(queryPerTest(dataDir)).rejects.toThrow()
-  })
 })
 
-// ─── queryTestRunDetails — missing parquet ────────────────────────────────────
+// ─── queries with missing parquet files ──────────────────────────────────────
 
-describe('queryTestRunDetails (missing parquet)', () => {
-  it('throws DuckDB IO error when test-results.parquet is missing but test-run.parquet exists', async () => {
-    const outputDir = path.join(tmpDir, 'output')
-    const dataDir = path.join(tmpDir, 'analytics')
-    await mkdir(dataDir, { recursive: true })
+describe('queries with no data', () => {
+  const runId = '20260101T100001'
 
-    // Import only test-run and test-config — skip test-results
+  for (const [label, makeDataDir] of [
+    ['a data directory that does not exist', async () => path.join(tmpDir, 'missing-analytics')],
+    [
+      'an empty data directory',
+      async () => {
+        const dataDir = path.join(tmpDir, 'empty-analytics')
+        await mkdir(dataDir, { recursive: true })
+        return dataDir
+      },
+    ],
+  ] as const) {
+    describe(`given ${label}`, () => {
+      it('queryTestRunSummaries returns an empty list', async () => {
+        expect(await queryTestRunSummaries(await makeDataDir())).toEqual([])
+      })
+
+      it('queryPerTest returns an empty list', async () => {
+        expect(await queryPerTest(await makeDataDir())).toEqual([])
+      })
+
+      it('queryScilHistory returns an empty list', async () => {
+        expect(await queryScilHistory(await makeDataDir())).toEqual([])
+      })
+
+      it('queryAcilHistory returns an empty list', async () => {
+        expect(await queryAcilHistory(await makeDataDir())).toEqual([])
+      })
+
+      it('queryTestRunDetails rejects with not found', async () => {
+        await expect(queryTestRunDetails(await makeDataDir(), runId)).rejects.toThrow(`Test run not found: ${runId}`)
+      })
+
+      it('queryScilRunDetails rejects with not found', async () => {
+        await expect(queryScilRunDetails(await makeDataDir(), runId)).rejects.toThrow(`SCIL run not found: ${runId}`)
+      })
+
+      it('queryAcilRunDetails rejects with not found', async () => {
+        await expect(queryAcilRunDetails(await makeDataDir(), runId)).rejects.toThrow(`ACIL run not found: ${runId}`)
+      })
+    })
+  }
+})
+
+describe('queries with partial test-run parquet files', () => {
+  async function importRunAndConfigOnly(outputDir: string, dataDir: string): Promise<void> {
     const runDir = path.join(outputDir, '20260101T100001')
     await writeJsonl(path.join(runDir, 'test-config.jsonl'), [
       makeConfigRecord({ testRunId: '20260101T100001', eval: 's', testName: 't' }),
@@ -571,7 +604,6 @@ describe('queryTestRunDetails (missing parquet)', () => {
     await writeJsonl(path.join(runDir, 'test-run.jsonl'), [
       makeRunResultRecord({ testRunId: '20260101T100001', eval: 's', testName: 't' }),
     ])
-    // Manually import only test-run and test-config
     await importJsonlToParquet({
       jsonlGlob: `${outputDir}/*/test-config.jsonl`,
       parquetPath: path.join(dataDir, 'test-config.parquet'),
@@ -581,10 +613,99 @@ describe('queryTestRunDetails (missing parquet)', () => {
       parquetPath: path.join(dataDir, 'test-run.parquet'),
       filter: (obj) => (obj as Record<string, unknown>).type === 'result',
     })
-    // test-results.parquet intentionally NOT created
+  }
 
-    // Existence check passes (run is in test-run), but summary query fails on missing test-results
-    await expect(queryTestRunDetails(dataDir, '20260101T100001')).rejects.toThrow()
+  describe('given test-run and test-config without test-results', () => {
+    it('queryTestRunSummaries returns the run with no passing tests', async () => {
+      const outputDir = path.join(tmpDir, 'output')
+      const dataDir = path.join(tmpDir, 'analytics')
+      await mkdir(dataDir, { recursive: true })
+      await importRunAndConfigOnly(outputDir, dataDir)
+
+      const runs = await queryTestRunSummaries(dataDir)
+
+      expect(runs).toHaveLength(1)
+      expect(runs[0]).toMatchObject({ test_run_id: '20260101T100001', total_tests: 1, passed: 0, failed: 1 })
+    })
+
+    it('queryPerTest returns rows with null all_expectations_passed', async () => {
+      const outputDir = path.join(tmpDir, 'output')
+      const dataDir = path.join(tmpDir, 'analytics')
+      await mkdir(dataDir, { recursive: true })
+      await importRunAndConfigOnly(outputDir, dataDir)
+
+      const rows = await queryPerTest(dataDir)
+
+      expect(rows).toHaveLength(1)
+      expect(rows[0].all_expectations_passed).toBeNull()
+    })
+
+    it('queryTestRunDetails returns the summary with empty expectations', async () => {
+      const outputDir = path.join(tmpDir, 'output')
+      const dataDir = path.join(tmpDir, 'analytics')
+      await mkdir(dataDir, { recursive: true })
+      await importRunAndConfigOnly(outputDir, dataDir)
+
+      const details = await queryTestRunDetails(dataDir, '20260101T100001')
+
+      expect(details.summary).toHaveLength(1)
+      expect(details.summary[0].all_expectations_passed).toBeNull()
+      expect(details.expectations).toEqual([])
+      expect(details.llmJudgeGroups).toEqual([])
+    })
+  })
+
+  describe('given test-run without test-config', () => {
+    // A partial write that dropped test-config reads as "no data", not an error.
+    it('list queries return empty and details report not found', async () => {
+      const outputDir = path.join(tmpDir, 'output')
+      const dataDir = path.join(tmpDir, 'analytics')
+      await mkdir(dataDir, { recursive: true })
+      await importRunAndConfigOnly(outputDir, dataDir)
+      await rm(path.join(dataDir, 'test-config.parquet'))
+
+      expect(await queryTestRunSummaries(dataDir)).toEqual([])
+      expect(await queryPerTest(dataDir)).toEqual([])
+      await expect(queryTestRunDetails(dataDir, '20260101T100001')).rejects.toThrow(
+        'Test run not found: 20260101T100001',
+      )
+    })
+  })
+})
+
+describe('SCIL and ACIL details with a summary but no iterations', () => {
+  it('queryScilRunDetails returns the summary with empty iterations', async () => {
+    const outputDir = path.join(tmpDir, 'output')
+    const dataDir = path.join(tmpDir, 'analytics')
+    await writeScilRunFixture({
+      outputDir,
+      runId: '20260101T200001',
+      iterations: [makeScilIterationRecord({ test_run_id: '20260101T200001' })],
+    })
+    await rm(path.join(outputDir, '20260101T200001', 'scil-iteration.jsonl'))
+    await updateAllParquet({ outputDir, dataDir })
+
+    const details = await queryScilRunDetails(dataDir, '20260101T200001')
+
+    expect(details.summary.test_run_id).toBe('20260101T200001')
+    expect(details.iterations).toEqual([])
+  })
+
+  it('queryAcilRunDetails returns the summary with empty iterations', async () => {
+    const outputDir = path.join(tmpDir, 'output')
+    const dataDir = path.join(tmpDir, 'analytics')
+    await writeAcilRunFixture({
+      outputDir,
+      runId: '20260101T200001',
+      iterations: [makeAcilIterationRecord({ test_run_id: '20260101T200001' })],
+    })
+    await rm(path.join(outputDir, '20260101T200001', 'acil-iteration.jsonl'))
+    await updateAllParquet({ outputDir, dataDir })
+
+    const details = await queryAcilRunDetails(dataDir, '20260101T200001')
+
+    expect(details.summary.test_run_id).toBe('20260101T200001')
+    expect(details.iterations).toEqual([])
   })
 })
 
