@@ -91,6 +91,7 @@ describe('createSandbox', () => {
       })
       .mockReturnValueOnce({
         exited: Promise.resolve(),
+        exitCode: 0,
       })
 
     const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
@@ -104,6 +105,27 @@ describe('createSandbox', () => {
 
     stderrSpy.mockRestore()
   })
+
+  it('throws SandboxError and does not report the sandbox ready when sbx run fails', async () => {
+    ;(globalThis as any).Bun.spawn
+      .mockReturnValueOnce({
+        stdout: makeStream('other-sandbox\n'),
+        stderr: makeStream(''),
+        exited: Promise.resolve(),
+        exitCode: 0,
+      })
+      .mockReturnValueOnce({
+        exited: Promise.resolve(),
+        exitCode: 1,
+      })
+    const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
+
+    const { createSandbox } = await import('./lifecycle.js')
+
+    await expect(createSandbox('/repo/root')).rejects.toBeInstanceOf(SandboxError)
+    expect(stderrSpy).not.toHaveBeenCalledWith(expect.stringContaining('is ready'))
+  })
+
   function stubNoSandboxThenRun() {
     ;(globalThis as any).Bun.spawn
       .mockReturnValueOnce({
@@ -114,6 +136,7 @@ describe('createSandbox', () => {
       })
       .mockReturnValueOnce({
         exited: Promise.resolve(),
+        exitCode: 0,
       })
   }
 
@@ -182,7 +205,7 @@ describe('updateSandbox', () => {
       .mockReturnValueOnce(makeCapturedProc(''))
       .mockReturnValueOnce(makeCapturedProc(''))
       .mockReturnValueOnce(makeCapturedProc(''))
-      .mockReturnValueOnce({ exited: Promise.resolve() })
+      .mockReturnValueOnce({ exited: Promise.resolve(), exitCode: 0 })
 
     const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
 
@@ -207,7 +230,7 @@ describe('updateSandbox', () => {
       .mockReturnValueOnce(makeCapturedProc('other-sandbox\n'))
       .mockReturnValueOnce(makeCapturedProc(templateList.split('\n')[0]))
       .mockReturnValueOnce(makeCapturedProc('other-sandbox\n'))
-      .mockReturnValueOnce({ exited: Promise.resolve() })
+      .mockReturnValueOnce({ exited: Promise.resolve(), exitCode: 0 })
 
     const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
 
@@ -231,7 +254,7 @@ describe('updateSandbox', () => {
       .mockReturnValueOnce(makeCapturedProc(''))
       .mockReturnValueOnce(makeCapturedProc("ERROR: sandboxd error: status 404: no template image '94670d5b2a24'", 1))
       .mockReturnValueOnce(makeCapturedProc('other-sandbox\n'))
-      .mockReturnValueOnce({ exited: Promise.resolve() })
+      .mockReturnValueOnce({ exited: Promise.resolve(), exitCode: 0 })
 
     const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
 

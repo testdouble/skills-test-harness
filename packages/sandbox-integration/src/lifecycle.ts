@@ -107,6 +107,13 @@ export async function createSandbox(repoRoot: string, extraWorkspaces: string[] 
   })
   await runProc.exited
 
+  if (runProc.exitCode !== 0) {
+    throw new SandboxError(
+      `sbx run failed (exit code ${runProc.exitCode ?? 1}). The sandbox was not created.\nRetry with \`./build/skillwalker sandbox create\`.`,
+      runProc.exitCode,
+    )
+  }
+
   process.stderr.write(`\nSandbox "${SANDBOX_NAME}" is ready. You can now run tests.\n`)
 }
 
