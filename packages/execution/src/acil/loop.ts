@@ -1,5 +1,6 @@
 import path from 'node:path'
 import { createInterface } from 'node:readline/promises'
+import { sandboxScriptsDir } from '@testdouble/claude-integration'
 import { ensureSandboxExists } from '@testdouble/sandbox-integration'
 import { getPhase } from '@testdouble/skillwalker-data'
 import { SkillwalkerError } from '../lib/errors.js'
@@ -43,7 +44,7 @@ export async function runAcilLoop(config: AcilConfig): Promise<void> {
 
   // Ensure sandbox exists
   process.stderr.write('Checking sandbox...\n')
-  await ensureSandboxExists()
+  await ensureSandboxExists([sandboxScriptsDir])
 
   // Generate run ID and output directory
   const runId = generateRunId()

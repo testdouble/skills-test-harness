@@ -104,6 +104,56 @@ describe('createSandbox', () => {
 
     stderrSpy.mockRestore()
   })
+  function stubNoSandboxThenRun() {
+    ;(globalThis as any).Bun.spawn
+      .mockReturnValueOnce({
+        stdout: makeStream('other-sandbox\n'),
+        stderr: makeStream(''),
+        exited: Promise.resolve(),
+        exitCode: 0,
+      })
+      .mockReturnValueOnce({
+        exited: Promise.resolve(),
+      })
+  }
+
+  it('mounts extra workspaces read-only after the repo root', async () => {
+    stubNoSandboxThenRun()
+    vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
+
+    const { createSandbox } = await import('./lifecycle.js')
+    await createSandbox('/repo/root', ['/skillwalker/build'])
+
+    const runArgs = (globalThis as any).Bun.spawn.mock.calls[1][0]
+    expect(runArgs).toEqual([
+      'sbx',
+      'run',
+      '--name',
+      'claude-skills-skillwalker',
+      'claude',
+      '/repo/root',
+      '/skillwalker/build:ro',
+    ])
+  })
+
+  it('skips extra workspaces already inside the repo root', async () => {
+    stubNoSandboxThenRun()
+    vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
+
+    const { createSandbox } = await import('./lifecycle.js')
+    await createSandbox('/repo/root', ['/repo/root/build', '/repo/root-sibling'])
+
+    const runArgs = (globalThis as any).Bun.spawn.mock.calls[1][0]
+    expect(runArgs).toEqual([
+      'sbx',
+      'run',
+      '--name',
+      'claude-skills-skillwalker',
+      'claude',
+      '/repo/root',
+      '/repo/root-sibling:ro',
+    ])
+  })
 })
 
 describe('updateSandbox', () => {
@@ -137,7 +187,7 @@ describe('updateSandbox', () => {
     const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
 
     const { updateSandbox } = await import('./lifecycle.js')
-    await updateSandbox('/repo/root')
+    await updateSandbox('/repo/root', ['/skillwalker/build'])
 
     expect(spawnedArgs()).toEqual([
       ['sbx', 'ls', '--quiet'],
@@ -146,7 +196,7 @@ describe('updateSandbox', () => {
       ['sbx', 'template', 'rm', '6f873d7e6093'],
       ['sbx', 'template', 'rm', '94670d5b2a24'],
       ['sbx', 'ls', '--quiet'],
-      ['sbx', 'run', '--name', 'claude-skills-skillwalker', 'claude', '/repo/root'],
+      ['sbx', 'run', '--name', 'claude-skills-skillwalker', 'claude', '/repo/root', '/skillwalker/build:ro'],
     ])
 
     stderrSpy.mockRestore()

@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+import { SandboxError } from '@testdouble/sandbox-integration'
 import { SkillwalkerError } from '@testdouble/skillwalker-execution'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
@@ -14,10 +15,17 @@ try {
     .command(await import('./src/commands/acil.js'))
     .demandCommand(1)
     .strict()
-    .showHelpOnFail(true)
+    // Rethrow handler errors to the catch below. Without this, yargs prints
+    // help and the raw error for them and exits before the catch runs.
+    .fail((message, error, cli) => {
+      if (error) throw error
+      cli.showHelp()
+      process.stderr.write(`\n${message}\n`)
+      process.exit(1)
+    })
     .parseAsync()
 } catch (err) {
-  if (err instanceof SkillwalkerError) {
+  if (err instanceof SkillwalkerError || err instanceof SandboxError) {
     process.stderr.write(`Error: ${err.message}\n`)
     process.exit(1)
   }

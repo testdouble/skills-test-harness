@@ -21,29 +21,68 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
+function makeSandboxList(sandboxes: { name: string; workspaces: string[] }[]): string {
+  return JSON.stringify({ sandboxes })
+}
+
+function mockSbxLs(stdout: string) {
+  ;(globalThis as any).Bun.spawn.mockReturnValue({
+    stdout: makeStream(stdout),
+    stderr: makeStream(''),
+    exited: Promise.resolve(),
+    exitCode: 0,
+  })
+}
+
 describe('ensureSandboxExists', () => {
-  it('resolves when sandbox is found in sbx ls output', async () => {
-    ;(globalThis as any).Bun.spawn.mockReturnValue({
-      stdout: makeStream('claude-skills-skillwalker\n'),
-      stderr: makeStream(''),
-      exited: Promise.resolve(),
-      exitCode: 0,
-    })
+  it('resolves when sandbox is found in sbx ls --json output', async () => {
+    mockSbxLs(makeSandboxList([{ name: 'claude-skills-skillwalker', workspaces: ['/repo'] }]))
 
     const { ensureSandboxExists } = await import('./sandbox.js')
     await expect(ensureSandboxExists()).resolves.toBeUndefined()
+    expect((globalThis as any).Bun.spawn.mock.calls[0][0]).toEqual(['sbx', 'ls', '--json'])
   })
 
   it('throws SandboxError when sandbox is not found', async () => {
-    ;(globalThis as any).Bun.spawn.mockReturnValue({
-      stdout: makeStream('some-other-sandbox\n'),
-      stderr: makeStream(''),
-      exited: Promise.resolve(),
-      exitCode: 0,
-    })
+    mockSbxLs(makeSandboxList([{ name: 'some-other-sandbox', workspaces: ['/repo'] }]))
 
     const { ensureSandboxExists } = await import('./sandbox.js')
     await expect(ensureSandboxExists()).rejects.toThrow(SandboxError)
+  })
+
+  it('throws the not-found SandboxError when sbx lists no sandboxes', async () => {
+    mockSbxLs(JSON.stringify({ sandboxes: null }))
+
+    const { ensureSandboxExists } = await import('./sandbox.js')
+    await expect(ensureSandboxExists()).rejects.toThrow(/not found.*sandbox create/)
+  })
+
+  it('resolves when every required path is under a mounted workspace', async () => {
+    mockSbxLs(
+      makeSandboxList([{ name: 'claude-skills-skillwalker', workspaces: ['/target/repo', '/skillwalker/build'] }]),
+    )
+
+    const { ensureSandboxExists } = await import('./sandbox.js')
+    await expect(ensureSandboxExists(['/target/repo/plugins', '/skillwalker/build'])).resolves.toBeUndefined()
+  })
+
+  it('treats a workspace listed with a :ro suffix as mounting its path', async () => {
+    mockSbxLs(
+      makeSandboxList([{ name: 'claude-skills-skillwalker', workspaces: ['/target/repo', '/skillwalker/build:ro'] }]),
+    )
+
+    const { ensureSandboxExists } = await import('./sandbox.js')
+    await expect(ensureSandboxExists(['/skillwalker/build'])).resolves.toBeUndefined()
+  })
+
+  it('throws SandboxError naming the path and sandbox update when a required path is not mounted', async () => {
+    mockSbxLs(makeSandboxList([{ name: 'claude-skills-skillwalker', workspaces: ['/target/repo'] }]))
+
+    const { ensureSandboxExists } = await import('./sandbox.js')
+    const result = ensureSandboxExists(['/skillwalker/build'])
+
+    await expect(result).rejects.toThrow(SandboxError)
+    await expect(result).rejects.toThrow(/does not mount \/skillwalker\/build.*sandbox update/s)
   })
 
   it('throws SandboxError when sbx ls exits non-zero', async () => {
@@ -137,5 +176,48 @@ describe('execInSandbox', () => {
     const result = await execInSandbox('/path/to/script', [], null, false)
 
     expect(result.exitCode).toBe(1)
+  })
+
+  it('throws SandboxError when sbx reports the command could not be started, despite exit code 0', async () => {
+    ;(globalThis as any).Bun.spawn.mockReturnValue({
+      stdout: makeStream(
+        'OCI runtime exec failed: executable file `/host/build/sandbox-run.sh` not found: No such file or directory\n',
+      ),
+      stderr: makeStream('Sandbox claude-skills-skillwalker started successfully\nINFO: Starting Docker daemon\n'),
+      exited: Promise.resolve(),
+      exitCode: 0,
+    })
+
+    const { execInSandbox } = await import('./sandbox.js')
+    const result = execInSandbox('/host/build/sandbox-run.sh', [], null, false)
+
+    await expect(result).rejects.toThrow(SandboxError)
+    await expect(result).rejects.toThrow(/sandbox update/)
+  })
+
+  it('throws SandboxError when the exec failure is reported on stderr after other lines', async () => {
+    ;(globalThis as any).Bun.spawn.mockReturnValue({
+      stdout: makeStream(''),
+      stderr: makeStream('INFO: Starting Docker daemon\nOCI runtime exec failed: executable file not found\n'),
+      exited: Promise.resolve(),
+      exitCode: 0,
+    })
+
+    const { execInSandbox } = await import('./sandbox.js')
+    await expect(execInSandbox('/path/to/script', [], null, false)).rejects.toThrow(SandboxError)
+  })
+
+  it('does not throw when the message appears mid-line in command output', async () => {
+    ;(globalThis as any).Bun.spawn.mockReturnValue({
+      stdout: makeStream('{"text":"OCI runtime exec failed is a docker error"}\n'),
+      stderr: makeStream(''),
+      exited: Promise.resolve(),
+      exitCode: 0,
+    })
+
+    const { execInSandbox } = await import('./sandbox.js')
+    const result = await execInSandbox('/path/to/script', [], null, false)
+
+    expect(result.exitCode).toBe(0)
   })
 })
