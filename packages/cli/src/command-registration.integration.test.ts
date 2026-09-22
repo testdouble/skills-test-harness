@@ -42,10 +42,11 @@ describe('top-level command registration', () => {
 })
 
 describe('sandbox sub-command registration', () => {
-  it('lists all three sub-commands and fails when none is given', () => {
+  it('lists all four sub-commands and fails when none is given', () => {
     const { status, output } = runCli('sandbox')
     expect(status).toBe(1)
     expect(output).toContain('skillwalker sandbox create')
+    expect(output).toContain('skillwalker sandbox update')
     expect(output).toContain('skillwalker sandbox clean')
     expect(output).toContain('skillwalker sandbox shell')
   })
