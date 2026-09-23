@@ -92,10 +92,14 @@ describe('compiled skillwalker binary installed like Homebrew', () => {
   it('loads its sidecar files through a bin symlink run from another directory', async () => {
     const linkedBinary = await installLikeHomebrew(path.join(tmpDir, 'prefix'))
 
-    const result = spawnSync(linkedBinary, ['update-analytics-data', '--output-dir', outputDir, '--data-dir', dataDir], {
-      cwd: tmpDir,
-      encoding: 'utf8',
-    })
+    const result = spawnSync(
+      linkedBinary,
+      ['update-analytics-data', '--output-dir', outputDir, '--data-dir', dataDir],
+      {
+        cwd: tmpDir,
+        encoding: 'utf8',
+      },
+    )
 
     expect(result.status).toBe(0)
     expect(existsSync(path.join(dataDir, 'test-run.parquet'))).toBe(true)
