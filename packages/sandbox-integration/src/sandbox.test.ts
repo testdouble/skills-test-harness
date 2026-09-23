@@ -54,7 +54,7 @@ describe('ensureSandboxExists', () => {
     mockSbxLs(JSON.stringify({ sandboxes: null }))
 
     const { ensureSandboxExists } = await import('./sandbox.js')
-    await expect(ensureSandboxExists()).rejects.toThrow(/not found.*sandbox create/)
+    await expect(ensureSandboxExists()).rejects.toThrow("Run 'skillwalker sandbox create' first.")
   })
 
   it('resolves when every required path is under a mounted workspace', async () => {
@@ -94,7 +94,7 @@ describe('ensureSandboxExists', () => {
     })
 
     const { ensureSandboxExists } = await import('./sandbox.js')
-    await expect(ensureSandboxExists()).rejects.toThrow(/sbx login/)
+    await expect(ensureSandboxExists()).rejects.toThrow('Run `sbx login`, then retry `skillwalker sandbox create`.')
   })
 
   it('throws SandboxError when sbx is missing', async () => {

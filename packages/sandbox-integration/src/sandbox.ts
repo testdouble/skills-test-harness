@@ -35,7 +35,7 @@ async function runSbxLs(args: string[]): Promise<string> {
 
   if (proc.exitCode !== 0) {
     throw new SandboxError(
-      `Unable to list sandboxes with sbx (exit code ${proc.exitCode ?? 1}): ${stdout}${stderr}\nRun \`sbx login\`, then retry \`./build/skillwalker sandbox create\`.`,
+      `Unable to list sandboxes with sbx (exit code ${proc.exitCode ?? 1}): ${stdout}${stderr}\nRun \`sbx login\`, then retry \`skillwalker sandbox create\`.`,
       proc.exitCode,
     )
   }
@@ -74,7 +74,7 @@ export async function ensureSandboxExists(requiredPaths: string[] = []): Promise
   const sandbox = (await listSandboxes()).find(({ name }) => name === SANDBOX_NAME)
 
   if (!sandbox) {
-    throw new SandboxError(`Sandbox "${SANDBOX_NAME}" not found. Run './build/skillwalker sandbox create' first.`, null)
+    throw new SandboxError(`Sandbox "${SANDBOX_NAME}" not found. Run 'skillwalker sandbox create' first.`, null)
   }
 
   for (const requiredPath of requiredPaths) {
