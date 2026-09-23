@@ -3,10 +3,11 @@ name: skillwalker-release
 description: >
   Cuts a Skillwalker release from main: checks that main is clean, current, and green in CI, bumps the version in
   packages/cli/package.json by patch, minor, or major or to an exact X.Y.Z, commits and tags it, pushes, follows the
-  release.yml workflow that builds the macOS archives, verifies the draft GitHub Release and its checksums, and
-  publishes it. The release commit includes new CHANGELOG.md notes written by skillwalker-release-notes. Use when releasing, cutting, shipping, tagging, or publishing a new Skillwalker version, or bumping the
-  version for a release. Requires the gh CLI, authenticated with repo access. Does not write or update the Homebrew
-  formula or the homebrew-tap repo, and does not change code, docs, or the release workflow itself.
+  release.yml workflow that builds the macOS archives, verifies the draft GitHub Release and its checksums, publishes
+  it, and updates the Homebrew formula. The release commit includes CHANGELOG.md notes written by
+  skillwalker-release-notes, and the formula update runs skillwalker-homebrew-update. Use when releasing, cutting,
+  shipping, tagging, or publishing a new Skillwalker version, or bumping the version for a release. Requires the gh CLI,
+  authenticated with repo access, and Homebrew. Does not change code, docs, or the release workflow itself.
 argument-hint: "[patch|minor|major|X.Y.Z]"
 disable-model-invocation: true
 allowed-tools: Skill, Bash(git push origin *), Bash(gh release edit *), Bash(gh release view *)
@@ -14,8 +15,9 @@ allowed-tools: Skill, Bash(git push origin *), Bash(gh release edit *), Bash(gh 
 
 # Release Skillwalker
 
-Cut a versioned release: write the release notes, bump, commit, tag, push, let `.github/workflows/release.yml` build the macOS archives, verify
-them, and publish. The requested version is `$ARGUMENTS` (may be empty).
+Cut a versioned release: write the release notes, bump, commit, tag, push, let `.github/workflows/release.yml` build the
+macOS archives, verify them, publish, and update the Homebrew formula. The requested version is `$ARGUMENTS` (may be
+empty).
 
 Run every script from the repository root. Each script prints its reason and exits non-zero on failure. When one fails,
 stop, show the user its output, and do not continue to later steps BECAUSE each step assumes the previous one held.
@@ -95,9 +97,24 @@ which Homebrew needs.
 
 If the user declines, stop and tell them the draft is ready to publish from the GitHub UI.
 
-## Step 9: Publish and Report
+## Step 9: Publish
 
 1. Publish with `gh release edit v{version} --draft=false`.
 2. Confirm it with `gh release view v{version} --json isDraft,url`. `isDraft` must be `false`.
-3. Report to the user: the release URL, the tag, the release workflow run URL, and the two `sha256` lines from Step 7.
-   The formula's `sha256` fields need these values.
+
+## Step 10: Update the Homebrew Formula
+
+Invoke the `skillwalker-homebrew-update` skill with the Skill tool, passing `{version}` as its argument, and tell it
+that it is running inside `/skillwalker-release`. It asks the user before pushing the formula.
+
+When it finishes, continue immediately to Step 11. Never treat its report as the end of the release BECAUSE the final
+report still has to run.
+
+If it stops without pushing (a failed check, a declined push, or a tap clone that is not ready), the release itself is
+still published. Carry its reason into the report, and tell the user to run
+`/skillwalker-homebrew-update {version}` once the cause is fixed.
+
+## Step 11: Report
+
+Report to the user: the release URL, the tag, the release workflow run URL, the two `sha256` lines from Step 7, and
+the tap commit URL from Step 10, or the reason the formula was not updated.
