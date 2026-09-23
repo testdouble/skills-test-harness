@@ -11,7 +11,7 @@ fail() {
   exit "${2:-1}"
 }
 
-for tool in gh jq; do
+for tool in gh jq bun; do
   command -v "$tool" >/dev/null || fail "$tool is not installed. Install it with: brew install $tool"
 done
 

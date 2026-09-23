@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Sets packages/cli/package.json to the given version and commits it with the
-# new CHANGELOG.md notes, then creates an annotated vX.Y.Z tag.
+# Sets packages/cli/package.json to the given version, syncs bun.lock, and commits
+# both with the new CHANGELOG.md notes, then creates an annotated vX.Y.Z tag.
 # Local only: nothing is pushed.
 set -euo pipefail
 
@@ -18,7 +18,11 @@ tmp=$(mktemp)
 jq --arg version "$version" '.version = $version' "$manifest" >"$tmp"
 mv "$tmp" "$manifest"
 
-git add "$manifest" CHANGELOG.md
+# bun.lock records each workspace package's version, so it must follow the bump
+# or it drifts from package.json
+bun install --silent
+
+git add "$manifest" bun.lock CHANGELOG.md
 git commit --quiet -m "chore(release): v$version"
 git tag -a "v$version" -m "Skillwalker v$version"
 
