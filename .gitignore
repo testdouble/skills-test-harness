@@ -12,3 +12,4 @@ deferred.txt
 test-plan.md
 code-review.md
 packages/web/dist/
+.claude/scheduled_tasks.lock
