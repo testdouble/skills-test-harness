@@ -1,0 +1,73 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  check-version:
+    name: Check Tag Matches Version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Compare the tag with packages/cli/package.json
+        run: |
+          package_version=$(jq -r .version packages/cli/package.json)
+          if [ "${GITHUB_REF_NAME#v}" != "$package_version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match packages/cli/package.json version $package_version"
+            exit 1
+          fi
+
+  build:
+    name: Build macOS ${{ matrix.arch }}
+    needs: check-version
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - runner: macos-15
+            arch: arm64
+          - runner: macos-15-intel
+            arch: x86_64
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      - run: make build
+      - run: bun run test:smoke
+      - name: Package the build folder
+        run: |
+          version=${GITHUB_REF_NAME#v}
+          name="skillwalker-$version-darwin-${{ matrix.arch }}"
+          mkdir -p "dist/$name"
+          cp build/skillwalker build/skillwalker-web build/duckdb.node build/libduckdb.dylib \
+            build/sandbox-run.sh build/sandbox-extract.sh "dist/$name/"
+          tar -czf "dist/$name.tar.gz" -C dist "$name"
+          shasum -a 256 "dist/$name.tar.gz" | tee "dist/$name.tar.gz.sha256"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: darwin-${{ matrix.arch }}
+          path: dist/*.tar.gz*
+
+  release:
+    name: Draft GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Create a draft release with the archives
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --draft \
+            --generate-notes \
+            --title "Skillwalker $GITHUB_REF_NAME"

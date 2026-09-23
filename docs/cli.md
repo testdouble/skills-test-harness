@@ -6,7 +6,7 @@ This page documents the CLI boundary: the six top-level commands the `skillwalke
 
 The `@testdouble/skillwalker-cli` package is the command-line entry point for Skillwalker. It is a thin Yargs wrapper that parses arguments, resolves paths from `process.cwd()`, and delegates all pipeline orchestration to `@testdouble/skillwalker-execution`.
 
-- **Last Updated:** 2026-05-15
+- **Last Updated:** 2026-09-23
 - **Authors:**
   - River Bailey (river.bailey@testdouble.com)
 
@@ -122,10 +122,26 @@ The CLI catches `SkillwalkerError` at the top level (`index.ts`) and writes the 
 | `--apply` | `scil`, `acil` | Auto-apply best description | `false` |
 | `--output-dir` | `update-analytics-data` | Path to test output directory | `tests/output/` |
 | `--data-dir` | `update-analytics-data` | Path to analytics data directory | `tests/analytics/` |
+| `--version` | all | Print the CLI version: `packages/cli/package.json`'s version in a compiled binary, `dev` from source | — |
+
+| Environment variable | Description | Default |
+|----------------------|-------------|---------|
+| `SKILLWALKER_SCRIPTS_DIR` | Folder holding `sandbox-run.sh` and `sandbox-extract.sh`. An installer sets it so the folder mounted into the sandbox keeps the same path across upgrades. See [Claude Integration](./claude-integration.md#sandbox-script-resolution). | beside the executable |
+
+### Build and Release
+
+`make build` runs `scripts/build.ts`, which compiles `skillwalker` and `skillwalker-web` into `build/` and copies the DuckDB native files and sandbox scripts beside them. Two details matter for a distributable build:
+
+- **Version.** The build passes `packages/cli/package.json`'s `version` to `Bun.build` as the `SKILLWALKER_VERSION` define. `packages/cli/src/version.ts` reads it and falls back to `dev` when running from source.
+- **Signing.** On macOS, `bun build --compile` appends the bundle after the linker has signed the executable, so the signature no longer matches the file and recent macOS releases kill it on launch. The build strips that signature, signs each binary ad hoc, and runs `codesign --verify`, failing the build if any step fails.
+
+Pushing a `v*` tag runs `.github/workflows/release.yml`. It fails unless the tag matches `packages/cli/package.json`'s version, then builds and smoke tests on arm64 and x86_64 macOS runners. Each build folder is packaged as `skillwalker-<version>-darwin-<arch>.tar.gz` with a `.sha256` file, and all of them are attached to a draft GitHub Release.
 
 ## Testing
 
 - `packages/cli/src/paths.test.ts` — Tests `createPathConfig` and `getAllEvals`
+- `packages/cli/src/version.test.ts` — Tests the `dev` version fallback when running from source
+- `packages/cli/src/compiled-binary.smoke.test.ts` — Runs the binaries in `build/` (`make build && bun run test:smoke`): `--version`, DuckDB loading, a Homebrew-style `bin` symlink into `libexec`, `SKILLWALKER_SCRIPTS_DIR`, and `codesign --verify` on macOS
 - `packages/cli/src/commands/test-run.test.ts` — Tests `test-run` command builder and handler
 - `packages/cli/src/commands/test-eval.test.ts` — Tests `test-eval` command builder and handler
 - `packages/cli/src/commands/scil.test.ts` — Tests `scil` command builder and handler

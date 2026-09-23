@@ -73,7 +73,7 @@ async function removeTemplateImage(imageId: string): Promise<void> {
   if (exitCode === 0 || output.includes(TEMPLATE_ALREADY_REMOVED_MESSAGE)) return
 
   throw new SandboxError(
-    `sbx template rm ${imageId} failed (exit code ${exitCode ?? 1}): ${output}\nRetry with \`./build/skillwalker sandbox update\`.`,
+    `sbx template rm ${imageId} failed (exit code ${exitCode ?? 1}): ${output}\nRetry with \`skillwalker sandbox update\`.`,
     exitCode,
   )
 }
@@ -93,7 +93,7 @@ export async function createSandbox(repoRoot: string, extraWorkspaces: string[] 
   if (await sandboxExists()) {
     process.stderr.write(`Sandbox "${SANDBOX_NAME}" already exists. To recreate, run:\n`)
     process.stderr.write(`  sbx rm --force ${SANDBOX_NAME}\n`)
-    process.stderr.write(`  ./build/skillwalker sandbox create\n`)
+    process.stderr.write(`  skillwalker sandbox create\n`)
     return
   }
 
@@ -109,7 +109,7 @@ export async function createSandbox(repoRoot: string, extraWorkspaces: string[] 
 
   if (runProc.exitCode !== 0) {
     throw new SandboxError(
-      `sbx run failed (exit code ${runProc.exitCode ?? 1}). The sandbox was not created.\nRetry with \`./build/skillwalker sandbox create\`.`,
+      `sbx run failed (exit code ${runProc.exitCode ?? 1}). The sandbox was not created.\nRetry with \`skillwalker sandbox create\`.`,
       runProc.exitCode,
     )
   }

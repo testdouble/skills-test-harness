@@ -76,6 +76,7 @@ describe('createSandbox', () => {
     await createSandbox('/repo/root')
 
     expect(stderrSpy).toHaveBeenCalledWith(expect.stringContaining('already exists'))
+    expect(stderrSpy).toHaveBeenCalledWith('  skillwalker sandbox create\n')
     expect((globalThis as any).Bun.spawn).toHaveBeenCalledTimes(1)
 
     stderrSpy.mockRestore()
@@ -122,7 +123,10 @@ describe('createSandbox', () => {
 
     const { createSandbox } = await import('./lifecycle.js')
 
-    await expect(createSandbox('/repo/root')).rejects.toBeInstanceOf(SandboxError)
+    const result = createSandbox('/repo/root')
+
+    await expect(result).rejects.toBeInstanceOf(SandboxError)
+    await expect(result).rejects.toThrow('Retry with `skillwalker sandbox create`.')
     expect(stderrSpy).not.toHaveBeenCalledWith(expect.stringContaining('is ready'))
   })
 
@@ -275,7 +279,10 @@ describe('updateSandbox', () => {
     const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
 
     const { updateSandbox } = await import('./lifecycle.js')
-    await expect(updateSandbox('/repo/root')).rejects.toThrow(SandboxError)
+    const result = updateSandbox('/repo/root')
+
+    await expect(result).rejects.toThrow(SandboxError)
+    await expect(result).rejects.toThrow('Retry with `skillwalker sandbox update`.')
 
     stderrSpy.mockRestore()
   })
