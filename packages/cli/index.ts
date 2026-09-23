@@ -3,10 +3,12 @@ import { SandboxError } from '@testdouble/sandbox-integration'
 import { SkillwalkerError } from '@testdouble/skillwalker-execution'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
+import { skillwalkerVersion } from './src/version.js'
 
 try {
   await yargs(hideBin(process.argv))
     .scriptName('skillwalker')
+    .version(skillwalkerVersion)
     .command(await import('./src/commands/test-run.js'))
     .command(await import('./src/commands/test-eval.js'))
     .command(await import('./src/commands/sandbox.js'))

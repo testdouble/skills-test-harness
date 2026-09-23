@@ -106,6 +106,9 @@ async function copyDuckdbNativeFiles(nativeDir: string): Promise<void> {
   }
 }
 
+// The release workflow checks that the pushed tag matches this version
+const { version } = await Bun.file(path.join(ROOT, 'packages/cli/package.json')).json()
+
 await mkdir(BUILD_DIR, { recursive: true })
 
 for (const target of COMPILE_TARGETS) {
@@ -114,6 +117,7 @@ for (const target of COMPILE_TARGETS) {
     target: 'bun',
     compile: { outfile: path.join(BUILD_DIR, target.outfile) },
     plugins: [duckdbSidecarPlugin],
+    define: { SKILLWALKER_VERSION: JSON.stringify(version) },
   })
 
   if (!result.success) {

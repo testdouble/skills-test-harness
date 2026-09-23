@@ -1,5 +1,5 @@
 import { type ChildProcess, spawn, spawnSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -11,6 +11,10 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 const buildDir = fileURLToPath(new URL('../../../build/', import.meta.url))
 const cliBinary = path.join(buildDir, 'skillwalker')
 const webBinary = path.join(buildDir, 'skillwalker-web')
+
+const cliPackageVersion: string = JSON.parse(
+  readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf8'),
+).version
 
 const TEST_RUN_ID = '20260101T100001'
 const WEB_PORT = 39099
@@ -48,6 +52,13 @@ afterEach(async () => {
 // ─── compiled binaries ────────────────────────────────────────────────────────
 
 describe('compiled skillwalker binary', () => {
+  it('reports the CLI package version', () => {
+    const result = spawnSync(cliBinary, ['--version'], { encoding: 'utf8' })
+
+    expect(result.status).toBe(0)
+    expect(result.stdout.trim()).toBe(cliPackageVersion)
+  })
+
   it('imports run output into parquet with the bundled DuckDB addon', () => {
     const result = spawnSync(cliBinary, ['update-analytics-data', '--output-dir', outputDir, '--data-dir', dataDir], {
       encoding: 'utf8',
