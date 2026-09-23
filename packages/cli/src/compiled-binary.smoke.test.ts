@@ -71,6 +71,16 @@ describe('compiled skillwalker binary', () => {
   })
 })
 
+describe('compiled binary signatures', () => {
+  // A binary whose signature fails to verify is killed on launch by recent macOS releases
+  it.skipIf(process.platform !== 'darwin').each([cliBinary, webBinary])('%s passes codesign verification', (binary) => {
+    const result = spawnSync('codesign', ['--verify', binary], { encoding: 'utf8' })
+
+    expect(result.stderr).toBe('')
+    expect(result.status).toBe(0)
+  })
+})
+
 describe('compiled skillwalker-web binary', () => {
   let server: ChildProcess | undefined
 

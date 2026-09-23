@@ -88,6 +88,25 @@ function resolveDuckdbNativeDir(): string {
   throw new Error(`No DuckDB native bindings installed for ${platformArch}. Tried: ${candidates.join(', ')}`)
 }
 
+function codesign(args: string[]): void {
+  const result = Bun.spawnSync(['codesign', ...args], { stderr: 'pipe' })
+  if (result.exitCode !== 0) {
+    throw new Error(`codesign ${args.join(' ')} failed: ${result.stderr.toString().trim()}`)
+  }
+}
+
+/**
+ * `bun build --compile` appends the bundle to an executable the linker has
+ * already signed, which leaves a signature that no longer matches the file, and
+ * recent macOS releases kill such a binary on launch. The stale signature has to
+ * be stripped before an ad-hoc one can replace it.
+ */
+function adHocSign(binary: string): void {
+  codesign(['--remove-signature', binary])
+  codesign(['--force', '--sign', '-', binary])
+  codesign(['--verify', binary])
+}
+
 /** Copies the native files, skipping any that are already in place unchanged. */
 async function copyDuckdbNativeFiles(nativeDir: string): Promise<void> {
   const artifacts = (await readdir(nativeDir)).filter((name) => !BINDINGS_METADATA_FILES.has(name))
@@ -126,6 +145,11 @@ for (const target of COMPILE_TARGETS) {
   }
 
   console.log(`  compiled build/${target.outfile}`)
+
+  if (process.platform === 'darwin') {
+    adHocSign(path.join(BUILD_DIR, target.outfile))
+    console.log(`  signed   build/${target.outfile}`)
+  }
 }
 
 await copyDuckdbNativeFiles(resolveDuckdbNativeDir())
