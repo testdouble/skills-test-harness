@@ -4,9 +4,11 @@ description: >
   Writes the release notes for a new Skillwalker version and prepends them to CHANGELOG.md in the repository root,
   covering every user-facing change merged since the previous release tag. Each section gets the version and date, a
   short plain-language summary, and New Features, Enhancements, Bug Fixes, and Breaking Changes, with related changes
-  grouped under named headings. Use when writing, drafting, or updating release notes or the changelog for an upcoming
-  version, or when skillwalker-release reaches its release-notes step. Never edits existing release notes. Does not
-  bump the version, commit, tag, push, or publish; use skillwalker-release to cut the release itself.
+  grouped under named headings and each merged pull request and completed issue credited to its contributors by linked
+  GitHub username. Requires the gh CLI, authenticated. Use when writing, drafting, or updating release notes or the
+  changelog for an upcoming version, or when skillwalker-release reaches its release-notes step. Never edits existing
+  release notes. Does not bump the version, commit, tag, push, or publish; use skillwalker-release to cut the release
+  itself.
 argument-hint: "[X.Y.Z]"
 allowed-tools: Bash(git show *), Bash(git log *)
 ---
@@ -36,19 +38,27 @@ requests and every commit in the range with its subject, body, and changed files
 - Exit code 3 means nothing has changed since `previous_tag`. Tell the user and stop.
 - Exit code 1 means the version is malformed or `CHANGELOG.md` already has a section for it. Show the reason and stop.
 
+Then collect who to credit by running `${CLAUDE_SKILL_DIR}/scripts/collect-credits.sh {range} {draft}`. Capture the
+`credits` path from its first line. The rest lists every pull request merged and issue completed in `range`, with its
+URL and the GitHub logins to credit. It exits 1 when `gh` or `jq` is missing or `gh` is not signed in; show the reason
+and stop, since every pull request must be credited.
+
 ## Step 3: Draft the Notes
 
 1. Read `${CLAUDE_SKILL_DIR}/references/notes-format.md`. It defines the template, which changes to include, how to
-   pick a category, how to group, and how to write the summary and bullets.
+   pick a category, how to group, how to write the summary and bullets, and how to credit contributors.
 2. Decide, for each commit, whether a user would notice it, and if so which category it belongs in. When a commit's
    subject and body do not make its effect clear, read the change with `git show --stat {sha}` or `git show {sha}`.
-3. Write the draft to the `draft` path with the Write tool, using `{version}` and `date` in the heading.
+3. Place every pull request and issue from the credits list on the bullet that describes its change, with its
+   contributors, as the format reference's Crediting contributors section describes. A pull request with only
+   internal changes gets its own Enhancements bullet.
+4. Write the draft to the `draft` path with the Write tool, using `{version}` and `date` in the heading.
 
 ## Step 4: Check the Draft
 
-Check the format by running `bun ${CLAUDE_SKILL_DIR}/scripts/check-notes.ts {draft} {version}`. If it lists problems,
-fix them in the draft and run it again. Repeat until it prints `ok`. Stop and show the user the remaining problems if
-three rounds of fixes do not get there.
+Check the format and credits by running `bun ${CLAUDE_SKILL_DIR}/scripts/check-notes.ts {draft} {version} {credits}`.
+If it lists problems, fix them in the draft and run it again. Repeat until it prints `ok`. Stop and show the user the
+remaining problems if three rounds of fixes do not get there.
 
 ## Step 5: Readability Pass on the New Notes Only
 
@@ -59,8 +69,9 @@ Dispatch the `han-communication:readability-editor` agent with the Agent tool. I
 - Name the audience: people who install and run Skillwalker, reading what changed in this release.
 - State the required shape, which it must keep: the `## v{version} - {date}` heading unchanged; a summary paragraph of
   3 to 5 sentences with 10 to 15 words each; the four `###` category headings unchanged and in order; `####` group
-  headings; every bullet in the form `- {thing that changed} - {summary of change}`; and `- None in this release.`
-  lines unchanged.
+  headings; every bullet in the form `- {thing that changed} - {summary of change}`; `- None in this release.` lines
+  unchanged; and the credits trailing each bullet (the `[#N](url)` and `[@login](https://github.com/login)` links, the
+  commas, and ` by `) kept byte for byte, since they are citation identifiers.
 - Ask it to preserve every fact and edit the file in place.
 
 If the agent is not available (the `han-communication` plugin is not installed), stop without touching `CHANGELOG.md`.
@@ -68,9 +79,9 @@ Tell the user the readability pass is required, and show them the draft path so 
 
 ## Step 6: Re-check the Edited Draft
 
-Run `bun ${CLAUDE_SKILL_DIR}/scripts/check-notes.ts {draft} {version}` again BECAUSE the readability pass can break the
-required shape. Fix any problem it lists, without undoing the editor's rewording where the format allows, until it
-prints `ok`.
+Run `bun ${CLAUDE_SKILL_DIR}/scripts/check-notes.ts {draft} {version} {credits}` again BECAUSE the readability pass can
+break the required shape or the credits. Fix any problem it lists, without undoing the editor's rewording where the
+format allows, until it prints `ok`.
 
 ## Step 7: Prepend to the Changelog
 
@@ -80,7 +91,8 @@ sections would change.
 
 ## Step 8: Report
 
-Show the user the new section as it now appears at the top of `CHANGELOG.md`, and the `range` it covers.
+Show the user the new section as it now appears at the top of `CHANGELOG.md`, and the `range` it covers. If
+`collect-credits.sh` reported unresolved co-authors, list them too: their commits have no GitHub login to credit.
 
 - When `skillwalker-release` invoked this skill, say the notes are ready and hand control back to it. Do not commit.
 - Otherwise, tell the user `CHANGELOG.md` is changed but not committed, so they can review it.

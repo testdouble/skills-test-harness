@@ -8,6 +8,7 @@
 - Grouping changes
 - Writing the summary paragraph
 - Writing bullets
+- Crediting contributors
 - Example
 
 ## Template
@@ -21,11 +22,11 @@ Copy this shape exactly. `scripts/check-notes.ts` enforces it.
 
 ### New Features
 
-- {thing that changed} - {summary of change}
+- {thing that changed} - {summary of change} [#{pr}]({pr url}) by [@{login}](https://github.com/{login})
 
 #### {Named change}
 
-- {thing that changed} - {summary of change}
+- {thing that changed} - {summary of change} [#{pr}]({pr url}), [#{issue}]({issue url}) by [@{login}](https://github.com/{login})
 - {thing that changed} - {summary of change}
 
 ### Enhancements
@@ -65,6 +66,11 @@ Leave out internal-only work BECAUSE it buries the changes users care about:
 A change that is internal in form but user-visible in effect is included. A release workflow that makes Homebrew
 installs possible counts; a new unit test does not.
 
+One exception: every merged pull request is credited (see Crediting contributors). A pull request whose changes are all
+internal-only becomes a single Enhancements bullet that names what it improved for the project, such as
+"Dependencies - Bun, React, and other libraries now run their latest releases." Small internal commits inside a
+user-facing pull request are still left out.
+
 ## Choosing a category
 
 Start from the Conventional Commit type, then correct it by what the change does for a user:
@@ -100,6 +106,24 @@ Every bullet is `- {thing that changed} - {summary of change}`, with a space, a 
   a workflow. Put commands and flags in backticks.
 - **Summary of change** is one short sentence on what is different now, from the user's side, ending with a period.
 
+## Crediting contributors
+
+`scripts/collect-credits.sh` lists every pull request merged and every issue completed in the release, with the GitHub
+logins to credit for each. Those are issue reporters, pull request authors, and commit authors and co-authors. It
+already leaves out AI and bot accounts, and reviewers and commenters are never credited. Use its list as the only source
+of credits BECAUSE `scripts/check-notes.ts` rejects any credit that is not in it.
+
+- Every pull request and every issue in the list is linked on the bullet that describes its change. An issue goes on
+  the same bullet as the pull request that closed it.
+- A bullet built from several pull requests or issues links all of them, and credits every contributor to any of them,
+  each login once.
+- Credits trail the summary sentence after one space: linked numbers separated by commas, then ` by `, then linked
+  usernames separated by commas. There are no parentheses around the credits.
+- Link a pull request or issue as `[#5](https://github.com/testdouble/skillwalker/pull/5)`, with the exact `url` from
+  the list. Link a user as `[@robsdudeson](https://github.com/robsdudeson)`, with the login as both the text and the
+  path.
+- A change pushed straight to `main`, with no pull request, gets no credit.
+
 ## Example
 
 ```markdown
@@ -113,17 +137,18 @@ Sandbox error messages now name the right command for installed copies of Skillw
 
 #### Homebrew-ready releases
 
-- Release archives - Each version tag builds signed macOS archives for Apple silicon and Intel.
-- `SKILLWALKER_SCRIPTS_DIR` - Points Skillwalker at sandbox scripts kept in a folder that survives upgrades.
+- Release archives - Each version tag builds signed macOS archives for Apple silicon and Intel. [#17](https://github.com/testdouble/skillwalker/pull/17) by [@mxriverlynn](https://github.com/mxriverlynn)
+- `SKILLWALKER_SCRIPTS_DIR` - Points Skillwalker at sandbox scripts kept in a folder that survives upgrades. [#17](https://github.com/testdouble/skillwalker/pull/17) by [@mxriverlynn](https://github.com/mxriverlynn)
 
 ### Enhancements
 
-- `skillwalker --version` - Prints the release version instead of "unknown".
+- `skillwalker --version` - Prints the release version instead of "unknown". [#17](https://github.com/testdouble/skillwalker/pull/17) by [@mxriverlynn](https://github.com/mxriverlynn)
+- Sandbox setup - Runs Claude Code in Docker Sandboxes through the `sbx` command. [#5](https://github.com/testdouble/skillwalker/pull/5), [#4](https://github.com/testdouble/skillwalker/issues/4) by [@robsdudeson](https://github.com/robsdudeson)
 
 ### Bug Fixes
 
-- macOS code signature - Compiled programs now pass signature checks, so macOS no longer blocks them.
-- Sandbox error messages - Retry hints now say `skillwalker` instead of the `./build/skillwalker` path.
+- macOS code signature - Compiled programs now pass signature checks, so macOS no longer blocks them. [#17](https://github.com/testdouble/skillwalker/pull/17) by [@mxriverlynn](https://github.com/mxriverlynn)
+- Sandbox error messages - Retry hints now say `skillwalker` instead of the `./build/skillwalker` path. [#17](https://github.com/testdouble/skillwalker/pull/17) by [@mxriverlynn](https://github.com/mxriverlynn)
 
 ### Breaking Changes
 

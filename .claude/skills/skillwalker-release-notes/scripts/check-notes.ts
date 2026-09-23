@@ -1,12 +1,21 @@
 #!/usr/bin/env bun
-// Checks a release-notes draft against the required format. Prints every
-// problem found and exits 1, or prints "ok" and exits 0.
-// Usage: bun check-notes.ts <draft-file> <X.Y.Z>
+// Checks a release-notes draft against the required format, and, given the
+// credits.json from collect-credits.sh, that every merged PR and completed issue
+// is linked with all of its contributors and no one else. Prints every problem
+// found and exits 1, or prints "ok" and exits 0.
+// Usage: bun check-notes.ts <draft-file> <X.Y.Z> [credits.json]
 
-const [draftPath, version] = process.argv.slice(2)
+const [draftPath, version, creditsPath] = process.argv.slice(2)
 if (!draftPath || !version) {
-  console.error('usage: bun check-notes.ts <draft-file> <X.Y.Z>')
+  console.error('usage: bun check-notes.ts <draft-file> <X.Y.Z> [credits.json]')
   process.exit(1)
+}
+
+interface CreditItem {
+  kind: 'pr' | 'issue'
+  number: number
+  url: string
+  contributors: string[]
 }
 
 const CATEGORIES = ['New Features', 'Enhancements', 'Bug Fixes', 'Breaking Changes']
@@ -85,6 +94,55 @@ for (const [index, line] of lines.entries()) {
   }
 }
 closeCategory()
+
+if (creditsPath) checkCredits(await Bun.file(creditsPath).json())
+
+// Credits trail the summary: linked PR and issue numbers, then "by" and linked usernames
+function checkCredits({ items }: { items: CreditItem[] }) {
+  const byUrl = new Map(items.map((item) => [item.url, item]))
+  const itemLink = /\[#(\d+)\]\((https:\/\/github\.com\/[^)]+\/(?:pull|issues)\/\d+)\)/g
+  const userLink = /\[@([^\]]+)\]\(https:\/\/github\.com\/([^)]+)\)/g
+  const trailer =
+    /\. \[#\d+\]\([^)]+\)(?:, \[#\d+\]\([^)]+\))* by \[@[^\]]+\]\([^)]+\)(?:, \[@[^\]]+\]\([^)]+\))*$/
+  const credited = new Set<string>()
+
+  for (const line of lines.filter((l) => l.startsWith('- '))) {
+    const links = [...line.matchAll(itemLink)]
+    const users = [...line.matchAll(userLink)]
+    if (links.length === 0 && users.length === 0) continue
+
+    if (!trailer.test(line)) {
+      problems.push(`credits must trail the summary as ". [#N](url), ... by [@user](https://github.com/user), ...": "${line}"`)
+    }
+
+    const expected = new Set<string>()
+    for (const [, number, url] of links) {
+      const item = byUrl.get(url)
+      if (!item || String(item.number) !== number) {
+        problems.push(`[#${number}](${url}) is not a PR or issue in this release's credits: "${line}"`)
+        continue
+      }
+      credited.add(url)
+      for (const login of item.contributors) expected.add(login)
+    }
+
+    const named = new Set<string>()
+    for (const [, shown, login] of users) {
+      if (shown !== login) problems.push(`[@${shown}] links to github.com/${login}; the text and link must match`)
+      named.add(login)
+    }
+    for (const login of expected) {
+      if (!named.has(login)) problems.push(`missing credit for @${login}: "${line}"`)
+    }
+    for (const login of named) {
+      if (!expected.has(login)) problems.push(`@${login} is not a contributor to the PRs or issues on this bullet: "${line}"`)
+    }
+  }
+
+  for (const item of items) {
+    if (!credited.has(item.url)) problems.push(`${item.kind} #${item.number} (${item.url}) is not credited on any bullet`)
+  }
+}
 
 if (problems.length > 0) {
   for (const problem of problems) console.error(`- ${problem}`)

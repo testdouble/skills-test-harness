@@ -19,12 +19,18 @@ if [ -f CHANGELOG.md ] && grep -q "^## v$version " CHANGELOG.md; then
   exit 1
 fi
 
-# The tag for this version may already exist when notes are written after a release
-if previous_tag=$(git describe --tags --abbrev=0 --match 'v*' --exclude "v$version" HEAD 2>/dev/null); then
-  range="$previous_tag..HEAD"
+# When notes are written after a release, this version's tag already exists and
+# the range ends there instead of at HEAD
+end=HEAD
+if git rev-parse -q --verify "refs/tags/v$version" >/dev/null; then
+  end="v$version"
+fi
+
+if previous_tag=$(git describe --tags --abbrev=0 --match 'v*' --exclude "v$version" "$end" 2>/dev/null); then
+  range="$previous_tag..$end"
 else
   previous_tag=none
-  range=HEAD
+  range=$end
 fi
 
 commits=$(git log --no-merges --format=%H "$range" --invert-grep --grep '^chore(release):')
