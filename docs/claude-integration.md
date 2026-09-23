@@ -121,15 +121,15 @@ The `--print` flag is always placed last in the argument array, after all other 
 
 ### Sandbox Script Resolution
 
-The `sandbox-run.sh` script path is resolved at module load time using `resolveRelativePath` from `@testdouble/bun-helpers`. This utility handles cross-runtime path resolution across Bun, Vitest, and the compiled binaries. In a compiled binary the script is read from beside the executable, where `scripts/build.ts` copies it:
+The `sandbox-run.sh` and `sandbox-extract.sh` paths are resolved once, at module load, by `resolveSandboxScripts(process.env)` in `packages/claude-integration/src/sandbox-scripts.ts`.
+
+When `SKILLWALKER_SCRIPTS_DIR` is set, both scripts are read from that folder, resolved to an absolute path. If either script is missing there, loading the module throws an error naming the variable, so every command fails at startup rather than at the first sandbox run. An installer uses this to keep the scripts in a folder whose path stays the same across upgrades: `sandbox create` mounts `sandboxScriptsDir` into the sandbox, and a Homebrew install's own folder changes with each version.
+
+Otherwise the paths come from `resolveRelativePath` in `@testdouble/bun-helpers`, which handles cross-runtime path resolution across Bun, Vitest, and the compiled binaries. In a compiled binary the scripts are read from beside the executable, where `scripts/build.ts` copies them:
 
 ```typescript
-// packages/claude-integration/src/run-claude.ts
-const sandboxRunScript = resolveRelativePath(
-  import.meta,
-  '../sandbox-run.sh',
-  'sandbox-run.sh',
-)
+// packages/claude-integration/src/sandbox-scripts.ts
+const runScript = resolveRelativePath(import.meta, '../sandbox-run.sh', 'sandbox-run.sh')
 ```
 
 ### Sandbox Script Behavior
