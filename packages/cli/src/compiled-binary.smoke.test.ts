@@ -1,6 +1,6 @@
 import { type ChildProcess, spawn, spawnSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
-import { rm } from 'node:fs/promises'
+import { cp, mkdir, readdir, rm, symlink, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { makeTmpDir, writeRunFixture } from '@testdouble/skillwalker-data/src/analytics-test-helpers.js'
@@ -30,6 +30,23 @@ async function waitForServer(url: string, proc: ChildProcess, timeoutMs = 10000)
     }
   }
   throw new Error(`skillwalker-web did not answer ${url} within ${timeoutMs}ms`)
+}
+
+/**
+ * Lays the build out the way Homebrew installs it: real files in libexec/ and a
+ * relative symlink to the CLI in bin/.
+ */
+async function installLikeHomebrew(prefix: string): Promise<string> {
+  const libexec = path.join(prefix, 'libexec')
+  await mkdir(libexec, { recursive: true })
+  for (const file of await readdir(buildDir)) {
+    await cp(path.join(buildDir, file), path.join(libexec, file))
+  }
+
+  const bin = path.join(prefix, 'bin')
+  await mkdir(bin)
+  await symlink('../libexec/skillwalker', path.join(bin, 'skillwalker'))
+  return path.join(bin, 'skillwalker')
 }
 
 // ─── test lifecycle ───────────────────────────────────────────────────────────
@@ -68,6 +85,47 @@ describe('compiled skillwalker binary', () => {
     expect(output).not.toContain('Cannot find module')
     expect(result.status).toBe(0)
     expect(existsSync(path.join(dataDir, 'test-run.parquet'))).toBe(true)
+  })
+})
+
+describe('compiled skillwalker binary installed like Homebrew', () => {
+  it('loads its sidecar files through a bin symlink run from another directory', async () => {
+    const linkedBinary = await installLikeHomebrew(path.join(tmpDir, 'prefix'))
+
+    const result = spawnSync(linkedBinary, ['update-analytics-data', '--output-dir', outputDir, '--data-dir', dataDir], {
+      cwd: tmpDir,
+      encoding: 'utf8',
+    })
+
+    expect(result.status).toBe(0)
+    expect(existsSync(path.join(dataDir, 'test-run.parquet'))).toBe(true)
+  })
+
+  it('reads the sandbox scripts from SKILLWALKER_SCRIPTS_DIR', async () => {
+    const scriptsDir = path.join(tmpDir, 'sandbox-scripts')
+    await mkdir(scriptsDir)
+    await writeFile(path.join(scriptsDir, 'sandbox-run.sh'), '')
+    await writeFile(path.join(scriptsDir, 'sandbox-extract.sh'), '')
+
+    const result = spawnSync(cliBinary, ['--help'], {
+      encoding: 'utf8',
+      env: { ...process.env, SKILLWALKER_SCRIPTS_DIR: scriptsDir },
+    })
+
+    expect(result.status).toBe(0)
+  })
+
+  it('names SKILLWALKER_SCRIPTS_DIR when that folder has no sandbox scripts', async () => {
+    const scriptsDir = path.join(tmpDir, 'empty-scripts')
+    await mkdir(scriptsDir)
+
+    const result = spawnSync(cliBinary, ['--help'], {
+      encoding: 'utf8',
+      env: { ...process.env, SKILLWALKER_SCRIPTS_DIR: scriptsDir },
+    })
+
+    expect(result.status).not.toBe(0)
+    expect(result.stderr).toContain(`SKILLWALKER_SCRIPTS_DIR is set to ${scriptsDir}, but it has no sandbox-run.sh`)
   })
 })
 
