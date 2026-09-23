@@ -62,6 +62,16 @@ jobs:
       - run: make build
       - run: bun run test:smoke
 
+  test-compiled-binaries-macos:
+    name: Compiled Binary Smoke Tests (macOS)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: make build
+      - run: bun run test:smoke
+
   security:
     name: Security Audit
     runs-on: ubuntu-latest
